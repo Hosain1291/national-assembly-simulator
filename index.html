@@ -23,6 +23,16 @@
   --bg:#0f1312; --surface:#171d1b; --sunk:#121716; --line:#29312e; --line2:#36403c;
   --ink:#e5ebe8; --ink2:#a6b1ac; --ink3:#727d78;
   --accent:#6fb5a4; --accent-ink:#0f1312; --gold:#c9a866; --ok:#6cc08f; --warn:#e08a63; --pa:#7fb0bd; --pb:#d4a165; --link:#8ab4f8; color-scheme:dark}
+/* 직접 고른 테마는 접속 기기·앱 설정보다 우선 */
+html:root[data-skin="light"]{--bg:#eef0ed; --surface:#fbfcfa; --sunk:#e3e7e3; --line:#d3d9d4; --line2:#bfc7c1; --ink:#16201c; --ink2:#47534e; --ink3:#7b8681; --accent:#2a6a5d; --accent-ink:#ffffff; --gold:#93763a; --ok:#2f7d4f; --warn:#b4552d; --pa:#4d7c8a; --pb:#a9773b; --link:#3366cc; color-scheme:light}
+html:root[data-skin="dark"]{--bg:#0f1312; --surface:#171d1b; --sunk:#121716; --line:#29312e; --line2:#36403c; --ink:#e5ebe8; --ink2:#a6b1ac; --ink3:#727d78; --accent:#6fb5a4; --accent-ink:#0f1312; --gold:#c9a866; --ok:#6cc08f; --warn:#e08a63; --pa:#7fb0bd; --pb:#d4a165; --link:#8ab4f8; color-scheme:dark}
+html:root[data-skin="mint"]{--bg:#e3f4ee; --surface:#f5fcf9; --sunk:#d2ebe2; --line:#b9dccf; --line2:#9ccbb9; --ink:#0f2f28; --ink2:#355c52; --ink3:#668b81; --accent:#0e8b70; --accent-ink:#ffffff; --gold:#8f7a2c; --ok:#1f7d4a; --warn:#b4552d; --pa:#2f7f8f; --pb:#b07a35; --link:#0a7660; color-scheme:light}
+.skin{display:inline-flex;border:1px solid var(--line2);border-radius:999px;padding:2px;gap:2px;background:var(--surface)}
+.skin button{border:0;background:transparent;border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600;color:var(--ink2);display:inline-flex;align-items:center;gap:5px}
+.skin button i{width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.25);display:inline-block}
+.skin button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.topr{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.top{flex-wrap:wrap}
 *{box-sizing:border-box}
 .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .tag{font-size:11.5px;font-weight:600;border-radius:999px;padding:1px 8px;background:var(--sunk);color:var(--ink2);border:1px solid var(--line)}
@@ -271,6 +281,7 @@ details.sec>summary .hint{font-size:12.5px}
 .in{width:100%;min-width:0;font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line2);border-radius:8px;padding:7px 9px}
 textarea.in{resize:vertical;line-height:1.45}
 .in.mono{font-family:var(--f-mono);font-size:12px}
+.iocode{word-break:break-all;overflow-wrap:anywhere}
 input[type=range]{width:100%;accent-color:var(--accent)}
 .clr{width:38px;height:36px;border:1px solid var(--line2);border-radius:8px;padding:2px;background:var(--bg);flex:none}
 .tot{margin:0;font-size:14px;color:var(--ink2)}
@@ -329,7 +340,15 @@ details.card>.secb{padding:0 12px 12px;margin-top:2px}
       <svg viewBox="0 0 30 20" aria-hidden="true"><path d="M3 18h24M5 18V11M9 18V11M13 18V11M17 18V11M21 18V11M25 18V11M4 11h22M8 11c0-4 3-7 7-7s7 3 7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       <div>국회 시뮬레이터<small>제헌국회 1948 — 제22대 2024</small></div>
     </div>
-    <button type="button" class="link" id="toHome" hidden>국회 다시 고르기</button>
+    <div class="topr">
+      <div class="skin" id="skin" role="group" aria-label="테마">
+        <button type="button" data-skin="auto">자동</button>
+        <button type="button" data-skin="light"><i style="background:#eef0ed"></i>라이트</button>
+        <button type="button" data-skin="dark"><i style="background:#171d1b"></i>다크</button>
+        <button type="button" data-skin="mint"><i style="background:#7fd1b5"></i>민트</button>
+      </div>
+      <button type="button" class="link" id="toHome" hidden>국회 다시 고르기</button>
+    </div>
   </div>
   <main id="app"></main>
   <p class="foot">질문과 정당 위치는 각 국회의 대표 쟁점을 단순화한 것으로, 실제 당론·표결과 다를 수 있습니다. 무소속은 한 묶음으로 계산하고 비례 의석은 받지 않습니다. 위성정당 의석은 모정당에 합산했습니다. 정당 색은 나무위키 당색(선거 당시 기준)을 따랐고, 당색이 알려지지 않은 단체는 구분색을 썼습니다.</p>
@@ -928,6 +947,186 @@ const EXTRA={
  ['검찰청 폐지','dm','pp','검찰청을 폐지하고 수사·기소를 분리','수사 공백이 우려된다, 반대',{jb:-1,jk:-1,dm:-0.9,sm:-0.4,gs:0.5,pp:0.95},'s','pol'],
  ['반도체 보조금','dm','pp','직접 보조금보다 공공 투자로','세액공제를 늘려 기업을 지원',{jb:-1,jk:-0.6,dm:-0.3,sm:0,gs:0.8,pp:0.9},'e','eco']]
 };
+// 국회별 추가 쟁점 2차
+const EXTRA2={
+1:[['헌법의 경제 조항','mu','hm','중요 산업과 자원은 국유·국영으로','사유재산과 시장경제를 중심으로',{mu:-0.6,etc:-0.5,hm:0.8,jm:0.1,dd:0.3,dc:0.4},'e','eco'],
+ ['적산 가옥 처리','mu','dc','무주택 서민에게 우선 불하해야','연고자에게 불하해야',{mu:-0.6,etc:-0.4,hm:0.6,jm:0.2,dd:0.4,dc:0.6},'e','reg'],
+ ['국무총리의 권한','hm','dc','국무총리에게 실질 권한을 줘야','대통령 중심 행정부로 가야',{hm:-0.8,mu:-0.3,etc:0,jm:0.4,dd:0.5,dc:0.9},'s','pol'],
+ ['남북 협상파 참여','mu','dc','김구·김규식계도 정치에 참여시켜야','단정 반대 세력은 배제해야',{mu:-0.7,etc:-0.2,hm:0.6,jm:0.4,dd:0.7,dc:0.8},'s','uni'],
+ ['숙군 작업','mu','dc','적법 절차로 신중하게','군 내 좌익을 철저히 숙청해야',{mu:-0.6,etc:-0.1,hm:0.6,jm:0.7,dd:0.9,dc:0.9},'s','sec'],
+ ['노동자 최저 생활','etc','hm','노동자의 최저 생활을 국가가 보장','기업 자율에 맡겨야',{etc:-0.7,mu:-0.5,hm:0.7,jm:-0.1,dd:0.2,dc:0.3},'e','lab'],
+ ['남녀평등 입법','mu','dc','남녀평등을 법으로 구체화해야','전통 가족 질서를 존중해야',{mu:-0.4,etc:-0.3,hm:0.3,jm:0.4,dd:0.5,dc:0.4},'s','soc'],
+ ['정부 수립기 조세','mu','hm','지주·부유층 중심으로 과세해야','간접세 중심으로 재정을',{mu:-0.6,etc:-0.5,hm:0.7,jm:0,dd:0.2,dc:0.3},'e','eco']],
+2:[['전시 특별세','mu','dk','부유층에 전시 특별세를','간접세와 원조로 충당해야',{mu:-0.5,mg:-0.2,etc:-0.2,no:-0.3,gm:0.5,dh:0.5,dk:0.7},'e','eco'],
+ ['귀속 농지 분배','mu','mg','귀속 농지를 소작농에게 거의 무상으로','유상 분배로 재정을 확보해야',{mu:-0.6,mg:0.5,etc:-0.3,no:-0.3,gm:0.2,dh:0.2,dk:0.2},'e','reg'],
+ ['수복 후 부역자 처벌','mu','dk','억울한 부역 혐의자를 구제해야','부역자를 엄벌해야',{mu:-0.6,mg:-0.3,etc:-0.1,no:0.4,gm:0.7,dh:0.9,dk:0.8},'s','soc'],
+ ['피란 학교 지원','mu','dk','피란 학교를 국가가 지원해야','전쟁 수행이 우선이다',{mu:-0.5,mg:-0.3,etc:-0.2,no:-0.1,gm:0.4,dh:0.5,dk:0.5},'e','soc'],
+ ['자유당 창당','mg','dk','관제 여당 창당에 반대한다','대통령을 뒷받침할 정당이 필요하다',{mg:-0.9,mu:-0.4,etc:0,no:0.6,gm:0.8,dh:0.9,dk:0.9},'s','pol'],
+ ['작전지휘권 이양','mu','dk','작전권 이양은 신중했어야 한다','유엔군 지휘가 승리에 필요하다',{mu:-0.3,mg:0.3,etc:0.2,no:0.5,gm:0.6,dh:0.7,dk:0.7},'s','sec'],
+ ['유엔 원조 배분 감시','mg','dk','원조 배분을 국회가 감시해야','정부가 효율적으로 배분해야',{mg:-0.8,mu:-0.5,etc:-0.1,no:0.3,gm:0.6,dh:0.7,dk:0.8},'e','uni'],
+ ['대한노총의 역할','no','dk','노총이 노동자 이익을 대변해야','노총은 정부 정책에 협력해야',{no:-0.5,mu:-0.4,mg:0,etc:-0.2,gm:0.6,dh:0.7,dk:0.7},'e','lab']],
+3:[['한미 합의의사록','mu','jy','경제 자주권을 지키는 조건으로','원조와 안보를 위해 받아들여야',{mu:-0.4,mg:0.2,etc:0.4,jy:0.8},'e','uni'],
+ ['예산 심의권','mg','jy','국회가 예산을 철저히 심의해야','정부 예산안을 신속히 통과시켜야',{mg:-0.9,mu:-0.5,etc:0.3,jy:0.85},'s','pol'],
+ ['도시 주택난','mu','jy','피란민·서민 주택을 국가가 지어야','민간 건설에 맡겨야',{mu:-0.6,mg:-0.3,etc:0.2,jy:0.6},'e','reg'],
+ ['대학생 병역 특례','mu','jy','대학생 병역 특례를 없애 공정하게','인재 양성을 위해 유지해야',{mu:-0.5,mg:-0.2,etc:0.3,jy:0.6},'s','sec'],
+ ['노동위원회 구성','mu','jy','노동위원회를 공정하게 구성해야','산업 평화를 위해 쟁의를 억제해야',{mu:-0.6,mg:-0.3,etc:0.3,jy:0.8},'e','lab'],
+ ['학교의 정치 동원','mg','jy','학생을 관제 집회에 동원하지 말아야','반공 교육과 궐기는 필요하다',{mg:-0.7,mu:-0.4,etc:0.5,jy:0.9},'s','soc'],
+ ['은행 대출 특혜','mg','jy','은행 대출 특혜를 조사해야','기간산업 육성 금융이다',{mg:-0.9,mu:-0.5,etc:0.3,jy:0.85},'e','eco'],
+ ['환도 후 재건 순서','mu','jy','서민 생활 재건을 먼저','관공서와 기간시설 재건을 먼저',{mu:-0.5,mg:-0.2,etc:0.3,jy:0.6},'e','reg']],
+4:[['경호권 발동 날치기','mj','jy','경호권 발동 날치기는 무효다','다수결로 통과된 정당한 의결이다',{mj:-0.95,tu:-0.6,mu:-0.3,jy:0.95},'s','pol'],
+ ['관권 선거 자금','mj','jy','관권 선거 자금을 조사해야','정당 활동 자금일 뿐이다',{mj:-0.95,tu:-0.6,mu:-0.3,jy:0.9},'e','eco'],
+ ['원조 감축 대응','mj','jy','원조 감소에 맞춰 자립 계획을','원조 유지를 위해 미국 요구를 수용',{mj:-0.6,tu:-0.4,mu:-0.2,jy:0.6},'e','uni'],
+ ['군의 선거 중립','mj','jy','군의 선거 개입을 막아야','군은 정부 방침을 따라야',{mj:-0.9,tu:-0.5,mu:-0.3,jy:0.85},'s','sec'],
+ ['노총의 자유당 예속','mu','jy','노조를 자유당에서 독립시켜야','노총은 국가 재건에 협력해야',{mj:-0.6,tu:-0.5,mu:-0.6,jy:0.85},'e','lab'],
+ ['판자촌 철거','mj','jy','판자촌 주민 이주 대책을','도시 미관을 위해 철거해야',{mj:-0.7,tu:-0.5,mu:-0.4,jy:0.6},'e','reg'],
+ ['대학생 집회','mj','jy','학생의 의사 표현을 보장해야','학생은 학업에 전념해야',{mj:-0.8,tu:-0.5,mu:-0.3,jy:0.9},'s','soc'],
+ ['국가 기밀 범위','mj','jy','국가 기밀 범위를 좁혀야','기밀 누설을 엄히 처벌해야',{mj:-0.9,tu:-0.5,mu:-0.2,jy:0.9},'s','soc']],
+5:[['경찰 중립화','sd','mj','경찰을 독립 기구로 정치 중립화','정부가 경찰을 지휘해야',{sd:-0.9,hs:-0.9,etc:-0.4,mj:0.3,mu:0.2,jy:0.7},'s','pol'],
+ ['교육 자치','sd','mj','교육위원을 주민이 선출해야','교육은 문교부가 관리해야',{sd:-0.8,hs:-0.8,etc:-0.3,mj:0.3,mu:0.2,jy:0.6},'s','soc'],
+ ['춘궁기 양곡','sd','mj','춘궁기 양곡을 무상 방출해야','시장 가격으로 판매해야',{sd:-0.9,hs:-0.9,etc:-0.3,mj:0.3,mu:0.1,jy:0.5},'e','reg'],
+ ['원조 의존 탈피','sd','mj','원조 의존에서 벗어나 자립 경제를','원조를 늘려 경제를 살려야',{sd:-0.9,hs:-0.9,etc:-0.2,mj:0.6,mu:0.4,jy:0.6},'e','uni'],
+ ['재벌 재산 환수','sd','mj','부정 재벌의 재산을 국가가 환수해야','벌과금으로 마무리해야',{sd:-0.95,hs:-0.95,etc:-0.4,mj:0.4,mu:0.3,jy:0.9},'e','eco'],
+ ['노동 쟁의 급증','sd','mj','쟁의권을 폭넓게 인정해야','경제 혼란을 막게 제한해야',{sd:-0.95,hs:-0.95,etc:-0.3,mj:0.5,mu:0.4,jy:0.8},'e','lab'],
+ ['정군 운동','sd','mj','정군 운동을 지지하고 부패 장성을 퇴진시켜야','군 질서를 위해 신중해야',{sd:-0.7,hs:-0.7,etc:-0.2,mj:0.3,mu:0.3,jy:0.7},'s','sec'],
+ ['혁신계 사찰','sd','mj','혁신 정당에 대한 사찰을 멈춰야','용공 세력 감시는 필요하다',{sd:-1,hs:-1,etc:-0.3,mj:0.6,mu:0.5,jy:0.95},'s','soc']],
+6:[['전국구 확대','mj','gh','전국구를 늘려 소수 정당 진출을','현행 제도로 안정 다수를',{mj:-0.6,md:-0.6,ku:-0.7,ja:-0.6,gh:0.7},'s','pol'],
+ ['환율 현실화','mj','gh','환율 인상은 서민 물가 부담이다','수출을 위해 환율을 현실화해야',{mj:-0.7,md:-0.6,ku:-0.3,ja:-0.2,gh:0.9},'e','eco'],
+ ['농어촌 전기 보급','mj','gh','농어촌 전기 공급을 국가가 먼저','도시·공업 전력이 우선이다',{mj:-0.6,md:-0.6,ku:-0.4,ja:-0.3,gh:0.4},'e','reg'],
+ ['파월 기술자','mj','gh','파월 기술자의 권익을 보호해야','외화 획득을 위해 확대해야',{mj:-0.5,md:-0.5,ku:-0.3,ja:-0.2,gh:0.9},'e','lab'],
+ ['중정의 언론 간섭','mj','gh','중앙정보부의 언론 간섭을 막아야','국가 이익을 위한 협조 요청이다',{mj:-0.9,md:-0.9,ku:-0.6,ja:-0.6,gh:0.85},'s','soc'],
+ ['반공법 제정','mj','gh','반공법 남용을 막아야','반공법으로 간첩을 막아야',{mj:-0.7,md:-0.7,ku:-0.4,ja:-0.4,gh:0.9},'s','sec'],
+ ['청구권 자금 사용','mj','gh','청구권 자금을 피해자 보상에','산업 기반 건설에',{mj:-0.8,md:-0.7,ku:-0.5,ja:-0.4,gh:0.9},'e','uni'],
+ ['사카린 밀수 사건','mj','gh','재벌 밀수를 철저히 수사해야','경제를 고려해 처벌해야',{mj:-0.95,md:-0.9,ku:-0.6,ja:-0.6,gh:0.7},'e','eco']],
+7:[['국정감사 실질화','sm','gh','국정감사를 실질화해야','행정 효율이 우선이다',{sm:-0.9,dj:-0.6,gh:0.8},'s','pol'],
+ ['수출자유지역','sm','gh','외국 자본 특혜를 줄여야','수출자유지역으로 유치해야',{sm:-0.7,dj:-0.6,gh:0.9},'e','eco'],
+ ['서울 도심 재개발','sm','gh','서민 주거를 지키는 개발을','도심 재개발과 고층화를',{sm:-0.7,dj:-0.6,gh:0.8},'e','reg'],
+ ['노동 쟁의 인정','sm','gh','노동 쟁의를 폭넓게 인정해야','수출 산업 쟁의는 제한해야',{sm:-0.8,dj:-0.7,gh:0.85},'e','lab'],
+ ['대학 내 사찰','sm','gh','대학 내 정보기관 사찰을 멈춰야','학원 안정을 위한 활동이다',{sm:-0.9,dj:-0.7,gh:0.9},'s','soc'],
+ ['예비군 무장','sm','gh','민간 무장은 오히려 위험하다','향토 방위를 위해 무장이 필요하다',{sm:-0.6,dj:-0.5,gh:0.9},'s','sec'],
+ ['일본 자본 도입','sm','gh','일본 자본 종속을 경계해야','한일 협력으로 성장을 앞당겨야',{sm:-0.7,dj:-0.6,gh:0.9},'e','uni'],
+ ['선거 관리 독립','sm','gh','선거 관리를 독립시켜야','현행 선거 관리를 유지해야',{sm:-0.9,dj:-0.6,gh:0.8},'s','pol']],
+8:[['10월 유신 국회 해산','sm','gh','국회 해산은 헌정 파괴다','비상 상황에 필요한 조치다',{sm:-1,mz:-0.7,kd:-0.4,gh:0.95},'s','pol'],
+ ['재벌 대출','sm','gh','재벌 대출을 줄여 중소기업에','수출 기업 지원이 필요하다',{sm:-0.8,mz:-0.5,kd:-0.1,gh:0.9},'e','eco'],
+ ['서울 인구 분산','sm','gh','지방 공업 육성으로 분산해야','서울 경쟁력을 유지해야',{sm:-0.6,mz:-0.4,kd:0,gh:0.6},'e','reg'],
+ ['근로감독 강화','sm','gh','근로감독관을 늘려 감독을 강화','기업 자율에 맡겨야',{sm:-0.8,mz:-0.5,kd:-0.2,gh:0.7},'e','lab'],
+ ['언론 협조 요구','sm','gh','언론 자유를 보장해야','국가 비상시엔 언론도 협조해야',{sm:-0.9,mz:-0.6,kd:-0.3,gh:0.9},'s','soc'],
+ ['방위산업 육성','sm','gh','재정 부담을 고려해 신중히','자주국방을 위해 방산을 육성',{sm:-0.3,mz:-0.2,kd:0.2,gh:0.9},'s','sec'],
+ ['데탕트 외교','sm','gh','데탕트에 맞춰 대화 외교로','반공 동맹을 더 단단히',{sm:-0.7,mz:-0.4,kd:0,gh:0.7},'s','uni'],
+ ['이중곡가제','sm','gh','이중곡가제를 확대해야','재정 적자가 우려된다, 축소해야',{sm:-0.8,mz:-0.5,kd:-0.2,gh:0.3},'e','reg']],
+9:[['국정조사권 부활','sm','gh','국정조사권을 되살려야','유신 헌법대로 제한해야',{sm:-0.9,tt:-0.9,mu:-0.3,gh:0.85,yj:0.95},'s','pol'],
+ ['1차 석유 파동','sm','gh','서민 물가 안정이 우선이다','에너지 가격을 현실화해야',{sm:-0.7,tt:-0.7,mu:-0.2,gh:0.7,yj:0.75},'e','eco'],
+ ['새마을 사업비 부담','sm','gh','농민 부담금을 줄여야','주민 자조로 해야',{sm:-0.7,tt:-0.6,mu:-0.2,gh:0.8,yj:0.85},'e','reg'],
+ ['노조 결성 제한','sm','gh','노조 결성을 자유롭게','산업 평화를 위해 제한해야',{sm:-0.8,tt:-0.8,mu:-0.2,gh:0.85,yj:0.9},'e','lab'],
+ ['종교계 인권 활동','sm','gh','종교계의 인권 활동을 보장해야','정치 활동은 단속해야',{sm:-0.9,tt:-0.9,mu:-0.3,gh:0.85,yj:0.9},'s','soc'],
+ ['판문점 도끼 만행','sm','gh','확전은 막고 외교로','강력한 무력 시위로 대응해야',{sm:-0.4,tt:-0.4,mu:0,gh:0.9,yj:0.95},'s','sec'],
+ ['코리아게이트','sm','gh','로비 의혹을 국회가 조사해야','외교 문제라 신중해야',{sm:-0.9,tt:-0.9,mu:-0.3,gh:0.8,yj:0.9},'s','uni'],
+ ['수출 100억 달러','sm','gh','성장의 그늘인 저임금을 살펴야','수출 목표 달성이 최우선이다',{sm:-0.7,tt:-0.7,mu:-0.1,gh:0.9,yj:0.9},'e','eco']],
+10:[['총재 직무 정지','sm','gh','법원 결정은 정치 탄압이다','법원 결정에 따라야',{sm:-1,tt:-0.9,mu:-0.3,gh:0.9,yj:0.95},'s','pol'],
+ ['중화학 투자 조정','sm','gh','중복 투자를 정리해야','중화학 육성을 계속해야',{sm:-0.7,tt:-0.6,mu:-0.2,gh:0.5,yj:0.6},'e','eco'],
+ ['재개발 철거민','sm','gh','철거민 생계 대책을','도시 정비를 계속해야',{sm:-0.8,tt:-0.7,mu:-0.2,gh:0.7,yj:0.8},'e','reg'],
+ ['사북 사태','sm','gh','광부들의 생존권 요구를 들어야','폭력 사태는 엄정 대처해야',{sm:-0.8,tt:-0.8,mu:-0.2,gh:0.6,yj:0.8},'e','lab'],
+ ['해직 교수 복직','sm','gh','해직 교수를 복직시켜야','재임용 제도를 유지해야',{sm:-0.9,tt:-0.9,mu:-0.3,gh:0.6,yj:0.8},'s','soc'],
+ ['계엄사령부 권한','sm','gh','계엄 범위를 줄이고 국회가 통제해야','안보를 위해 계엄사에 맡겨야',{sm:-0.9,tt:-0.9,mu:-0.3,gh:0.5,yj:0.8},'s','sec'],
+ ['1979 한미 정상회담','sm','gh','인권 개선 요구를 받아들여야','주한미군 철수 중단이 성과다',{sm:-0.8,tt:-0.8,mu:-0.2,gh:0.8,yj:0.9},'s','uni'],
+ ['노동 3권 회복','sm','gh','유신 이전 노동 3권을 회복해야','안정기까지 유보해야',{sm:-0.9,tt:-0.9,mu:-0.2,gh:0.6,yj:0.8},'e','lab']],
+11:[['제1당 전국구 프리미엄','mh','mjj','전국구 제1당 프리미엄을 없애야','안정 의석이 필요하다',{ms:-0.9,mh:-0.8,mk:-0.7,mu:-0.5,sj:-0.6,etc:-0.6,kn:-0.4,mjj:0.95},'s','pol'],
+ ['임금 억제','mh','mjj','임금보다 물가부터 잡아야','임금 동결로 물가를 안정시켜야',{ms:-0.9,mh:-0.6,mk:-0.5,mu:-0.2,sj:-0.2,etc:-0.3,kn:0.2,mjj:0.8},'e','lab'],
+ ['프로야구와 3S 정책','mh','mjj','관심을 돌리려는 우민화 정책이다','국민 여가를 위한 정책이다',{ms:-0.7,mh:-0.5,mk:-0.4,mu:-0.1,sj:-0.1,etc:-0.1,kn:0.2,mjj:0.8},'s','soc'],
+ ['해외 건설 부실','mh','mjj','부실 해외 건설사를 정리해야','국가 신용을 위해 지원해야',{ms:-0.7,mh:-0.5,mk:-0.4,mu:-0.1,sj:-0.1,etc:-0.1,kn:0.3,mjj:0.8},'e','eco'],
+ ['목동 철거','mh','mjj','철거민 대책이 먼저다','주택 공급을 서둘러야',{ms:-0.8,mh:-0.6,mk:-0.5,mu:-0.3,sj:-0.2,etc:-0.3,kn:0.1,mjj:0.7},'e','reg'],
+ ['미국문화원 방화','ms','mjj','반미 시위의 원인을 살펴야','반미 운동은 엄벌해야',{ms:-0.8,mh:-0.4,mk:-0.4,mu:-0.2,sj:-0.2,etc:-0.2,kn:0.4,mjj:0.95},'s','uni'],
+ ['교복·두발 자율화','mh','mjj','학생 자율을 넓혀야','학교 규율을 지켜야',{ms:-0.6,mh:-0.5,mk:-0.4,mu:-0.2,sj:-0.2,etc:-0.2,kn:0,mjj:-0.2},'s','soc'],
+ ['보안사의 사찰','mh','mjj','보안사의 민간인 사찰을 멈춰야','안보를 위한 정보 활동이다',{ms:-0.9,mh:-0.7,mk:-0.6,mu:-0.4,sj:-0.4,etc:-0.3,kn:0.1,mjj:0.9},'s','sec']],
+12:[['소선거구제 복귀','shm','mjj','소선거구제와 공정 선거로','중대선거구를 유지해야',{shm:-0.8,sjs:-0.6,smj:-0.5,mh:-0.4,mu:-0.2,kn:0.2,mjj:0.8},'s','pol'],
+ ['외채 문제','shm','mjj','외채를 줄이고 분배를','호황을 투자 확대로',{shm:-0.7,sjs:-0.8,smj:-0.4,mh:-0.4,mu:-0.2,kn:0.3,mjj:0.8},'e','eco'],
+ ['상계동 철거','shm','mjj','강제 철거를 멈추고 이주 대책을','올림픽을 위해 정비가 불가피하다',{shm:-0.9,sjs:-0.9,smj:-0.6,mh:-0.5,mu:-0.3,kn:0.2,mjj:0.85},'e','reg'],
+ ['구로동맹파업','shm','mjj','노동자 연대 파업을 탄압하지 말아야','불법 파업은 엄단해야',{shm:-0.8,sjs:-0.9,smj:-0.5,mh:-0.3,mu:-0.2,kn:0.4,mjj:0.9},'e','lab'],
+ ['박종철 고문치사 은폐','shm','mjj','은폐 책임자를 처벌하고 직선제로','경찰 개인의 일탈이다',{shm:-1,sjs:-0.9,smj:-0.7,mh:-0.6,mu:-0.4,kn:0.2,mjj:0.85},'s','soc'],
+ ['군 의문사','shm','mjj','군 의문사 진상을 밝혀야','군 기밀 사항이다',{shm:-0.9,sjs:-0.8,smj:-0.5,mh:-0.4,mu:-0.2,kn:0.3,mjj:0.85},'s','sec'],
+ ['미국 담배·쇠고기 개방','shm','mjj','미국 압력에 굴복하지 말아야','통상 마찰을 피해야',{shm:-0.8,sjs:-0.9,smj:-0.5,mh:-0.5,mu:-0.3,kn:0.1,mjj:0.7},'e','uni'],
+ ['4·13 호헌 조치','shm','mjj','호헌 조치를 철회하고 직선제로','개헌 논의는 올림픽 이후로',{shm:-1,sjs:-0.9,smj:-0.7,mh:-0.6,mu:-0.4,kn:0.2,mjj:0.95},'s','pol']],
+13:[['재벌 경제력 집중','pm','mjj','재벌 계열사와 업종을 제한해야','국제 경쟁력을 위해 대형화해야',{hg:-1,pm:-0.85,tm:-0.5,mu:-0.2,gj:0.5,mjj:0.7},'e','eco'],
+ ['증시 부양','pm','mjj','투기 부양책을 멈춰야','증시 안정을 위해 부양해야',{hg:-0.8,pm:-0.6,tm:-0.3,mu:0,gj:0.4,mjj:0.7},'e','eco'],
+ ['청문회 상설화','pm','mjj','청문회를 상설화해야','정쟁 도구가 된다',{hg:-0.9,pm:-0.9,tm:-0.7,mu:-0.3,gj:-0.3,mjj:0.6},'s','pol'],
+ ['해직 교사 복직','pm','mjj','해직 교사를 복직시켜야','불법 단체 가입은 징계해야',{hg:-1,pm:-0.8,tm:-0.3,mu:0,gj:0.6,mjj:0.9},'s','soc'],
+ ['방위비 분담','pm','mjj','방위비 분담을 줄여야','동맹 유지를 위해 분담을 늘려야',{hg:-0.9,pm:-0.6,tm:-0.2,mu:0,gj:0.6,mjj:0.8},'s','sec'],
+ ['남북 고위급 회담','pm','mjj','회담을 정례화하고 합의를 서둘러야','신중하게 단계적으로',{hg:-0.9,pm:-0.8,tm:-0.4,mu:-0.1,gj:0.4,mjj:0.3},'s','uni'],
+ ['농어촌 부채 경감','pm','mjj','농어촌 부채 경감을 특별법으로','구조 개선 투자 중심으로',{hg:-0.9,pm:-0.9,tm:-0.6,mu:-0.4,gj:-0.2,mjj:0.6},'e','reg'],
+ ['임금 가이드라인','pm','mjj','정부의 임금 억제 지침에 반대','물가를 위해 한 자릿수 인상',{hg:-1,pm:-0.8,tm:-0.4,mu:-0.1,gj:0.5,mjj:0.85},'e','lab']],
+14:[['정치 개혁 입법','md','mja','돈 안 드는 선거법·정치자금법을','점진적으로 개혁해야',{md:-0.8,sj:-0.9,mu:-0.4,tk:-0.2,mja:0.4},'s','pol'],
+ ['토지초과이득세','md','mja','토초세를 유지해 투기를 막아야','위헌 소지가 있어 폐지해야',{md:-0.8,sj:-0.4,mu:0,tk:0.8,mja:0.5},'e','eco'],
+ ['노동 유연화','md','mja','유연화보다 고용 안정이 먼저','국제 경쟁력을 위해 유연화',{md:-0.8,sj:-0.4,mu:-0.1,tk:0.7,mja:0.8},'e','lab'],
+ ['5·31 교육 개혁','md','mja','공교육 재정 확충이 먼저','수요자 중심 자율 경쟁으로',{md:-0.6,sj:-0.3,mu:0,tk:0.5,mja:0.7},'e','soc'],
+ ['미국 통상 압력','md','mja','미국의 통상 압력에 맞서야','개방으로 통상 마찰을 풀어야',{md:-0.8,sj:-0.4,mu:-0.3,tk:0.3,mja:0.7},'e','uni'],
+ ['복무 기간 단축','md','mja','병역 기간을 줄여야','안보 상황상 유지해야',{md:-0.5,sj:-0.4,mu:0,tk:0.2,mja:0.7},'s','sec'],
+ ['1기 신도시 부실','md','mja','부실 시공 책임과 기반시설 확충을','공급 확대가 우선이다',{md:-0.8,sj:-0.5,mu:-0.3,tk:0.3,mja:0.5},'e','reg'],
+ ['역사 바로세우기','md','mja','친일·독재 잔재를 청산해야','국민 통합이 우선이다',{md:-0.9,sj:-0.6,mu:-0.3,tk:0,mja:0.3},'s','soc']],
+15:[['세풍 사건','kh','sh','국세청 대선 자금 모금을 처벌해야','정치 보복이다',{kh:-0.9,tm:-0.6,mu:-0.2,jm:-0.2,sh:0.9},'s','pol'],
+ ['한보 사태','kh','sh','권력형 특혜 대출을 국정조사해야','기업 부실의 문제다',{kh:-0.95,tm:-0.7,mu:-0.3,jm:-0.5,sh:0.6},'e','eco'],
+ ['외환위기 고통 분담','kh','sh','재벌·부유층이 더 고통을 나눠야','국민 모두가 고통을 나눠야',{kh:-0.8,tm:-0.6,mu:0,jm:0.2,sh:0.6},'e','eco'],
+ ['국민연금 전 국민 확대','kh','sh','도시 자영업자까지 확대해야','준비가 부족하다, 연기해야',{kh:-0.9,tm:-0.5,mu:0,jm:0.4,sh:0.6},'e','lab'],
+ ['지역 편중 인사','kh','sh','지역 차별 인사를 바로잡아야','능력 위주 인사가 맞다',{kh:-0.9,tm:-0.6,mu:-0.1,jm:-0.3,sh:0.7},'s','reg'],
+ ['대포동 미사일','kh','sh','포용 정책을 흔들지 말아야','대북 정책을 재검토해야',{kh:-0.7,tm:-0.4,mu:0.1,jm:0.8,sh:0.9},'s','sec'],
+ ['일본 대중문화 개방','kh','sh','일본 대중문화를 단계적으로 개방','문화 잠식이 우려돼 신중해야',{kh:-0.8,tm:-0.5,mu:0,jm:0.3,sh:0.4},'s','uni'],
+ ['고문 수사 근절','kh','sh','고문 수사를 막는 인권법을','수사 위축이 우려된다',{kh:-0.8,tm:-0.6,mu:0,jm:0.6,sh:0.7},'s','soc']],
+16:[['대선 자금 수사','mj','hn','여야 대선 자금을 모두 수사해야','한나라당 표적 수사에 반대',{mj:-0.7,mu:0,hs:0.3,mk:0.4,jm:0.5,hn:0.9},'s','pol'],
+ ['방탄 국회','mj','hn','방탄 국회를 금지해 특권을 줄여야','야당 탄압을 막기 위해 필요하다',{mj:-0.6,mu:0,hs:0.3,mk:0.4,jm:0.5,hn:0.8},'s','pol'],
+ ['카드 대란','mj','hn','서민 채무 조정이 먼저다','카드사 자구 노력이 먼저다',{mj:-0.6,mu:0,hs:0.3,mk:0.4,jm:0.5,hn:0.6},'e','eco'],
+ ['주 40시간 근무','mj','hn','법정 근로 시간을 40시간으로','중소기업 부담을 고려해 유예',{mj:-0.8,mu:0,hs:0.3,mk:0.4,jm:0.5,hn:0.6},'e','lab'],
+ ['고속철도 노선','mj','hn','환경 훼손 구간은 재검토해야','공기 지연 없이 추진해야',{mj:-0.3,mu:0,hs:0.3,mk:0.3,jm:0.4,hn:0.5},'e','reg'],
+ ['2차 북핵 위기','mj','hn','대화로 풀고 지원은 유지해야','지원을 끊고 압박해야',{mj:-0.8,mu:0,hs:0.4,mk:0.6,jm:0.8,hn:0.9},'s','sec'],
+ ['NEIS 시행','mj','hn','인권 침해 우려 항목은 빼야','교육 행정 효율을 위해 시행',{mj:-0.3,mu:0,hs:0.3,mk:0.3,jm:0.4,hn:0.5},'s','soc'],
+ ['반미 정서와 한미 관계','mj','hn','대등한 한미 관계로 재정립','동맹 균열을 막아야',{mj:-0.7,mu:0,hs:0.3,mk:0.5,jm:0.7,hn:0.9},'s','uni']],
+17:[['4대 입법 단독 처리','ur','hn','과반으로 개혁 입법을 처리해야','합의 없는 강행은 안 된다',{dn:-0.9,ur:-0.9,mj:-0.2,mu:0,tg:0.4,jm:0.8,hn:0.9},'s','pol'],
+ ['대연정 제안','ur','hn','지역 구도를 풀기 위해 대연정을','권력 나눠먹기에 반대',{dn:-0.2,ur:-0.6,mj:0.3,mu:0,tg:0,jm:0.2,hn:0.8},'','pol'],
+ ['출자총액제 폐지','ur','hn','재벌 규제를 유지해야','투자를 위해 폐지해야',{dn:-1,ur:-0.6,mj:-0.2,mu:0,tg:0.4,jm:0.6,hn:0.9},'e','eco'],
+ ['비정규직 차별 금지','dn','hn','동일노동 동일임금을 법으로','시장 자율에 맡겨야',{dn:-1,ur:-0.4,mj:-0.3,mu:0,tg:0.4,jm:0.6,hn:0.6},'e','lab'],
+ ['수도권 공장 신증설','ur','hn','지방 이전을 유도해야','수도권 공장 규제를 풀어야',{dn:-0.7,ur:-0.8,mj:-0.4,mu:0,tg:0.3,jm:-0.3,hn:0.6},'e','reg'],
+ ['평택 미군기지 이전','dn','hn','주민 강제 수용을 멈춰야','동맹 합의대로 이전해야',{dn:-1,ur:0.3,mj:0.1,mu:0,tg:0.4,jm:0.8,hn:0.9},'s','sec'],
+ ['친일 재산 환수','ur','hn','친일파 재산을 국가가 환수해야','소급 입법 논란이 있다',{dn:-1,ur:-0.9,mj:-0.4,mu:0,tg:0.2,jm:0.6,hn:0.5},'s','soc'],
+ ['스크린쿼터 축소','dn','hn','스크린쿼터를 지켜야','FTA를 위해 축소해야',{dn:-1,ur:0.2,mj:-0.2,mu:0,tg:0.3,jm:0.4,hn:0.7},'e','uni']],
+18:[['직권상정과 국회 폭력','tm','hn','직권상정을 금지해야','다수결 원칙대로 처리해야',{dn:-0.9,ch:-0.8,tm:-0.9,mu:0.2,sj:0.3,cp:0.4,hn:0.85},'s','pol'],
+ ['대검 중수부 폐지','tm','hn','중수부를 폐지해야','권력형 비리 수사를 위해 유지',{dn:-0.9,ch:-0.8,tm:-0.8,mu:0.2,sj:0.4,cp:0.3,hn:0.6},'s','pol'],
+ ['글로벌 금융위기 대응','tm','hn','서민 지원과 일자리 예산을','대규모 감세와 건설 투자로',{dn:-1,ch:-0.8,tm:-0.85,mu:0.3,sj:0.4,cp:0.4,hn:0.9},'e','eco'],
+ ['고환율 정책','tm','hn','고환율은 서민 물가를 올린다','수출 기업을 위해 고환율 유지',{dn:-0.9,ch:-0.8,tm:-0.8,mu:0.3,sj:0.3,cp:0.3,hn:0.8},'e','eco'],
+ ['보금자리주택','tm','hn','공공임대 중심으로','분양 위주로 공급',{dn:-1,ch:-0.7,tm:-0.8,mu:0.2,sj:0.3,cp:0.3,hn:0.6},'e','reg'],
+ ['노조 전임자 임금','dn','hn','전임자 임금은 노사 자율로','전임자 임금 지급을 금지해야',{dn:-1,ch:-0.7,tm:-0.8,mu:0.3,sj:0.5,cp:0.4,hn:0.85},'e','lab'],
+ ['용산 참사','tm','hn','진압 책임자 처벌과 재개발 제도 개선','불법 점거 농성이 원인이다',{dn:-1,ch:-0.9,tm:-0.9,mu:0.2,sj:0.4,cp:0.3,hn:0.8},'s','soc'],
+ ['대북 특사','tm','hn','대북 특사로 대화를 재개해야','국제 공조로 압박해야',{dn:-1,ch:-0.6,tm:-0.7,mu:0.4,sj:0.8,cp:0.7,hn:0.9},'s','uni']],
+19:[['세월호 시행령','mt','sn','특조위 독립성을 보장하게 고쳐야','정부 시행령대로',{tj:-1,mt:-0.9,mu:-0.2,sj:0.3,sn:0.8},'s','pol'],
+ ['비선 실세 문건','mt','sn','비선 실세 의혹을 국정조사해야','문건 유출이 본질이다',{tj:-1,mt:-0.9,mu:-0.2,sj:0.3,sn:0.85},'s','pol'],
+ ['담뱃값 인상','mt','sn','서민 증세라 반대한다','국민 건강을 위해 올려야',{tj:-0.8,mt:-0.6,mu:0,sj:0.4,sn:0.8},'e','eco'],
+ ['임금피크제','mt','sn','노사 합의 없는 도입에 반대','청년 고용을 위해 도입해야',{tj:-1,mt:-0.7,mu:0,sj:0.5,sn:0.85},'e','lab'],
+ ['노후 원전 수명 연장','mt','sn','노후 원전을 폐쇄해야','전력 안정을 위해 연장해야',{tj:-1,mt:-0.7,mu:0,sj:0.5,sn:0.8},'e','reg'],
+ ['윤 일병 사건','mt','sn','군 인권보호관을 신설해야','지휘관 책임 강화로 충분하다',{tj:-1,mt:-0.8,mu:0,sj:0.4,sn:0.6},'s','sec'],
+ ['전교조 법외노조','mt','sn','법외노조 통보는 탄압이다','해직자 조합원은 위법이다',{tj:-1,mt:-0.85,mu:0,sj:0.6,sn:0.9},'s','soc'],
+ ['AIIB 가입','mt','sn','중국과의 경제 협력을 넓혀야','미국과의 관계를 고려해 신중히',{tj:-0.6,mt:-0.5,mu:0,sj:0.3,sn:0.2},'s','uni']],
+20:[['선거법 패스트트랙','dm','sn','4+1 협의체로 선거법을 처리','제1야당 배제 강행은 무효다',{jd:-1,dm:-0.8,kp:-0.8,mu:0.2,sn:0.95},'s','pol'],
+ ['소득주도성장','dm','sn','가계 소득을 늘려 성장을','기업 투자가 위축된다, 폐기해야',{jd:-0.9,dm:-0.85,kp:0,mu:0.4,sn:0.9},'e','eco'],
+ ['조국 법무부 장관','dm','sn','검찰 개혁을 위해 임명해야','의혹이 많아 임명을 철회해야',{jd:-0.3,dm:-0.9,kp:0.4,mu:0.4,sn:0.95},'s','pol'],
+ ['광주형 일자리','dm','sn','상생형 지역 일자리를 늘려야','시장 원리에 맡겨야',{jd:-0.3,dm:-0.8,kp:-0.6,mu:0,sn:0.3},'e','reg'],
+ ['탄력근로제 확대','jd','sn','단위 기간 확대에 반대','6개월 이상으로 늘려야',{jd:-1,dm:-0.3,kp:0.3,mu:0.3,sn:0.9},'e','lab'],
+ ['비동의 강간죄','jd','sn','비동의 강간죄를 도입해야','무고 우려로 신중해야',{jd:-1,dm:-0.5,kp:-0.4,mu:0.2,sn:0.6},'s','soc'],
+ ['북한 목선 경계 실패','dm','sn','경계 보완으로 충분하다','국방장관을 문책해야',{jd:-0.4,dm:-0.8,kp:0.3,mu:0.3,sn:0.95},'s','sec'],
+ ['방위비 분담금','dm','sn','미국 요구가 과하다, 단호히','동맹 유지를 위해 일정 부분 수용',{jd:-0.9,dm:-0.6,kp:-0.3,mu:0.3,sn:0.6},'s','uni']],
+21:[['상임위원장 독식','dm','tt','다수당이 맡아 책임 정치를','관례대로 여야가 나눠야',{jd:-0.2,ym:-0.9,dm:-0.9,mu:0,kp:0.6,tt:0.95},'s','pol'],
+ ['대장동 의혹','dm','tt','정치 공세다, 수사로 충분하다','특검으로 철저히 수사해야',{jd:0.3,ym:-0.8,dm:-0.9,mu:0,kp:0.8,tt:0.95},'s','pol'],
+ ['가상자산 과세','dm','tt','예정대로 과세해야','과세를 유예해야',{jd:-0.8,ym:-0.3,dm:0.2,mu:0,kp:0.6,tt:0.8},'e','eco'],
+ ['기본소득','dm','tt','기본소득을 단계적으로 도입','선별 복지가 효율적이다',{jd:-0.4,ym:-0.7,dm:-0.7,mu:0,kp:0.6,tt:0.85},'e','lab'],
+ ['재건축 규제','dm','tt','투기 우려로 규제를 유지해야','공급을 위해 규제를 풀어야',{jd:-0.9,ym:-0.7,dm:-0.7,mu:0,kp:0.6,tt:0.9},'e','reg'],
+ ['전술핵 재배치','dm','tt','전술핵은 비핵화 원칙에 어긋난다','확장억제 강화와 핵 공유 검토',{jd:-0.9,ym:-0.9,dm:-0.8,mu:0,kp:0.5,tt:0.9},'s','sec'],
+ ['TBS 예산 지원','dm','tt','공영방송 독립을 보장해야','편파 방송 예산 지원을 끊어야',{jd:-0.6,ym:-0.9,dm:-0.85,mu:0,kp:0.6,tt:0.9},'s','soc'],
+ ['후쿠시마 오염수 방류','dm','tt','방류에 강력히 반대한다','과학적 검증 결과를 존중해야',{jd:-1,ym:-0.9,dm:-0.95,mu:0,kp:0.3,tt:0.85},'s','uni']],
+22:[['개헌 방향(2025)','dm','pp','대통령 4년 중임과 감사원 국회 이관','분권형 개헌과 국회 권한 견제',{jb:-0.6,jk:-0.8,dm:-0.8,sm:-0.3,gs:0.3,pp:0.8},'','pol'],
+ ['내란 특검','dm','pp','계엄 관련자를 특검으로 수사해야','수사기관 중복이다, 반대',{jb:-1,jk:-1,dm:-0.95,sm:-0.7,gs:-0.4,pp:0.7},'s','pol'],
+ ['1주택 종부세','dm','pp','종부세를 유지해야','1주택자 종부세를 폐지해야',{jb:-1,jk:-0.9,dm:-0.4,sm:-0.2,gs:0.7,pp:0.9},'e','eco'],
+ ['상법 개정','dm','pp','주주 보호를 위해 이사 충실의무를 넓혀야','기업 경영이 위축된다',{jb:-1,jk:-0.9,dm:-0.9,sm:-0.3,gs:0.3,pp:0.9},'e','eco'],
+ ['정년 연장','dm','pp','법정 정년을 65세로 단계 연장','청년 고용이 줄어든다, 신중히',{jb:-1,jk:-0.6,dm:-0.7,sm:-0.2,gs:0.8,pp:0.4},'e','lab'],
+ ['저출생과 수도권 집중','dm','pp','지역 균형 발전으로 풀어야','수도권 주택 공급과 현금 지원으로',{jb:-0.9,jk:-0.7,dm:-0.7,sm:-0.3,gs:0.5,pp:0.6},'e','reg'],
+ ['혐중 시위','dm','pp','혐오 시위를 제한해야','표현의 자유다, 제한에 반대',{jb:-0.9,jk:-0.7,dm:-0.7,sm:-0.2,gs:0.6,pp:0.7},'s','uni'],
+ ['군 사건 수사권','dm','pp','군 사건 수사권을 민간으로','군사법원이 맡아야',{jb:-1,jk:-0.9,dm:-0.8,sm:-0.4,gs:0,pp:0.7},'s','sec']]
+};
+Object.keys(EXTRA2).forEach(n=>{ EXTRA[n]=(EXTRA[n]||[]).concat(EXTRA2[n]); });
 DATA.forEach(a=>{
   const ex=(EXTRA[a.n]||[]).map(([t,L,R,A,B,p,ax,f])=>({t,L,R,A,B,p,ax,f,g:false})), ev=a.Q.map(q=>Object.assign(q,{g:false})), out=[];
   for(let i=0;i<Math.max(ev.length,ex.length);i++){ if(ev[i]) out.push(ev[i]); if(ex[i]) out.push(ex[i]); }
@@ -1001,13 +1200,14 @@ try{ const v=+localStorage.getItem('kr-asm-sel'); if(v>=0&&v<DATA.length) S.ai=v
 let C=null, FIELDS=[], FK=[];
 const fld=k=>FIELDS.find(F=>F.k===k)||{k,n:k,c:'#888888',d:''};
 const SKEY=n=>'kr-asm-edit-'+n;
+const QV=3; // 질문 세트 버전: 올리면 예전에 저장한 시험에 새 질문이 더해짐
 function baseScenario(i){ const a=JSON.parse(JSON.stringify(DATA[i]));
   a.Q.forEach(q=>{ if(q.g) q.p={}; q.on=true; });
   a.F=JSON.parse(JSON.stringify(DEF_FIELDS)); a.T=JSON.parse(JSON.stringify(DEF_TRAITS));
   a.P.forEach(p=>{ p.tr={}; p.ld=(LEADERS[a.n]||{})[p.k]||''; });
   const keys=a.P.map(p=>p.k);
   a.co={span:true,veto:[],named:(NAMED[a.n]||[]).map(([n,m])=>({n,m:m.filter(k=>keys.includes(k))}))};
-  a.N=a.D+a.Lst+sum(Object.values(a.fixed)); return a; }
+  a.N=a.D+a.Lst+sum(Object.values(a.fixed)); a.v=QV; return a; }
 function norm(c){
   if(!c||!Array.isArray(c.P)||!Array.isArray(c.Q)||!Array.isArray(c.F)||c.P.length<2||!c.F.length) return null;
   const base=DATA.find(d=>d.n===Math.round(+c.n)); if(!base) return null;
@@ -1027,7 +1227,7 @@ function norm(c){
   c.gov=(Array.isArray(c.gov)?c.gov:[]).filter(k=>keys.has(k));
   const co=c.co||{}; c.co={span:co.span!==false,veto:(Array.isArray(co.veto)?co.veto:[]).filter(v=>Array.isArray(v)&&keys.has(v[0])&&keys.has(v[1])&&v[0]!==v[1]),
     named:(Array.isArray(co.named)?co.named:[]).slice(0,20).map(x=>({n:String(x&&x.n||'연합').slice(0,40),m:(Array.isArray(x&&x.m)?x.m:[]).filter(k=>keys.has(k))}))};
-  c.N=c.D+c.Lst+sum(Object.values(c.fixed));
+  c.N=c.D+c.Lst+sum(Object.values(c.fixed)); c.v=Math.round(+c.v)||0;
   return c; }
 const strip=c=>JSON.stringify(c,(k,v)=>k[0]==='_'?undefined:v);
 function setFields(){ FIELDS=C.F; FK=FIELDS.map(F=>F.k); C._ax=null; }
@@ -1037,8 +1237,9 @@ function loadScenario(){ let c=null; try{ const raw=localStorage.getItem(SKEY(DA
   // 예전 버전의 공통 의견 질문이 남아 있으면 이 국회 전용 질문으로 교체
   if(c){ const gt=new Set(GENERAL.map(x=>x[0])); if(c.Q.some(q=>q.g&&gt.has(q.t))){ const base=baseScenario(S.ai), have=new Set(c.Q.map(q=>q.t));
     c.Q=c.Q.filter(q=>!(q.g&&gt.has(q.t))).concat(base.Q.filter(q=>!have.has(q.t))); c=norm(c)||c; try{ localStorage.setItem(SKEY(c.n),strip(c)); }catch(e){} } }
+  if(c&&c.v<QV){ const base=baseScenario(S.ai), have=new Set(c.Q.map(q=>q.t)); c.Q=c.Q.concat(base.Q.filter(q=>!have.has(q.t))); c.v=QV; c=norm(c)||c; try{ localStorage.setItem(SKEY(c.n),strip(c)); }catch(e){} }
   C=c||baseScenario(S.ai); C._edited=!!c; setFields(); }
-function save(){ C._ax=null; C.N=C.D+C.Lst+sum(Object.values(C.fixed)); try{ localStorage.setItem(SKEY(C.n),strip(C)); C._edited=true; }catch(e){} }
+function save(){ C._ax=null; C.N=C.D+C.Lst+sum(Object.values(C.fixed)); try{ localStorage.setItem(SKEY(C.n),strip(C)); C._edited=true; }catch(e){} if(typeof fillIO==='function'&&document.getElementById('io')) fillIO(false); }
 const A=()=>C;
 
 const party=(a,k)=>a.P.find(p=>p.k===k);
@@ -1547,8 +1748,8 @@ function viewEdit(){
     (C.F.length<12?'<button type="button" class="add" data-act="addF">+ 분야 추가</button>':'')+
     '<span class="lbl" style="margin-top:14px;display:block">질문 <span class="hint">(체크를 끄면 시험에서 빠집니다)</span></span><div class="rows">'+C.F.map(F=>'<details class="card" data-o="q'+esc(F.k)+'"'+op('q'+F.k)+'><summary><i class="dot" style="background:'+F.c+'"></i><b>'+esc(F.n)+'</b><span class="hint num">'+non(F.k)+' / '+nq(F.k)+'</span></summary><div class="secb" data-qb="'+esc(F.k)+'">'+(OPEN['q'+F.k]?qGroup(F.k):'')+'</div></details>').join('')+'</div></div></details>'+
    // 6 이동
-   '<details class="box sec" data-o="io"'+op('io')+'><summary><span class="sn">6</span><h3>시험을 다른 기기로 이동</h3></summary><div class="secb"><p class="hint">“현재 시험 보기”로 나온 글을 복사해 다른 기기의 같은 칸에 붙여 넣고 “글에서 불러오기”를 누르세요. 몇 대 국회인지도 함께 옮겨집니다.</p>'+
-    '<textarea class="in mono" id="io" rows="5" spellcheck="false" aria-label="시험 데이터"></textarea><div class="acts" style="margin-top:8px"><button type="button" class="chip" data-act="exp">현재 시험 보기</button><button type="button" class="chip" data-act="copy">복사</button><button type="button" class="chip" data-act="imp">글에서 불러오기</button><span class="hint" id="iomsg"></span></div>'+
+   '<details class="box sec" data-o="io"'+op('io')+'><summary><span class="sn">6</span><h3>시험을 다른 기기로 이동</h3></summary><div class="secb"><p class="hint">아래 코드를 복사해 다른 기기의 같은 칸에 붙여 넣고 “코드 불러오기”를 누르세요. 원래 데이터와 달라진 부분만 압축해 담기 때문에 짧고, 몇 대 국회인지도 함께 옮겨집니다.</p>'+
+    '<textarea class="in mono iocode" id="io" rows="2" spellcheck="false" aria-label="시험 코드" placeholder="KR1.22…"></textarea><div class="acts" style="margin-top:8px"><button type="button" class="chip" data-act="copy">코드 복사</button><button type="button" class="chip" data-act="imp">코드 불러오기</button><button type="button" class="chip" data-act="exp">코드 새로 만들기</button><span class="hint" id="iomsg"></span></div>'+
     '<div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px"><button type="button" class="link danger" data-act="reset">원래대로 되돌리기</button> <span class="hint" id="rsmsg">이 국회의 편집 내용을 모두 지우고 처음 데이터로 돌아갑니다.</span></div></div></details>'+
    '<div class="launch"><button type="button" class="cta" id="estart"'+(C.N&&C.Q.some(q=>q.on)?'':' disabled')+'>분야 정하고 시작하기</button><button type="button" class="cta ghost" id="eback">국회 소개로</button></div>'+
   '</section>';
@@ -1557,8 +1758,30 @@ function viewEdit(){
   root.addEventListener('toggle',e=>{ const d=e.target, o=d.dataset&&d.dataset.o; if(!o) return; OPEN[o]=d.open; const b=d.querySelector('[data-qb]'); if(d.open&&b&&!b.innerHTML) b.innerHTML=qGroup(b.dataset.qb); },true);
   $('#estart').addEventListener('click',()=>{ FK.forEach(k=>{ S.fimp[k]=2; }); viewPrio(); });
   $('#eback').addEventListener('click',viewHome);
+  fillIO(true);
   window.scrollTo(0,sy); }
 function rerender(){ viewEdit(); }
+// ── 다른 기기로 이동: 원래 데이터와 달라진 부분만 압축해 짧은 코드로
+const B64=u8=>{ let s=''; for(let i=0;i<u8.length;i+=8192) s+=String.fromCharCode.apply(null,u8.subarray(i,i+8192)); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); };
+const UNB64=t=>{ t=t.replace(/-/g,'+').replace(/_/g,'/'); while(t.length%4) t+='='; const s=atob(t), u=new Uint8Array(s.length); for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); return u; };
+async function zip(data,pack){ const cs=pack?new CompressionStream('deflate-raw'):new DecompressionStream('deflate-raw');
+  const out=await new Response(new Blob([pack?new TextEncoder().encode(data):data]).stream().pipeThrough(cs)).arrayBuffer(); return pack?new Uint8Array(out):new TextDecoder().decode(out); }
+const canon=c=>JSON.parse(strip(norm(JSON.parse(strip(c)))));
+function diffOf(c){ const base=canon(baseScenario(DATA.findIndex(d=>d.n===c.n))), cur=canon(c), d={};
+  Object.keys(cur).forEach(k=>{ if(k==='Q'||k==='P') return; if(JSON.stringify(cur[k])!==JSON.stringify(base[k])) d[k]=cur[k]; });
+  ['Q','P'].forEach(k=>{ if(JSON.stringify(cur[k])===JSON.stringify(base[k])) return;
+    if(cur[k].length===base[k].length){ const m={}; cur[k].forEach((x,i)=>{ const b=base[k][i], ch={}; Object.keys(x).forEach(f=>{ if(JSON.stringify(x[f])!==JSON.stringify(b[f])) ch[f]=x[f]; }); if(Object.keys(ch).length) m[i]=ch; }); d[k+'d']=m; }
+    else d[k]=cur[k]; });
+  return d; }
+function applyDiff(n,d){ const i=DATA.findIndex(x=>x.n===n); if(i<0) return null; const c=canon(baseScenario(i));
+  Object.keys(d).forEach(k=>{ if(k==='Qd'||k==='Pd'){ const arr=c[k[0]]; Object.keys(d[k]).forEach(j=>{ if(arr[+j]) Object.assign(arr[+j],d[k][j]); }); } else c[k]=d[k]; }); c.n=n; return norm(c); }
+async function makeCode(c){ const js=JSON.stringify(diffOf(c)); if(js==='{}') return 'KR1.'+c.n;
+  try{ return 'KR1.'+c.n+'.z'+B64(await zip(js,true)); }catch(e){ return 'KR1.'+c.n+'.j'+B64(new TextEncoder().encode(js)); } }
+async function readCode(t){ t=String(t||'').trim(); if(t[0]==='{') return norm(JSON.parse(t)); t=t.replace(/\s+/g,'');
+  const m=/^KR1\.(\d+)(?:\.([zj])([A-Za-z0-9_-]+))?$/.exec(t); if(!m) return null; const n=+m[1]; if(!m[3]) return applyDiff(n,{});
+  const u=UNB64(m[3]), js=m[2]==='j'?new TextDecoder().decode(u):await zip(u,false); return applyDiff(n,JSON.parse(js)); }
+let ioTimer=null;
+function fillIO(now){ clearTimeout(ioTimer); ioTimer=setTimeout(()=>{ const ta=$('#io'); if(!ta) return; makeCode(C).then(code=>{ const t=$('#io'); if(!t) return; t.value=code; const m=$('#iomsg'); if(m&&now) m.textContent='코드를 만들었습니다 ('+code.length+'자). 원래 데이터와 달라진 부분만 담깁니다.'; }); },now?0:400); }
 function setPath(path,v){ const ps=path.split('.'); let o=C; for(let i=0;i<ps.length-1;i++) o=o[ps[i]]; o[ps[ps.length-1]]=v; }
 function fixAsm(){ C.D=ci(C.D,0,1000); C.Lst=ci(C.Lst,0,1000); C.semi=ci(C.semi,0,C.Lst); C.bonus=ci(C.bonus,0,C.Lst-C.semi); C.thr=clamp(+C.thr||0,0,20);
   ['semi','bonus'].forEach(k=>{ const el=$('#e-'+k); if(el&&document.activeElement!==el&&+el.value!==C[k]) el.value=C[k]; }); }
@@ -1601,17 +1824,24 @@ function onEdClick(e){
   else if(a==='delF'){ const k=C.F[i].k; C.F.splice(i,1); const to=C.F[0].k; C.Q.forEach(q=>{ if(q.f===k) q.f=to; }); }
   else if(a==='addQ'){ const f=b.dataset.f2; C.Q.push({t:'새 질문',A:'',B:'',L:null,R:null,p:{},ax:'s',g:false,f,on:true}); OPEN.qs=true; OPEN['q'+f]=true; }
   else if(a==='delQ'){ C.Q.splice(i,1); }
-  else if(a==='exp'){ $('#io').value=strip(C); $('#iomsg').textContent='현재 시험을 글로 표시했습니다.'; return; }
-  else if(a==='copy'){ const ta=$('#io'); if(!ta.value) ta.value=strip(C); const sel=()=>{ ta.focus(); ta.select(); $('#iomsg').textContent='글을 선택했습니다. 직접 복사해 주세요.'; };
-    try{ navigator.clipboard.writeText(ta.value).then(()=>{ $('#iomsg').textContent='복사했습니다.'; },sel); }catch(_){ sel(); } return; }
-  else if(a==='imp'){ let c=null; try{ c=norm(JSON.parse($('#io').value)); }catch(_){}
-    if(!c){ $('#iomsg').textContent='글을 읽지 못했습니다. 처음 중괄호부터 마지막 중괄호까지 빠짐없이 붙여 넣어 주세요.'; return; }
-    S.ai=DATA.findIndex(d=>d.n===c.n); try{ localStorage.setItem('kr-asm-sel',S.ai); }catch(_){} C=c; setFields(); save(); OPEN.io=true; rerender(); $('#iomsg').textContent=asmName(C)+' 시험을 불러왔습니다.'; return; }
+  else if(a==='exp'){ fillIO(true); return; }
+  else if(a==='copy'){ const ta=$('#io'); if(!ta.value){ fillIO(true); $('#iomsg').textContent='코드를 만드는 중입니다. 잠시 후 다시 눌러 주세요.'; return; }
+    const sel=()=>{ ta.focus(); ta.select(); $('#iomsg').textContent='코드를 선택했습니다. 직접 복사해 주세요.'; };
+    try{ navigator.clipboard.writeText(ta.value.trim()).then(()=>{ $('#iomsg').textContent='복사했습니다. ('+ta.value.trim().length+'자)'; },sel); }catch(_){ sel(); } return; }
+  else if(a==='imp'){ const txt=$('#io').value; $('#iomsg').textContent='불러오는 중…';
+    readCode(txt).then(c=>{ if(!c){ $('#iomsg').textContent='코드를 읽지 못했습니다. KR1로 시작하는 코드를 빠짐없이 붙여 넣어 주세요.'; return; }
+      S.ai=DATA.findIndex(d=>d.n===c.n); try{ localStorage.setItem('kr-asm-sel',S.ai); }catch(_){} C=c; setFields(); save(); OPEN.io=true; rerender(); $('#iomsg').textContent=asmName(C)+' 시험을 불러왔습니다.'; })
+      .catch(()=>{ $('#iomsg').textContent='코드를 읽지 못했습니다. KR1로 시작하는 코드를 빠짐없이 붙여 넣어 주세요.'; }); return; }
   else if(a==='reset'){ if(!b.dataset.arm){ b.dataset.arm='1'; b.textContent='정말 되돌리기'; $('#rsmsg').textContent='한 번 더 누르면 편집 내용이 모두 지워집니다.'; return; }
     try{ localStorage.removeItem(SKEY(C.n)); }catch(_){} C=baseScenario(S.ai); C._edited=false; setFields(); }
   save(); if(a==='reset'){ try{ localStorage.removeItem(SKEY(C.n)); }catch(_){} C._edited=false; }
   setFields(); rerender(); }
 
+// 테마: 자동(기기 설정) · 라이트 · 다크 · 민트
+function setSkin(k){ if(k==='auto') document.documentElement.removeAttribute('data-skin'); else document.documentElement.setAttribute('data-skin',k);
+  $$('#skin button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.skin===k)); try{ localStorage.setItem('kr-asm-skin',k); }catch(e){} }
+let SK='auto'; try{ SK=localStorage.getItem('kr-asm-skin')||'auto'; }catch(e){} setSkin(SK);
+$('#skin').addEventListener('click',e=>{ const b=e.target.closest('button[data-skin]'); if(b) setSkin(b.dataset.skin); });
 toHome.addEventListener('click',viewHome);
 loadScenario();
 viewHome();
