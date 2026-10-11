@@ -1,0 +1,1347 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>국회 시뮬레이터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Nanum+Myeongjo:wght@700;800&display=swap">
+<style>
+/* Layout: one narrow column like a parliamentary record — chamber diagram on top, agenda items below, a media-style scrubber as the voting control */
+:root{
+  --bg:#eef0ed; --surface:#fbfcfa; --sunk:#e3e7e3; --line:#d3d9d4; --line2:#bfc7c1;
+  --ink:#16201c; --ink2:#47534e; --ink3:#7b8681;
+  --accent:#2a6a5d; --accent-ink:#ffffff; --gold:#93763a;
+  --ok:#2f7d4f; --warn:#b4552d; --pa:#4d7c8a; --pb:#a9773b; --link:#3366cc;
+  --f-display:"Nanum Myeongjo","Noto Serif KR",serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1312; --surface:#171d1b; --sunk:#121716; --line:#29312e; --line2:#36403c;
+  --ink:#e5ebe8; --ink2:#a6b1ac; --ink3:#727d78;
+  --accent:#6fb5a4; --accent-ink:#0f1312; --gold:#c9a866; --ok:#6cc08f; --warn:#e08a63; --pa:#7fb0bd; --pb:#d4a165; --link:#8ab4f8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1312; --surface:#171d1b; --sunk:#121716; --line:#29312e; --line2:#36403c;
+  --ink:#e5ebe8; --ink2:#a6b1ac; --ink3:#727d78;
+  --accent:#6fb5a4; --accent-ink:#0f1312; --gold:#c9a866; --ok:#6cc08f; --warn:#e08a63; --pa:#7fb0bd; --pb:#d4a165; --link:#8ab4f8; color-scheme:dark}
+*{box-sizing:border-box}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.tag{font-size:11.5px;font-weight:600;border-radius:999px;padding:1px 8px;background:var(--sunk);color:var(--ink2);border:1px solid var(--line)}
+.lean{position:relative;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--pa),var(--sunk) 50%,var(--pb));margin-top:6px;max-width:220px}
+.lean i{position:absolute;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--ink3)}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;padding:0 16px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding-block:20px 56px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);font-weight:800;line-height:1.3;text-wrap:balance;margin:0}
+h3{font-size:19px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.02em}
+.brand svg{width:30px;height:20px;flex:none}
+.brand small{display:block;font-weight:500;color:var(--ink3);font-size:12px;letter-spacing:.06em}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--ink3);font-weight:600}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
+.stack{display:grid;gap:16px}
+.hint{color:var(--ink3);font-size:13px;margin:0}
+.sub{margin:4px 0 12px}
+.link{background:none;border:0;padding:4px 0;color:var(--ink2);font-weight:600;font-size:14px}
+.link:hover{color:var(--accent)}
+.cta{background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:12px 22px;font-weight:700;font-size:15px}
+.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+.cta:disabled{opacity:.4;cursor:default}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none}
+.ring{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none;border:2px solid var(--ink2)}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+.intro h1{font-size:clamp(26px,6vw,36px)}
+.intro p{color:var(--ink2);max-width:62ch;margin:8px 0 0}
+
+.eras{display:grid;gap:12px}
+.era{display:grid;grid-template-columns:86px 1fr;gap:10px;align-items:start}
+.era>span{font-size:12px;color:var(--ink3);font-weight:600;padding-top:9px;letter-spacing:.04em}
+.era .row{display:flex;flex-wrap:wrap;gap:6px}
+.asm{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:5px 10px;display:grid;line-height:1.25;text-align:left;min-width:62px}
+.asm b{font-size:14px}
+.asm small{font-family:var(--f-mono);font-size:11px;color:var(--ink3)}
+.asm[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.asm[aria-pressed="true"] small{color:inherit;opacity:.7}
+@media (max-width:480px){.era{grid-template-columns:1fr;gap:4px}.era>span{padding-top:0}}
+
+.detail h2{font-size:26px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0 4px}
+.facts div{border-top:1px solid var(--line);padding-top:6px}
+.facts dt{font-size:12px;color:var(--ink3)}
+.facts dd{margin:0;font-weight:600}
+.desc{color:var(--ink2);margin:10px 0 0}
+.sysbar{display:flex;height:12px;border-radius:3px;overflow:hidden;margin:12px 0 4px;background:var(--sunk)}
+.sysbar span{height:100%}
+.syslg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--ink2)}
+.syslg span{display:flex;gap:6px;align-items:center}
+.hemi svg{width:100%;height:auto;display:block}
+.hemi .seat{transition:fill .5s ease,stroke .5s ease}
+.hemi .big{font-family:var(--f-display);font-weight:800;font-size:46px;fill:var(--ink)}
+.hemi .sm{font-size:15px;fill:var(--ink3)}
+.hlg{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--ink3);margin-top:4px}
+.hlg span{display:flex;gap:6px;align-items:center}
+.plist{display:grid;gap:2px;margin-top:6px}
+.prow{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:0}
+.prow b{font-weight:600}
+.prow small{display:block;color:var(--ink3);font-size:12.5px;line-height:1.4}
+.opts{display:grid;gap:10px;margin-top:4px}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.chk input{margin-top:4px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.chk small{display:block;color:var(--ink3);font-size:12.5px}
+.launch{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.launch span{color:var(--ink3);font-size:13px}
+
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.prog{display:grid;grid-auto-flow:column;gap:3px;margin:14px 0 18px}
+.prog i{height:4px;border-radius:2px;background:var(--line)}
+.prog i.done{background:var(--accent)}
+.prog i.skip{background:var(--line2)}
+.prog i.cur{background:var(--ink)}
+.qmeta{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--ink3);flex-wrap:wrap}
+.qmeta b{color:var(--ink2)}
+.qtitle{font-size:clamp(24px,6vw,32px);margin:6px 0 16px}
+.poles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pole{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 13px;display:grid;gap:6px;align-content:start;transition:opacity .2s,border-color .2s;opacity:var(--o,1);min-width:0}
+.pole.r{text-align:right}
+.pole .pn{display:flex;gap:7px;align-items:center;font-size:13px;font-weight:700;color:var(--ink2)}
+.pole.r .pn{justify-content:flex-end}
+.pole .pn i{width:10px;height:10px;border-radius:50%;background:var(--pc);flex:none}
+.pole .ps{font-size:15px;line-height:1.45;font-weight:500}
+.pole.on{border-color:var(--pc);box-shadow:inset 0 0 0 1px var(--pc)}
+.pole em{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--ink3)}
+
+.player{margin-top:20px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px 18px 16px}
+.track{position:relative;height:44px;touch-action:none;cursor:pointer;margin:18px 6px 0}
+.rail{position:absolute;left:0;right:0;top:50%;height:8px;margin-top:-4px;border-radius:4px;background:var(--sunk);box-shadow:inset 0 0 0 1px var(--line)}
+.rail::before,.rail::after{content:"";position:absolute;top:0;bottom:0;width:6px;border-radius:4px}
+.rail::before{left:0;background:var(--lc)}
+.rail::after{right:0;background:var(--rc)}
+.fill{position:absolute;top:50%;height:8px;margin-top:-4px;border-radius:4px;background:var(--fc,var(--accent))}
+.tick{position:absolute;top:50%;width:1px;height:14px;margin-top:-7px;background:var(--line2)}
+.tick.c{height:22px;margin-top:-11px;background:var(--ink3)}
+.thumb{position:absolute;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;background:var(--surface);border:3px solid var(--fc,var(--ink3));box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.track:not(.set) .thumb{border-style:dashed}
+.bubble{position:absolute;bottom:100%;transform:translateX(-50%);margin-bottom:-2px;font-family:var(--f-mono);font-size:11px;font-weight:600;background:var(--ink);color:var(--bg);border-radius:6px;padding:1px 6px;white-space:nowrap;pointer-events:none}
+.track:not(.set) .bubble{opacity:0}
+.track.anim .thumb,.track.anim .fill,.track.anim .bubble{transition:left .18s ease,width .18s ease}
+.pdot{position:absolute;top:50%;width:10px;height:10px;margin:-17px 0 0 -5px;border-radius:50%;border:1.5px solid var(--surface)}
+.time{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--ink3);margin-top:4px}
+.time span{max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.read{text-align:center;font-weight:600;color:var(--ink);margin:10px 0 0;min-height:1.6em}
+.controls{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px}
+.ic{width:46px;height:46px;border-radius:50%;border:1px solid var(--line2);background:transparent;display:grid;place-items:center;padding:0;font-weight:700}
+.ic svg{width:18px;height:18px;fill:currentColor}
+.ic:disabled{opacity:.35;cursor:default}
+.play{padding:0 22px;height:52px;border-radius:999px;background:var(--accent);color:var(--accent-ink);border:0;display:flex;gap:8px;align-items:center;font-weight:700}
+.play svg{width:16px;height:16px;fill:currentColor}
+.play:disabled{opacity:.4;cursor:default}
+.imp{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+.imp .lh{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--ink2);margin-bottom:8px;flex-wrap:wrap}
+.imp .lh b{color:var(--ink)}
+.seg5{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--line2);border-radius:10px;overflow:hidden}
+.seg5 button{border:0;border-right:1px solid var(--line);background:transparent;padding:8px 2px;font-size:12.5px;font-weight:600;color:var(--ink2);line-height:1.2}
+.seg5 button:last-child{border-right:0}
+.seg5 button[aria-checked="true"]{background:var(--ink);color:var(--bg)}
+.seg5.mini{max-width:420px}
+.seg5.mini button{padding:5px 2px;font-size:11.5px}
+.subctl{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px}
+.chip{border:1px solid var(--line2);background:transparent;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--ink2)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.dleg{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:center;margin-top:12px;font-size:12px;color:var(--ink2)}
+.dleg span{display:flex;gap:5px;align-items:center}
+.live{margin-top:16px}
+.live .lh{display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);margin-bottom:6px;gap:8px}
+.lbar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--sunk);position:relative}
+.lbar span{display:block;height:100%;transition:width .3s ease}
+.lbar em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.llg{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px;font-size:12px;color:var(--ink2)}
+.llg span{display:flex;gap:5px;align-items:center}
+.kbd{font-size:12px;color:var(--ink3);text-align:center;margin-top:10px}
+
+.rhead h2{font-size:clamp(26px,6vw,34px)}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.pill{font-size:12px;font-weight:600;border:1px solid var(--line2);border-radius:999px;padding:2px 10px;color:var(--ink2)}
+.pill.strong{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--ink2)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.lead{color:var(--ink2);margin:6px 0 0;max-width:62ch}
+.tw{overflow-x:auto;margin-top:8px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px;min-width:420px}
+.tbl th{font-size:12px;color:var(--ink3);font-weight:600;text-align:right;padding:6px 4px;border-bottom:1px solid var(--line2);white-space:nowrap}
+.tbl th:first-child{text-align:left}
+.tbl td{padding:8px 4px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.tbl td:first-child{text-align:left;font-family:var(--f-body)}
+.tbl td:first-child span{display:flex;gap:8px;align-items:center}
+.up{color:var(--ok)} .down{color:var(--warn)}
+.thr{display:grid;gap:10px}
+.thr .t{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:baseline}
+.thr .t b{font-weight:600}
+.thr .t .num{font-weight:600}
+.thr .t small{grid-column:1/-1;color:var(--ink3);font-size:12.5px}
+.meter{position:relative;height:14px;border-radius:4px;background:var(--sunk);display:flex;overflow:hidden;margin:4px 0 2px}
+.meter span{height:100%}
+.mk{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink)}
+.mk.l2{background:var(--gold)}
+.mlab{position:relative;height:16px;font-size:11px;color:var(--ink3);font-family:var(--f-mono)}
+.mlab span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.cmp svg{width:100%;max-width:520px;height:auto;display:block;margin:0 auto}
+.cmp .ax{font-size:10.5px;fill:var(--ink3)}
+.cmp .lb{font-size:10.5px;fill:var(--ink2);font-weight:600}
+.cmp .lb.you{fill:var(--ink);font-weight:700}
+.match{display:grid;gap:8px}
+.match .m{display:grid;grid-template-columns:12px 1fr 52px;gap:10px;align-items:center}
+.match .bar{height:8px;border-radius:4px;background:var(--sunk);overflow:hidden}
+.match .bar span{display:block;height:100%}
+.bill{border-top:1px solid var(--line);padding-top:16px;margin-top:16px}
+.bill:first-child{border-top:0;padding-top:0}
+.bill h4{margin:0 0 4px;font-size:15px}
+.bill .you{font-size:13px;color:var(--ink2);margin:0 0 8px}
+.bill .stake{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:8px 0 4px;font-size:12.5px;color:var(--ink3)}
+.vrow{display:grid;grid-template-columns:62px 1fr;gap:4px 8px;align-items:center;font-size:12px;color:var(--ink3);margin-top:8px}
+.vbar{position:relative;height:16px;border-radius:4px;overflow:hidden;background:var(--sunk);display:flex}
+.vbar span{height:100%}
+.vbar em{position:absolute;top:0;bottom:0;width:2px;background:var(--ink)}
+.vnum{grid-column:2;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;gap:6px}
+.verdict{font-family:var(--f-body);font-size:12.5px;font-weight:600;color:var(--ink2)}
+.acts{display:flex;flex-wrap:wrap;gap:10px}
+details.how summary{cursor:pointer;font-weight:700}
+details.how p{color:var(--ink2);font-size:14px;margin:10px 0 0}
+.foot{color:var(--ink3);font-size:12px;margin-top:22px;line-height:1.6}
+@media (max-width:480px){.poles{grid-template-columns:1fr}.pole.r{text-align:left}.pole.r .pn{justify-content:flex-start}.pole.r .pn i{order:-1}.box{padding:15px}.seg5 button{font-size:11.5px}}
+.frow{display:grid;gap:8px;padding:14px 0;border-bottom:1px solid var(--line)}
+.frow:first-child{padding-top:0}
+.frow:last-child{border-bottom:0;padding-bottom:0}
+.frow .fh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.frow .fh small{display:block;color:var(--ink3);font-size:12.5px;font-weight:400;margin-top:2px}
+.fseats{font-family:var(--f-mono);font-weight:700;font-size:16px;text-align:right;white-space:nowrap}
+.fseats small{display:block;font-family:var(--f-body);color:var(--ink3);font-weight:500;font-size:12px}
+.frow.off .fchip,.frow.off .fseats{opacity:.5}
+.stepper{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);flex-wrap:wrap}
+.stepper button{width:30px;height:30px;border-radius:50%;border:1px solid var(--line2);background:transparent;font-weight:700;padding:0}
+.stepper button:disabled{opacity:.35;cursor:default}
+.fchip{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--ink)}
+.stakebox{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--ink2)}
+.stakebox b{color:var(--ink);font-family:var(--f-mono)}
+.brow{display:grid;grid-template-columns:12px 1fr auto auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.brow .add{font-family:var(--f-mono);font-size:13px;color:var(--ok);min-width:40px;text-align:right}
+.brow .add.zero{color:var(--ink3)}
+.brow .cum{font-family:var(--f-mono);font-weight:700;min-width:36px;text-align:right}
+.brow .bar{height:6px;border-radius:3px;background:var(--sunk);margin-top:4px;overflow:hidden}
+.brow .bar span{display:block;height:100%}
+.fbar{display:flex;height:14px;border-radius:4px;overflow:hidden;background:var(--sunk);margin:6px 0 4px}
+.fbar span{height:100%}
+.wb-wrap{overflow-x:auto}
+.wb{width:100%;max-width:440px;min-width:300px;margin:0 auto;border-collapse:collapse;background:var(--sunk);border:1px solid var(--line2);font-size:13px;line-height:1.45;color:var(--ink)}
+.wb td,.wb th{padding:4px 6px;text-align:center;vertical-align:middle}
+.wb .wb-title{font-size:17px;font-weight:700;padding:10px 8px 8px;font-family:var(--f-body);line-height:1.3}
+.wb .wb-title div{font-size:12px;font-weight:500;color:var(--ink3);margin-top:2px}
+.wb .wb-c{padding:6px}
+.wb-flag{width:72px;height:auto;border:1px solid var(--line2);display:block;margin:0 auto}
+.wb-nav{display:flex;justify-content:space-between;align-items:center;gap:6px;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);padding:6px 0}
+.wb-nav span{min-width:60px}
+.wb-nav span:last-child{text-align:right}
+.wb-a{background:none;border:0;padding:0;color:var(--link,#3366cc);font-size:13px}
+.wb-link{color:var(--link,#3366cc)}
+.wb th[scope="row"]{text-align:left;font-weight:700;white-space:nowrap;width:1%}
+.wb .wb-r{text-align:left}
+.wb tr.wb-pics td{padding-bottom:0}
+.wb-ph{aspect-ratio:3/4;max-width:100px;margin:0 auto;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 70%,#ffffff),var(--c));display:grid;place-items:center;border:1px solid var(--line2)}
+.wb-ph span{font-family:var(--f-display);font-weight:800;font-size:22px;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.wb-cb{height:5px;max-width:100px;margin:0 auto}
+.wb .wb-hr{padding:0;border-top:1px solid var(--line2);height:0}
+.wb small{font-size:11px}
+.wb .hemi{max-width:300px;margin:4px auto 0}
+.wb-cap{font-size:12px;color:var(--ink3);padding-bottom:4px}
+.edited{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--ink3);margin:8px 0 0}
+.tag.tr{background:transparent;border-style:dashed}
+details.sec>summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:"열기";margin-left:auto;font-size:12px;color:var(--ink3);font-weight:600}
+details.sec[open]>summary::after{content:"접기"}
+details.sec>summary .hint{font-size:12.5px}
+.sn{width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.secb{display:grid;gap:12px;margin-top:14px;min-width:0}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.fl{display:grid;gap:4px;font-size:12.5px;color:var(--ink3);font-weight:600;min-width:0}
+.fl b{color:var(--ink2)}
+.in{width:100%;min-width:0;font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line2);border-radius:8px;padding:7px 9px}
+textarea.in{resize:vertical;line-height:1.45}
+.in.mono{font-family:var(--f-mono);font-size:12px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.clr{width:38px;height:36px;border:1px solid var(--line2);border-radius:8px;padding:2px;background:var(--bg);flex:none}
+.tot{margin:0;font-size:14px;color:var(--ink2)}
+.warn{color:var(--warn)}
+.rows{display:grid;gap:8px;min-width:0}
+details.card{border:1px solid var(--line);border-radius:12px;background:var(--surface);min-width:0}
+details.card>summary{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;list-style:none}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary .hint{margin-left:auto}
+details.card>.secb{padding:0 12px 12px;margin-top:2px}
+.prow2{display:flex;gap:8px;align-items:center;min-width:0}
+.tg{display:grid;gap:6px}
+.lbl{font-size:12.5px;font-weight:700;color:var(--ink2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.tchip{border:1px solid var(--line2);background:transparent;border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600;color:var(--ink2);display:inline-flex;gap:5px;align-items:center}
+.tchip small{font-size:11px;color:var(--ink3)}
+.tchip[data-l="1"]{background:var(--sunk);color:var(--ink);border-color:var(--ink3)}
+.tchip[data-l="2"]{background:var(--ink2);color:var(--bg);border-color:var(--ink2)}
+.tchip[data-l="3"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tchip[data-l="2"] small,.tchip[data-l="3"] small{color:inherit;opacity:.75}
+.link.danger{color:var(--warn);justify-self:start}
+.link:disabled{opacity:.4;cursor:default}
+.x{width:32px;height:32px;border-radius:50%;border:1px solid var(--line2);background:transparent;font-size:16px;line-height:1;padding:0;flex:none;color:var(--ink2)}
+.x:disabled{opacity:.35;cursor:default}
+.add{border:1px dashed var(--line2);background:transparent;border-radius:10px;padding:9px;font-weight:600;color:var(--ink2);font-size:14px}
+.trow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) auto auto;gap:6px;align-items:center}
+.trow.add2{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) auto}
+.frow2{display:grid;grid-template-columns:38px minmax(0,1fr) minmax(0,1.4fr) auto auto;gap:6px;align-items:center}
+@media (max-width:560px){.trow,.trow.add2{grid-template-columns:1fr 1fr}.trow .in:first-child,.trow.add2 .in:first-child{grid-column:1/-1}.frow2{grid-template-columns:38px 1fr auto auto}.frow2 .in:nth-of-type(2){grid-column:1/-1;order:5}}
+.coed{display:grid;gap:8px;border:1px solid var(--line);border-radius:10px;padding:10px}
+.qed{display:grid;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg)}
+.qed.off{opacity:.55}
+.qh{display:flex;gap:8px;align-items:center}
+.qh input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);flex:none}
+.ab2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:480px){.ab2{grid-template-columns:1fr}}
+.poss{display:grid;gap:4px}
+.posrow{display:grid;grid-template-columns:minmax(0,9em) 1fr 4.2em;gap:8px;align-items:center;font-size:12.5px;color:var(--ink2)}
+.posrow span{display:flex;gap:6px;align-items:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.posrow b{text-align:right;font-size:11.5px}
+.coal{display:grid;gap:10px}
+.co .t{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:4px}
+.go{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cabbox{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.cabbox h4{margin:0;font-size:15px}
+.cabg{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.cabr{display:grid;grid-template-columns:24px 1fr;gap:2px 8px;padding:7px 10px;border-radius:8px;background:var(--bg);border-left:3px solid var(--c);font-size:13px}
+.cabr .num{grid-row:span 2;color:var(--ink3);font-size:12px;align-self:center}
+.cabr span:last-child{color:var(--ink3);font-size:12px;display:flex;gap:5px;align-items:center}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <svg viewBox="0 0 30 20" aria-hidden="true"><path d="M3 18h24M5 18V11M9 18V11M13 18V11M17 18V11M21 18V11M25 18V11M4 11h22M8 11c0-4 3-7 7-7s7 3 7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <div>국회 시뮬레이터<small>제헌국회 1948 — 제22대 2024</small></div>
+    </div>
+    <button type="button" class="link" id="toHome" hidden>국회 다시 고르기</button>
+  </div>
+  <main id="app"></main>
+  <p class="foot">질문과 정당 위치는 각 국회의 대표 쟁점을 단순화한 것으로, 실제 당론·표결과 다를 수 있습니다. 무소속은 한 묶음으로 계산하고 비례 의석은 받지 않습니다. 위성정당 의석은 모정당에 합산했습니다. 정당 색은 나무위키 당색(선거 당시 기준)을 따랐고, 당색이 알려지지 않은 단체는 구분색을 썼습니다.</p>
+</div>
+
+<script>
+(function(){
+'use strict';
+const MU='#8b9098', ETC='#b0a99c';
+// 정당: [키, 이름, 색, 성향(-1 왼쪽 … +1 오른쪽), 실제 의석, 설명]
+// 질문: [제목, 왼쪽 정당, 오른쪽 정당, 왼쪽 입장, 오른쪽 입장, {정당별 위치}, 축('e' 경제 · 's' 정치·안보 · '' 스펙트럼 제외)]
+// 선거제도: sys 'smd' 소선거구 / 'mmd' 중대선거구, D 지역구, Lst 전국구·비례, bonus 제1당 프리미엄, semi 준연동형 몫, thr 비례 봉쇄조항(%), fixed 간선 고정 의석
+const DATA=[
+{n:1,y:1948,date:'1948.5.10',term:'1948–1950',pres:'이승만 (국회 간선)',N:200,sys:'smd',D:200,Lst:0,gov:[],era:'미군정·제1공화국',
+ desc:'헌법을 만들고 초대 대통령을 뽑은 제헌국회. 반민특위와 농지개혁이 가장 뜨거운 쟁점이었습니다.',
+ P:[['mu','무소속',MU,-0.2,85,'정당 없이 당선. 소장파 개혁 의원이 다수'],['etc','기타 단체',ETC,0,13,'대한노총·농민총연맹 등'],['hm','한국민주당','#3a6fb0',0.3,29,'지주·지식인 중심 보수 정당, 내각책임제 지향'],['jm','조선민족청년단','#6b8e3a',0.6,6,'이범석의 청년단'],['dd','대동청년단','#c98a2b',0.7,12,'지청천의 우익 청년단'],['dc','대한독립촉성국민회','#b5473a',0.8,55,'이승만을 지지한 최대 우익 단체']],
+ Q:[['정부 형태','hm','dc','내각책임제로 국회가 정부를 견제해야 한다','대통령중심제로 강한 지도력이 필요하다',{hm:-0.9,mu:-0.2,dc:0.9,dd:0.6,jm:0.5,etc:0.1},''],
+  ['반민족행위자 처벌','mu','dc','반민특위로 친일 부역자를 엄하게 처벌해야 한다','반공과 국가 건설이 먼저, 처벌은 신중하게',{mu:-0.8,hm:0.2,dc:0.7,dd:0.5,jm:0.3,etc:0},'s'],
+  ['농지개혁','mu','hm','소작농에게 싼값에 농지를 나눠줘야 한다','지주에게 충분한 보상을 해야 한다',{mu:-0.7,dc:-0.1,hm:0.9,dd:0,jm:-0.2,etc:-0.3},'e'],
+  ['외국군 주둔','mu','dc','미군과 소련군 모두 철수해야 자주독립이다','북한 위협 앞에 미군 주둔이 필요하다',{mu:-0.5,hm:0.8,dc:0.9,dd:0.9,jm:0.7,etc:0.3},'s'],
+  ['통일 노선','mu','dc','남북 협상으로 통일의 길을 계속 찾아야 한다','대한민국 정부를 굳건히 하고 북진통일',{mu:-0.5,hm:0.6,dc:0.9,dd:0.8,jm:0.6,etc:0.2},'s'],
+  ['귀속재산 처리','mu','hm','일본인이 남긴 주요 공장은 국영으로 운영해야 한다','민간에 불하해 기업을 키워야 한다',{mu:-0.6,etc:-0.3,hm:0.9,jm:0.1,dd:0.3,dc:0.5},'e'],
+  ['국가보안법 제정','mu','dc','사상 탄압에 악용될 수 있어 반대한다','공산 세력을 막으려면 꼭 필요하다',{mu:-0.6,etc:-0.1,hm:0.8,jm:0.8,dd:0.9,dc:0.9},'s'],
+  ['근로자 이익균점권','mu','hm','근로자에게 기업 이익을 나눌 권리를 헌법에 넣자','기업의 자율에 맡겨야 한다',{mu:-0.7,etc:-0.6,hm:0.8,jm:-0.2,dd:0.2,dc:0.2},'e'],
+  ['국무총리 인준','hm','dc','국회 다수의 뜻을 존중한 총리를 세워야 한다','대통령의 인사권을 존중해야 한다',{hm:-0.8,mu:-0.4,etc:0,jm:0.4,dd:0.5,dc:0.9},''],
+  ['지방자치 실시','mu','dc','지방자치를 바로 실시해야 한다','치안이 불안하니 지방선거를 미뤄야 한다',{mu:-0.6,hm:-0.5,etc:-0.2,jm:0.3,dd:0.5,dc:0.8},'s']]},
+{n:2,y:1950,date:'1950.5.30',term:'1950–1954',pres:'이승만',N:210,sys:'smd',D:210,Lst:0,gov:['dk'],era:'제1공화국',
+ desc:'선거 한 달 뒤 6·25 전쟁이 터졌습니다. 부산 피란 국회에서 발췌개헌으로 대통령 직선제가 도입됩니다.',
+ P:[['mg','민주국민당','#3a6fb0',-0.6,24,'한민당 후신, 반이승만 야당'],['mu','무소속',MU,-0.1,126,'제헌국회보다 더 많은 무소속 당선'],['etc','기타 단체',ETC,0,9,''],['no','대한노총','#4e8c7a',0.5,3,'대한노동총연맹'],['gm','국민회','#c98a2b',0.7,14,'독촉국민회 후신'],['dh','대한청년단','#8e5a9b',0.8,10,''],['dk','대한국민당','#b5473a',0.8,24,'이승만 지지 세력']],
+ Q:[['대통령 선출 방식','mg','dk','내각책임제 개헌으로 국회 중심 정치를','대통령은 국민이 직접 뽑아야 한다',{mg:-0.9,mu:-0.4,dk:0.9,gm:0.8,dh:0.9,no:0.6,etc:0},''],
+  ['국민방위군 사건','mg','dk','책임자를 엄벌하고 정부 책임을 따져야 한다','전시에는 단결이 먼저, 정쟁을 자제해야 한다',{mg:-0.9,mu:-0.5,dk:0.6,gm:0.5,dh:0.7,no:0.3,etc:-0.1},'s'],
+  ['휴전 협상','mu','dk','전쟁을 끝내기 위해 휴전을 받아들여야 한다','휴전 반대, 북진통일까지 싸워야 한다',{mu:-0.3,mg:0.2,dk:0.9,gm:0.8,dh:0.9,no:0.7,etc:0.2},'s'],
+  ['귀속재산 처리','mu','dk','주요 기업은 국가가 관리하고 공정히 처리해야 한다','민간에 불하해 산업을 빨리 재건해야 한다',{mu:-0.4,mg:0.4,dk:0.6,gm:0.4,dh:0.5,no:-0.3,etc:0},'e'],
+  ['노동 입법','no','dk','근로기준법으로 노동자 권리를 보장해야 한다','전후 복구를 위해 기업 부담을 줄여야 한다',{no:-0.8,mu:-0.4,mg:0.1,dk:0.5,gm:0.4,dh:0.4,etc:-0.1},'e'],
+  ['거창 사건 진상','mg','dk','민간인 희생의 진상을 밝히고 책임자를 처벌해야 한다','전시 군 작전 문제는 신중히 다뤄야 한다',{mg:-0.9,mu:-0.6,etc:-0.2,no:0.2,gm:0.5,dh:0.7,dk:0.7},'s'],
+  ['화폐개혁','mu','dk','서민 부담이 큰 화폐개혁에 반대한다','전시 인플레이션을 잡으려면 필요하다',{mu:-0.4,mg:-0.3,etc:0,no:-0.3,gm:0.4,dh:0.4,dk:0.8},'e'],
+  ['농지 상환 부담','mu','mg','분배받은 농민의 상환 부담을 줄여야 한다','지주 보상을 확실히 해야 한다',{mu:-0.7,etc:-0.4,no:-0.3,mg:0.8,gm:0.2,dh:0.1,dk:0.2},'e'],
+  ['부산 정치파동','mg','dk','계엄을 풀고 체포된 의원을 석방해야 한다','국회를 압박하는 민의도 정당하다',{mg:-0.95,mu:-0.6,etc:-0.2,no:0.5,gm:0.7,dh:0.9,dk:0.9},'s'],
+  ['전시 지방선거','mg','dk','전쟁 중 지방선거는 관권 동원이다, 미뤄야 한다','지방자치를 지금 실시해야 한다',{mg:-0.8,mu:-0.3,etc:0,no:0.4,gm:0.7,dh:0.7,dk:0.9},'']]},
+{n:3,y:1954,date:'1954.5.20',term:'1954–1958',pres:'이승만',N:203,sys:'smd',D:203,Lst:0,gov:['jy'],era:'제1공화국',
+ desc:'자유당이 처음 과반을 얻은 국회. 사사오입 개헌으로 초대 대통령의 중임 제한이 사라졌습니다.',
+ P:[['mg','민주국민당','#3a6fb0',-0.8,15,'1955년 민주당으로 통합되는 야당'],['mu','무소속',MU,-0.2,67,''],['etc','기타',ETC,0.4,7,'국민회·대한국민당 등'],['jy','자유당','#b5473a',0.9,114,'이승만의 여당']],
+ Q:[['대통령 중임 제한','mg','jy','초대 대통령도 중임 제한을 지켜야 한다','초대 대통령에 한해 중임 제한을 없애야 한다',{mg:-0.95,mu:-0.4,etc:0.4,jy:0.95},'s'],
+  ['원조 경제','mg','jy','원조 물자 배분의 특혜와 부패를 바로잡아야 한다','원조로 소비재 산업을 키우는 지금 방식이 옳다',{mg:-0.8,mu:-0.4,etc:0.3,jy:0.8},'e'],
+  ['평화통일론','mu','jy','평화통일 논의도 허용해야 한다','북진통일만이 길, 평화통일론은 위험하다',{mu:-0.4,mg:0.4,etc:0.7,jy:0.9},'s'],
+  ['언론 자유','mg','jy','정부를 비판하는 언론을 보장해야 한다','반공을 위해 언론 통제가 필요할 수 있다',{mg:-0.9,mu:-0.3,etc:0.4,jy:0.8},'s'],
+  ['지방자치','mg','jy','시·읍·면장을 주민이 직접 뽑아야 한다','지방 단체장은 정부가 임명해야 한다',{mg:-0.9,mu:-0.3,etc:0.3,jy:0.8},'s'],
+  ['잉여농산물 도입','mg','jy','원조 농산물이 쌀값을 떨어뜨려 농민을 해친다','식량 부족을 해결하려면 필요하다',{mg:-0.7,mu:-0.6,etc:0.2,jy:0.8},'e'],
+  ['조세 부담','mu','jy','서민 간접세를 줄이고 부유층에 과세해야 한다','재정 확보를 위해 현행을 유지해야 한다',{mu:-0.5,mg:-0.4,etc:0.3,jy:0.7},'e'],
+  ['귀속재산 불하 특혜','mg','jy','특혜 불하를 국정조사해야 한다','불하로 산업 기반을 다졌다',{mg:-0.9,mu:-0.5,etc:0.3,jy:0.85},'e'],
+  ['대일 관계','mu','jy','일본과 대화해 관계를 정상화해야 한다','평화선을 지키며 강경하게 대응해야 한다',{mu:-0.3,mg:-0.4,etc:0.4,jy:0.8},'s'],
+  ['경찰의 선거 개입','mg','jy','경찰을 정치적으로 중립화해야 한다','치안을 위해 경찰 역할이 필요하다',{mg:-0.95,mu:-0.5,etc:0.3,jy:0.85},'s']]},
+{n:4,y:1958,date:'1958.5.2',term:'1958–1960',pres:'이승만',N:233,sys:'smd',D:233,Lst:0,gov:['jy'],era:'제1공화국',
+ desc:'자유당과 민주당의 양당 구도. 2·4 보안법 파동과 3·15 부정선거를 거쳐 4·19 혁명으로 막을 내립니다.',
+ P:[['mj','민주당','#3a6fb0',-0.8,79,'장면·조병옥의 보수 야당'],['tu','통일당','#6b8e3a',-0.3,1,''],['mu','무소속',MU,0,27,''],['jy','자유당','#b5473a',0.9,126,'이승만의 여당']],
+ Q:[['신국가보안법','mj','jy','언론과 야당을 억누를 보안법 개정에 반대한다','간첩을 막기 위해 보안법을 강화해야 한다',{mj:-0.95,tu:-0.5,mu:-0.1,jy:0.95},'s'],
+  ['경향신문 폐간','mj','jy','폐간 명령은 언론 탄압이다','허위 보도에 대한 정당한 조치다',{mj:-0.9,tu:-0.5,mu:-0.2,jy:0.9},'s'],
+  ['지방자치 임명제','mj','jy','단체장 선거를 유지해야 한다','시·읍·면장을 임명제로 바꿔야 한다',{mj:-0.9,tu:-0.4,mu:-0.1,jy:0.85},'s'],
+  ['경제 정책','mj','jy','부패를 걷어내고 경제 제일주의로 가야 한다','원조와 안정 기조를 유지해야 한다',{mj:-0.8,tu:-0.5,mu:0,jy:0.8},'e'],
+  ['정부 형태','mj','jy','내각책임제로 독재를 막아야 한다','대통령중심제를 유지해야 한다',{mj:-0.8,tu:-0.3,mu:0,jy:0.95},''],
+  ['자립 경제','mj','jy','경제개발계획을 세워 원조에서 벗어나야 한다','원조 중심의 안정 기조가 낫다',{mj:-0.7,tu:-0.5,mu:-0.2,jy:0.7},'e'],
+  ['농가 부채','mj','jy','농가 고리채를 정리하고 쌀값을 보장해야 한다','재정 한계 안에서 점진적으로 대책을',{mj:-0.7,tu:-0.6,mu:-0.4,jy:0.7},'e'],
+  ['노동조합 자주성','mu','jy','노조가 정부와 여당에서 독립해야 한다','노총은 반공과 산업 협력에 힘써야 한다',{mj:-0.5,tu:-0.6,mu:-0.6,jy:0.8},'e'],
+  ['조봉암 사건','mu','jy','정적 제거를 위한 정치 보복이다','국가보안법 위반은 엄벌해야 한다',{mj:-0.2,tu:-0.6,mu:-0.5,jy:0.95},'s'],
+  ['공명선거','mj','jy','관권 개입을 막고 공명선거를 보장해야 한다','선거 관리는 정부에 맡겨야 한다',{mj:-0.95,tu:-0.6,mu:-0.3,jy:0.9},'s']]},
+{n:5,y:1960,date:'1960.7.29',term:'1960–1961',pres:'윤보선 (국무총리 장면)',N:233,sys:'smd',D:233,Lst:0,gov:['mj'],era:'제2공화국',
+ desc:'4·19 혁명 뒤 내각책임제 아래의 민의원(참의원 58석 제외). 혁신 정당이 등장했지만 5·16으로 해산됩니다.',
+ P:[['sd','사회대중당','#c0506a',-0.9,4,'4·19 이후 등장한 혁신 정당'],['hs','한국사회당','#8e5a9b',-0.8,1,''],['etc','기타',ETC,0,2,''],['mj','민주당','#3a6fb0',0.3,175,'압승한 집권당, 신파·구파로 갈라짐'],['mu','무소속',MU,0.3,49,''],['jy','자유당','#b5473a',0.9,2,'4·19로 몰락한 옛 여당']],
+ Q:[['통일 방안','sd','mj','남북 교류와 중립화 통일을 논의하자','유엔 감시하 남북 총선거가 원칙이다',{sd:-0.9,hs:-0.9,etc:-0.2,mj:0.6,mu:0.4,jy:0.9},'s'],
+  ['부정선거 처벌','sd','jy','소급입법을 해서라도 3·15 부정선거 책임자를 처벌해야 한다','소급 처벌은 법치주의에 어긋난다',{sd:-0.9,hs:-0.9,mj:-0.5,mu:-0.3,etc:-0.3,jy:0.95},'s'],
+  ['반공·데모 규제법','sd','mj','반공임시특별법과 데모규제법은 민주주의 후퇴다','혼란을 막으려면 질서 유지 법이 필요하다',{sd:-0.95,hs:-0.95,etc:-0.2,mj:0.6,mu:0.4,jy:0.8},'s'],
+  ['경제 체제','sd','mj','주요 산업을 국유화하고 계획경제로 가야 한다','시장경제 속에서 경제 제일주의로 성장해야 한다',{sd:-0.9,hs:-0.95,etc:0,mj:0.7,mu:0.5,jy:0.8},'e'],
+  ['한미경제협정','sd','mj','주권을 침해하는 불평등 협정이다','원조를 받으려면 협정이 필요하다',{sd:-0.9,hs:-0.9,etc:-0.1,mj:0.8,mu:0.4,jy:0.7},'e'],
+  ['교원노조','sd','mj','교원노조를 합법화해야 한다','교사의 노조 활동은 허용할 수 없다',{sd:-0.95,hs:-0.95,etc:-0.3,mj:0.6,mu:0.4,jy:0.8},'e'],
+  ['부정축재 처리','sd','mj','부정축재 재산을 몰수해야 한다','벌금으로 처리해 경제 충격을 줄여야 한다',{sd:-0.95,hs:-0.9,etc:-0.4,mj:0.3,mu:0.2,jy:0.9},'e'],
+  ['군 병력 감축','sd','mj','군을 줄여 그 돈을 경제 재건에 써야 한다','안보가 우선, 병력을 유지해야 한다',{sd:-0.9,hs:-0.9,etc:-0.2,mj:0.3,mu:0.5,jy:0.9},'s'],
+  ['언론 자유','sd','jy','신문 허가제를 없애고 언론을 완전히 자유롭게','무분별한 언론은 규제해야 한다',{sd:-0.9,hs:-0.9,etc:-0.5,mj:-0.3,mu:0,jy:0.8},'s'],
+  ['남북 학생회담','sd','mj','학생들의 남북회담을 허용해야 한다','시기상조다, 허용할 수 없다',{sd:-0.95,hs:-0.95,etc:-0.3,mj:0.7,mu:0.5,jy:0.95},'s']]},
+{n:6,y:1963,date:'1963.11.26',term:'1963–1967',pres:'박정희',N:175,sys:'smd',D:131,Lst:44,bonus:22,gov:['gh'],era:'제3공화국',
+ desc:'군정 이후 처음 치른 총선. 전국구 44석 중 절반이 제1당에 돌아가는 제도가 있었습니다. 한일 국교정상화가 최대 쟁점이었습니다.',
+ P:[['mj','민정당','#3a6fb0',-0.7,41,'윤보선의 야당'],['md','민주당','#5ba3d9',-0.6,13,'박순천의 야당'],['ku','국민의당','#8e5a9b',-0.4,2,'허정'],['ja','자유민주당','#6b8e3a',-0.3,9,''],['gh','민주공화당','#a0522d',0.9,110,'5·16 세력이 만든 여당']],
+ Q:[['한일 국교정상화','mj','gh','굴욕적인 협상이다, 청구권 조건부터 다시','경제 개발 자금을 위해 국교를 맺어야 한다',{mj:-0.95,md:-0.8,ku:-0.6,ja:-0.6,gh:0.9},'s'],
+  ['베트남 파병','mj','gh','전투병 파병은 신중해야 한다','한미동맹과 경제 이익을 위해 파병해야 한다',{mj:-0.7,md:-0.5,ku:-0.4,ja:-0.3,gh:0.9},'s'],
+  ['경제 개발 방식','mj','gh','농촌과 중소기업을 함께 살리는 균형 성장','수출 주도로 빠르게 성장해야 한다',{mj:-0.6,md:-0.6,ku:-0.3,ja:-0.2,gh:0.9},'e'],
+  ['언론윤리위원회법','mj','gh','언론 규제법은 철회해야 한다','언론의 책임을 위해 윤리위원회가 필요하다',{mj:-0.9,md:-0.9,ku:-0.6,ja:-0.6,gh:0.8},'s'],
+  ['중앙정보부','md','gh','중앙정보부의 정치 개입을 막아야 한다','안보를 위해 정보기관의 권한이 필요하다',{mj:-0.8,md:-0.85,ku:-0.5,ja:-0.4,gh:0.85},'s'],
+  ['수출 기업 세제 혜택','mj','gh','대기업 특혜를 줄이고 서민 세금을 낮춰야 한다','수출 기업을 세제로 밀어줘야 한다',{mj:-0.7,md:-0.6,ku:-0.4,ja:-0.3,gh:0.9},'e'],
+  ['농어촌 고리채','mj','gh','농어민 부채 탕감을 넓혀야 한다','재정 범위 안에서 정리해야 한다',{mj:-0.8,md:-0.7,ku:-0.5,ja:-0.4,gh:0.6},'e'],
+  ['외자 도입','mj','gh','무분별한 차관은 부실기업만 만든다','외국 자본으로 공장을 지어야 한다',{mj:-0.7,md:-0.6,ku:-0.3,ja:-0.2,gh:0.9},'e'],
+  ['노동 3권','mj','gh','노동자의 단결권과 쟁의권을 보장해야 한다','수출을 위해 노사 안정이 먼저다',{mj:-0.6,md:-0.6,ku:-0.3,ja:-0.2,gh:0.85},'e'],
+  ['6·3 시위와 계엄','mj','gh','학생 시위 탄압을 멈춰야 한다','계엄으로 질서를 회복해야 한다',{mj:-0.95,md:-0.85,ku:-0.6,ja:-0.6,gh:0.9},'s']]},
+{n:7,y:1967,date:'1967.6.8',term:'1967–1971',pres:'박정희',N:175,sys:'smd',D:131,Lst:44,bonus:22,gov:['gh'],era:'제3공화국',
+ desc:'6·8 부정선거 논란 속에 공화당이 개헌선을 넘겼고, 1969년 3선 개헌이 통과됩니다.',
+ P:[['sm','신민당','#3a6fb0',-0.8,45,'야당 통합으로 출범한 제1야당'],['dj','대중당','#8e5a9b',-0.5,1,''],['gh','민주공화당','#a0522d',0.9,129,'박정희의 여당']],
+ Q:[['3선 개헌','sm','gh','대통령 3선 개헌은 장기집권 시도다','경제 개발을 이어가려면 3선이 필요하다',{sm:-0.95,dj:-0.7,gh:0.95},'s'],
+  ['6·8 선거 부정','sm','gh','부정선거를 규탄하고 재선거를 해야 한다','일부 문제는 사법 처리로 충분하다',{sm:-0.9,dj:-0.6,gh:0.8},'s'],
+  ['향토예비군','sm','gh','향토예비군은 국민 부담이다, 폐지해야 한다','1·21 사태 이후 향토예비군이 꼭 필요하다',{sm:-0.7,dj:-0.5,gh:0.95},'s'],
+  ['경부고속도로','sm','gh','재정 부담이 크고 시기상조다','국토의 대동맥으로 건설해야 한다',{sm:-0.7,dj:-0.3,gh:0.95},'e'],
+  ['분배와 성장','sm','gh','대중경제로 근로자와 농민 몫을 늘려야 한다','성장이 먼저, 분배는 그다음이다',{sm:-0.8,dj:-0.8,gh:0.85},'e'],
+  ['차관 특혜','sm','gh','차관 기업 특혜를 국정조사해야 한다','산업화 과정의 불가피한 비용이다',{sm:-0.9,dj:-0.6,gh:0.8},'e'],
+  ['쌀값 정책','sm','gh','이중곡가제로 농민 쌀값을 보장해야 한다','물가 안정을 위해 쌀값을 묶어야 한다',{sm:-0.8,dj:-0.6,gh:0.5},'e'],
+  ['정치 사찰','sm','gh','중앙정보부의 정치 사찰을 멈춰야 한다','안보 정보 활동은 필요하다',{sm:-0.9,dj:-0.6,gh:0.9},'s'],
+  ['푸에블로호·대북 대응','sm','gh','대화로 긴장을 완화해야 한다','북한 도발에 강경하게 대응해야 한다',{sm:-0.5,dj:-0.4,gh:0.9},'s'],
+  ['교육 투자','sm','gh','의무교육을 넓히고 학비 부담을 줄여야 한다','재정 여건에 맞춰 단계적으로',{sm:-0.7,dj:-0.6,gh:0.4},'e']]},
+{n:8,y:1971,date:'1971.5.25',term:'1971–1972',pres:'박정희',N:204,sys:'smd',D:153,Lst:51,gov:['gh'],era:'제3공화국',
+ desc:'신민당이 개헌저지선을 확보했지만, 1972년 10월 유신으로 1년 반 만에 해산됩니다.',
+ P:[['sm','신민당','#3a6fb0',-0.8,89,'1971년 대선 이후 크게 약진한 야당'],['mz','민중당','#8e5a9b',-0.4,1,''],['kd','국민당','#6b8e3a',0,1,''],['gh','민주공화당','#a0522d',0.9,113,'박정희의 여당']],
+ Q:[['국가보위법','sm','gh','비상대권을 주는 보위법은 독재로 가는 길이다','안보 위기에 대통령 비상대권이 필요하다',{sm:-0.95,mz:-0.6,kd:-0.3,gh:0.95},'s'],
+  ['남북 대화','sm','gh','남북 대화를 국회와 국민에게 공개해야 한다','정부가 주도해 비공개로 협상해야 한다',{sm:-0.7,mz:-0.4,kd:-0.2,gh:0.85},'s'],
+  ['향토예비군 폐지','sm','gh','향토예비군을 폐지해야 한다','안보를 위해 유지해야 한다',{sm:-0.8,mz:-0.3,kd:0.2,gh:0.95},'s'],
+  ['8·3 사채 동결','sm','gh','재벌 특혜이고 서민 채권자에게 손해다','기업 부도를 막기 위한 불가피한 조치다',{sm:-0.8,mz:-0.5,kd:0,gh:0.9},'e'],
+  ['지방자치','sm','gh','미뤄진 지방자치를 즉시 실시해야 한다','통일 이후로 지방자치를 미뤄야 한다',{sm:-0.9,mz:-0.6,kd:-0.3,gh:0.85},'s'],
+  ['대중경제','sm','gh','중소기업과 농민 중심의 대중경제로','대기업 중심 수출 성장을 이어가야 한다',{sm:-0.9,mz:-0.5,kd:0,gh:0.9},'e'],
+  ['근로소득세','sm','gh','봉급생활자 세금을 크게 줄여야 한다','재정 확보를 위해 유지해야 한다',{sm:-0.8,mz:-0.5,kd:-0.2,gh:0.7},'e'],
+  ['4대국 보장 평화통일','sm','gh','주변 4강의 보장으로 평화통일을','힘의 우위로 안보를 지켜야 한다',{sm:-0.85,mz:-0.5,kd:0,gh:0.9},'s'],
+  ['외국인투자기업 노조 제한','sm','gh','노동 3권 제한 특례법을 폐지해야 한다','외자 유치를 위해 특례가 필요하다',{sm:-0.8,mz:-0.6,kd:0,gh:0.9},'e'],
+  ['중화학공업','sm','gh','농촌과 경공업의 균형이 먼저다','중화학공업 육성에 집중해야 한다',{sm:-0.6,mz:-0.4,kd:0.2,gh:0.9},'e']]},
+{n:9,y:1973,date:'1973.2.27',term:'1973–1979',pres:'박정희',N:219,sys:'mmd',D:146,Lst:0,fixed:{yj:73},gov:['gh','yj'],era:'제4공화국 (유신)',
+ desc:'한 선거구에서 2명을 뽑는 중대선거구제. 의석의 3분의 1은 대통령이 추천해 통일주체국민회의가 간선한 유신정우회였습니다.',
+ P:[['tt','민주통일당','#5ba3d9',-0.8,2,'양일동의 야당'],['sm','신민당','#3a6fb0',-0.8,52,'유신 체제 아래 제1야당'],['mu','무소속',MU,0,19,''],['gh','민주공화당','#a0522d',0.8,73,'박정희의 여당'],['yj','유신정우회','#5c3a2e',1,73,'대통령 추천 간선 의원단. 답변과 무관하게 고정']],
+ Q:[['유신헌법','sm','gh','유신헌법을 고쳐 민주 헌정을 회복해야 한다','안보와 경제를 위해 유신 체제를 지켜야 한다',{sm:-0.95,tt:-0.95,mu:-0.2,gh:0.9,yj:1},'s'],
+  ['긴급조치','sm','gh','긴급조치를 해제하고 구속자를 풀어야 한다','사회 안정을 위해 긴급조치가 필요하다',{sm:-0.9,tt:-0.95,mu:-0.2,gh:0.9,yj:1},'s'],
+  ['김대중 납치사건','sm','gh','진상을 끝까지 밝혀야 한다','한일 관계를 생각해 외교적으로 매듭짓자',{sm:-0.9,tt:-0.9,mu:-0.3,gh:0.8,yj:0.9},'s'],
+  ['중화학공업화','sm','gh','경공업·농촌과 균형을 맞춰야 한다','중화학공업을 집중 육성해야 한다',{sm:-0.6,tt:-0.6,mu:0,gh:0.9,yj:0.9},'e'],
+  ['방위세','sm','gh','서민 부담이 큰 새 세금은 신중해야 한다','자주국방을 위해 방위세가 필요하다',{sm:-0.4,tt:-0.5,mu:0.2,gh:0.9,yj:0.95},'e'],
+  ['노동 쟁의','sm','gh','노동자의 단결권을 보장해야 한다','산업 평화를 위해 쟁의를 제한해야 한다',{sm:-0.7,tt:-0.7,mu:-0.1,gh:0.85,yj:0.9},'e'],
+  ['의료보험','sm','gh','전 국민 의료보험을 서둘러야 한다','대기업 사업장부터 단계적으로',{sm:-0.7,tt:-0.7,mu:-0.3,gh:0.6,yj:0.6},'e'],
+  ['새마을운동','sm','gh','관 주도 동원 방식을 고쳐야 한다','농촌 근대화의 성과를 이어가야 한다',{sm:-0.5,tt:-0.5,mu:0.1,gh:0.95,yj:0.95},''],
+  ['동아일보 광고 사태','sm','gh','언론 탄압을 멈추고 자유를 보장해야 한다','국론 분열을 막기 위한 조치다',{sm:-0.9,tt:-0.9,mu:-0.3,gh:0.8,yj:0.9},'s'],
+  ['정치범과 인권','sm','gh','정치범을 석방하고 인권을 보장해야 한다','안보 사범은 엄벌해야 한다',{sm:-0.9,tt:-0.95,mu:-0.3,gh:0.85,yj:0.95},'s']]},
+{n:10,y:1978,date:'1978.12.12',term:'1979–1980',pres:'박정희 → 최규하',N:231,sys:'mmd',D:154,Lst:0,fixed:{yj:77},gov:['gh','yj'],era:'제4공화국 (유신)',
+ desc:'신민당이 득표율에서 공화당을 앞섰습니다. 김영삼 제명과 부마항쟁, 10·26으로 이어지는 격동의 국회입니다.',
+ P:[['sm','신민당','#3a6fb0',-0.85,61,'득표율에서 공화당을 앞선 야당'],['tt','민주통일당','#5ba3d9',-0.8,3,''],['mu','무소속',MU,0,22,''],['gh','민주공화당','#a0522d',0.8,68,'박정희의 여당'],['yj','유신정우회','#5c3a2e',1,77,'대통령 추천 간선 의원단. 답변과 무관하게 고정']],
+ Q:[['유신 철폐','sm','gh','유신을 끝내고 대통령 직선제로 돌아가야 한다','유신 체제를 유지해야 한다',{sm:-0.95,tt:-0.95,mu:-0.3,gh:0.9,yj:1},'s'],
+  ['YH무역 사건','sm','gh','농성 노동자를 보호하고 강제 진압을 규탄한다','불법 농성은 엄정히 다스려야 한다',{sm:-0.9,tt:-0.8,mu:-0.2,gh:0.85,yj:0.9},'e'],
+  ['김영삼 의원 제명','sm','gh','야당 총재 제명은 의회 민주주의 파괴다','국익을 해친 발언에 대한 징계다',{sm:-1,tt:-0.9,mu:-0.3,gh:0.9,yj:0.95},'s'],
+  ['부가가치세','sm','gh','물가를 올리는 부가가치세를 손봐야 한다','세제 현대화를 위해 유지해야 한다',{sm:-0.8,tt:-0.7,mu:-0.2,gh:0.8,yj:0.85},'e'],
+  ['경제 안정화','sm','gh','과잉 투자를 멈추고 물가부터 잡아야 한다','성장 기조를 이어가야 한다',{sm:-0.7,tt:-0.6,mu:-0.1,gh:0.6,yj:0.7},'e'],
+  ['부마항쟁 대응','sm','gh','계엄을 풀고 시민의 요구를 받아들여야 한다','계엄으로 질서를 회복해야 한다',{sm:-0.95,tt:-0.9,mu:-0.4,gh:0.85,yj:0.95},'s'],
+  ['긴급조치 9호','sm','gh','긴급조치 9호를 해제해야 한다','안정을 위해 유지해야 한다',{sm:-0.9,tt:-0.9,mu:-0.3,gh:0.85,yj:0.95},'s'],
+  ['농산물 수입','sm','gh','농민 보호를 위해 수입을 억제해야 한다','물가 안정을 위해 수입이 필요하다',{sm:-0.7,tt:-0.6,mu:-0.3,gh:0.6,yj:0.7},'e'],
+  ['국정감사 부활','sm','gh','국회의 국정감사권을 되살려야 한다','행정 효율을 위해 필요 없다',{sm:-0.9,tt:-0.9,mu:-0.4,gh:0.7,yj:0.9},'s'],
+  ['최저임금','sm','gh','최저임금제를 도입해야 한다','수출 경쟁력을 위해 시기상조다',{sm:-0.7,tt:-0.7,mu:-0.2,gh:0.7,yj:0.8},'e']]},
+{n:11,y:1981,date:'1981.3.25',term:'1981–1985',pres:'전두환',N:276,sys:'mmd',D:184,Lst:92,bonus:61,gov:['mjj'],era:'제5공화국',
+ desc:'신군부가 정치인 활동을 묶은 채 치른 선거. 2인 선거구에 더해, 전국구 92석 중 3분의 2가 제1당 몫이었습니다.',
+ P:[['ms','민주사회당','#c0506a',-0.7,2,''],['mh','민주한국당','#3a6fb0',-0.5,81,'제1야당, 관제 야당이라는 비판도'],['mk','민권당','#5ba3d9',-0.3,2,''],['mu','무소속',MU,0,11,''],['sj','신정당','#8e5a9b',0,2,''],['etc','기타',ETC,0,2,'민주농민당·안민당'],['kn','한국국민당','#6b8e3a',0.4,25,'공화당 계열 보수 정당'],['mjj','민주정의당','#d08b2c',0.9,151,'전두환의 여당']],
+ Q:[['대통령 선출','mh','mjj','대통령 직선제로 바꿔야 한다','대통령선거인단 간선제를 유지해야 한다',{ms:-0.8,mh:-0.7,mk:-0.6,sj:-0.3,etc:-0.2,mu:-0.3,kn:0.3,mjj:0.95},'s'],
+  ['정치활동 규제','mh','mjj','묶인 정치인들의 활동을 전면 해금해야 한다','안정을 위해 단계적으로 풀어야 한다',{ms:-0.8,mh:-0.8,mk:-0.6,sj:-0.4,etc:-0.3,mu:-0.4,kn:-0.2,mjj:0.85},'s'],
+  ['과외 금지·졸업정원제','mh','mjj','현실에 맞지 않는 교육 조치를 재검토해야 한다','과열 과외를 막는 개혁을 유지해야 한다',{ms:-0.5,mh:-0.6,mk:-0.4,sj:-0.2,etc:-0.2,mu:-0.2,kn:0,mjj:0.85},''],
+  ['경제 정책','mh','mjj','서민 생활과 분배를 먼저 챙겨야 한다','물가 안정을 위한 긴축을 이어가야 한다',{ms:-0.9,mh:-0.6,mk:-0.5,sj:-0.2,etc:-0.3,mu:-0.2,kn:0.2,mjj:0.8},'e'],
+  ['언론기본법','mh','mjj','언론 통폐합과 언론기본법을 되돌려야 한다','언론의 공적 책임을 위해 필요하다',{ms:-0.8,mh:-0.7,mk:-0.6,sj:-0.4,etc:-0.3,mu:-0.4,kn:0.1,mjj:0.9},'s'],
+  ['은행 민영화','mh','mjj','재벌이 은행을 지배하지 못하게 막아야 한다','금융 자율화로 효율을 높여야 한다',{ms:-0.8,mh:-0.5,mk:-0.4,sj:-0.1,etc:-0.2,mu:-0.1,kn:0.4,mjj:0.8},'e'],
+  ['노동법','mh','mjj','제3자 개입 금지 등 노동 악법을 고쳐야 한다','산업 평화를 위해 유지해야 한다',{ms:-0.9,mh:-0.6,mk:-0.5,sj:-0.2,etc:-0.2,mu:-0.2,kn:0.3,mjj:0.9},'e'],
+  ['학원 자율화','mh','mjj','제적생을 복교시키고 학원 자율을 보장해야 한다','학원 안정이 먼저다',{ms:-0.8,mh:-0.7,mk:-0.5,sj:-0.3,etc:-0.2,mu:-0.3,kn:0.2,mjj:0.85},'s'],
+  ['대일 경제협력 차관','mh','mjj','안보 경협 차관은 굴욕 외교다','안보 분담으로 차관을 받아야 한다',{ms:-0.6,mh:-0.6,mk:-0.4,sj:-0.2,etc:-0.2,mu:-0.2,kn:0.2,mjj:0.9},''],
+  ['권력형 금융 비리','mh','mjj','장영자 사건을 국정조사해야 한다','검찰 수사와 재판으로 충분하다',{ms:-0.9,mh:-0.8,mk:-0.7,sj:-0.4,etc:-0.3,mu:-0.4,kn:-0.2,mjj:0.85},'s']]},
+{n:12,y:1985,date:'1985.2.12',term:'1985–1988',pres:'전두환',N:276,sys:'mmd',D:184,Lst:92,bonus:61,gov:['mjj'],era:'제5공화국',
+ desc:'창당 한 달 만의 신한민주당이 제1야당이 된 2·12 총선. 직선제 개헌 요구가 6월 항쟁으로 이어집니다.',
+ P:[['shm','신한민주당','#2a5ca8',-0.9,67,'선거 직전 창당해 돌풍을 일으킨 야당'],['sjs','신정사회당','#c0506a',-0.6,1,''],['smj','신민주당','#8e5a9b',-0.4,1,''],['mh','민주한국당','#7fb2de',-0.3,35,''],['mu','무소속',MU,0,4,''],['kn','한국국민당','#6b8e3a',0.4,20,''],['mjj','민주정의당','#d08b2c',0.9,148,'전두환의 여당']],
+ Q:[['개헌 방향','shm','mjj','대통령 직선제로 개헌해야 한다','의원내각제 개헌 또는 현행 유지',{shm:-0.95,sjs:-0.7,smj:-0.6,mh:-0.5,mu:-0.3,kn:0.3,mjj:0.9},'s'],
+  ['광주 진상 규명','shm','mjj','국정조사로 5·18의 진상을 밝혀야 한다','국민 화합을 위해 과거를 덮어야 한다',{shm:-0.95,sjs:-0.8,smj:-0.6,mh:-0.6,mu:-0.3,kn:0.2,mjj:0.9},'s'],
+  ['학원안정법','shm','mjj','학생운동 탄압법은 철회해야 한다','학원 소요를 막을 법이 필요하다',{shm:-0.9,sjs:-0.8,smj:-0.5,mh:-0.5,mu:-0.2,kn:0.3,mjj:0.9},'s'],
+  ['보도지침','shm','mjj','정부의 보도지침은 언론 통제다, 폐지해야 한다','국가 안보를 위한 협조 요청일 뿐이다',{shm:-0.9,sjs:-0.8,smj:-0.6,mh:-0.6,mu:-0.3,kn:0.2,mjj:0.85},'s'],
+  ['3저 호황의 몫','shm','mjj','호황의 이익을 노동자 임금으로 나눠야 한다','수출 경쟁력을 위해 임금을 안정시켜야 한다',{shm:-0.8,sjs:-0.9,smj:-0.5,mh:-0.4,mu:-0.2,kn:0.4,mjj:0.85},'e'],
+  ['고문 근절','shm','mjj','부천서·박종철 고문 사건의 진상을 밝혀야 한다','수사 결과를 존중해야 한다',{shm:-0.95,sjs:-0.9,smj:-0.6,mh:-0.6,mu:-0.4,kn:0,mjj:0.85},'s'],
+  ['농가 부채','shm','mjj','농가 부채를 탕감하고 농산물 수입을 막아야 한다','개방은 불가피하다, 경쟁력을 키우자',{shm:-0.8,sjs:-0.8,smj:-0.5,mh:-0.5,mu:-0.3,kn:0.1,mjj:0.7},'e'],
+  ['최저임금제','shm','mjj','최저임금을 넉넉한 수준으로 바로 시행해야 한다','기업 사정을 보며 단계적으로',{shm:-0.8,sjs:-0.9,smj:-0.5,mh:-0.4,mu:-0.2,kn:0.3,mjj:0.7},'e'],
+  ['평화의 댐','shm','mjj','안보 위협을 부풀린 것이다, 진상을 공개하라','북한 수공에 대비해야 한다',{shm:-0.8,sjs:-0.7,smj:-0.4,mh:-0.3,mu:-0.1,kn:0.5,mjj:0.95},'s'],
+  ['재벌 규제','shm','mjj','경제력 집중을 억제해야 한다','성장을 위해 대기업을 키워야 한다',{shm:-0.8,sjs:-0.9,smj:-0.5,mh:-0.4,mu:-0.2,kn:0.4,mjj:0.6},'e']]},
+{n:13,y:1988,date:'1988.4.26',term:'1988–1992',pres:'노태우',N:299,sys:'smd',D:224,Lst:75,bonus:38,gov:['mjj'],era:'제6공화국',
+ desc:'소선거구제로 돌아와 치른 헌정사 첫 여소야대 국회. 5공 청문회가 열렸고, 1990년 3당 합당으로 구도가 뒤집힙니다.',
+ P:[['hg','한겨레민주당','#c0506a',-0.9,1,''],['pm','평화민주당','#2f8f4e',-0.85,70,'김대중의 정당, 제1야당'],['tm','통일민주당','#3a6fb0',-0.4,59,'김영삼의 정당'],['mu','무소속',MU,0,9,''],['gj','신민주공화당','#a0522d',0.5,35,'김종필의 정당'],['mjj','민주정의당','#d08b2c',0.85,125,'노태우의 여당']],
+ Q:[['5공 청산','pm','mjj','전두환 전 대통령을 증언대에 세우고 처벌해야 한다','정치적 타협으로 과거를 정리해야 한다',{hg:-0.95,pm:-0.95,tm:-0.7,mu:-0.3,gj:-0.1,mjj:0.85},'s'],
+  ['정계 개편','pm','mjj','야권 공조로 여당을 견제해야 한다','보수 대연합으로 안정 다수를 만들어야 한다',{hg:-0.9,pm:-0.95,tm:0.6,mu:0,gj:0.7,mjj:0.9},''],
+  ['지방자치','pm','mjj','단체장까지 지방선거를 즉시 실시해야 한다','지방의회부터 단계적으로 하자',{hg:-0.9,pm:-0.95,tm:-0.6,mu:-0.3,gj:-0.2,mjj:0.8},'s'],
+  ['남북 교류','pm','mjj','민간 교류를 넓히고 평화공존을 앞당겨야 한다','대북 창구는 정부로 단일화해야 한다',{hg:-0.95,pm:-0.8,tm:-0.2,mu:0,gj:0.5,mjj:0.7},'s'],
+  ['노동법 개정','pm','mjj','복수노조를 허용하고 제3자 개입 금지를 없애야 한다','노사 안정을 위해 현행을 유지해야 한다',{hg:-1,pm:-0.8,tm:-0.4,mu:-0.1,gj:0.4,mjj:0.85},'e'],
+  ['토지공개념','pm','gj','토지초과이득세 등 토지공개념을 도입해야 한다','사유재산 침해다',{hg:-1,pm:-0.9,tm:-0.4,mu:0,gj:0.7,mjj:-0.2},'e'],
+  ['의료보험 통합','pm','mjj','조합을 하나로 통합해 형평성을 높여야 한다','조합주의를 유지해야 한다',{hg:-1,pm:-0.9,tm:-0.6,mu:-0.2,gj:0.3,mjj:0.8},'e'],
+  ['추곡 수매가','pm','mjj','쌀 수매가를 크게 올려야 한다','물가를 위해 소폭 인상이 맞다',{hg:-0.9,pm:-0.9,tm:-0.6,mu:-0.4,gj:-0.2,mjj:0.6},'e'],
+  ['전교조','pm','mjj','교원노조를 합법화해야 한다','교사의 노조는 안 된다, 해직은 불가피하다',{hg:-1,pm:-0.7,tm:-0.2,mu:0,gj:0.7,mjj:0.9},'e'],
+  ['국가보안법','pm','mjj','국가보안법을 개정하거나 폐지해야 한다','안보를 위해 유지해야 한다',{hg:-1,pm:-0.8,tm:-0.3,mu:0,gj:0.8,mjj:0.85},'s']]},
+{n:14,y:1992,date:'1992.3.24',term:'1992–1996',pres:'노태우 → 김영삼',N:299,sys:'smd',D:237,Lst:62,gov:['mja'],era:'제6공화국',
+ desc:'3당 합당으로 생긴 민자당이 과반에 한 석 모자랐습니다. 정주영의 통일국민당이 31석으로 돌풍을 일으켰습니다.',
+ P:[['md','민주당','#2f8f4e',-0.8,97,'김대중·이기택의 통합 야당'],['sj','신정당','#c0506a',-0.2,1,''],['mu','무소속',MU,0,21,''],['tk','통일국민당','#6b4fa0',0.3,31,'정주영이 창당한 정당'],['mja','민주자유당','#d08b2c',0.8,149,'3당 합당으로 탄생한 여당']],
+ Q:[['단체장 선거 시기','md','mja','약속대로 단체장 선거를 바로 해야 한다','경제 사정상 선거를 미뤄야 한다',{md:-0.95,sj:-0.5,mu:-0.4,tk:-0.6,mja:0.85},'s'],
+  ['쌀 시장 개방','md','mja','우루과이라운드 쌀 개방은 막아야 한다','개방은 피할 수 없다, 농업을 구조조정하자',{md:-0.9,sj:-0.5,mu:-0.5,tk:-0.2,mja:0.7},'e'],
+  ['금융실명제','md','mja','과거 자금까지 추적하는 철저한 실명제','실명제는 하되 경제 충격을 줄여야 한다',{md:-0.8,sj:-0.4,mu:-0.2,tk:0.6,mja:0.3},'e'],
+  ['북핵 대응','md','mja','대화와 교류로 북핵 문제를 풀어야 한다','핵 문제 해결 전에는 교류를 미뤄야 한다',{md:-0.8,sj:-0.2,mu:0,tk:0.3,mja:0.7},'s'],
+  ['재벌 규제','md','mja','경제력 집중을 막기 위해 재벌을 규제해야 한다','세계화 시대에 규제를 풀어야 한다',{md:-0.8,sj:-0.3,mu:-0.1,tk:0.95,mja:0.4},'e'],
+  ['5·18 특별법','md','mja','특별법으로 전두환·노태우를 처벌해야 한다','역사의 평가에 맡겨야 한다',{md:-0.95,sj:-0.6,mu:-0.4,tk:0.2,mja:0.4},'s'],
+  ['안기부 개혁','md','mja','안기부의 정치 사찰을 법으로 금지해야 한다','대공 수사권은 유지해야 한다',{md:-0.9,sj:-0.5,mu:-0.2,tk:0.3,mja:0.8},'s'],
+  ['WTO와 세계화','md','mja','농업과 중소기업 보호가 먼저다','개방으로 국제경쟁력을 키워야 한다',{md:-0.8,sj:-0.4,mu:-0.3,tk:0.5,mja:0.8},'e'],
+  ['무노동 무임금','md','mja','파업 기간에도 생계비 일부는 지급해야 한다','무노동 무임금 원칙을 지켜야 한다',{md:-0.7,sj:-0.4,mu:-0.1,tk:0.8,mja:0.85},'e'],
+  ['대북 쌀 지원','md','mja','인도적 쌀 지원을 넓혀야 한다','북한의 태도를 보며 신중해야 한다',{md:-0.8,sj:-0.3,mu:0,tk:0.3,mja:0.4},'s']]},
+{n:15,y:1996,date:'1996.4.11',term:'1996–2000',pres:'김영삼 → 김대중',N:299,sys:'smd',D:253,Lst:46,gov:['sh'],era:'제6공화국',
+ desc:'3김 정치의 절정. 노동법 날치기와 IMF 외환위기를 겪고, 첫 여야 정권교체가 이뤄집니다.',
+ P:[['kh','새정치국민회의','#2f8f4e',-0.75,79,'김대중의 정당'],['tm','통합민주당','#e0a020',-0.3,15,'이기택·노무현 등'],['mu','무소속',MU,0.1,16,''],['jm','자유민주연합','#2e8c8c',0.6,50,'김종필의 충청 기반 보수 정당'],['sh','신한국당','#1f5fa8',0.8,139,'김영삼의 여당, 1997년 한나라당으로']],
+ Q:[['노동법 개정','kh','sh','정리해고제 날치기 처리는 무효다','노동 유연화로 경쟁력을 높여야 한다',{kh:-0.9,tm:-0.7,mu:-0.2,jm:-0.3,sh:0.9},'e'],
+  ['내각제 개헌','jm','sh','의원내각제로 권력을 나눠야 한다','대통령중심제를 유지해야 한다',{kh:-0.5,tm:0.2,mu:0,jm:-0.95,sh:0.8},''],
+  ['대북 정책','kh','sh','햇볕정책으로 북한을 포용해야 한다','상호주의 원칙을 지켜야 한다',{kh:-0.9,tm:-0.6,mu:0,jm:0.6,sh:0.85},'s'],
+  ['IMF 구조조정','kh','sh','재벌 개혁과 빅딜로 구조를 바꿔야 한다','시장 자율에 맡기고 정부 개입을 줄여야 한다',{kh:-0.8,tm:-0.5,mu:0,jm:0.1,sh:0.7},'e'],
+  ['금융 개방','kh','sh','준비 없는 개방은 위험하다','OECD 가입과 함께 개방을 서둘러야 한다',{kh:-0.6,tm:-0.4,mu:0,jm:0.2,sh:0.9},'e'],
+  ['국가보안법','kh','sh','인권 침해 소지가 있는 조항을 고쳐야 한다','안보를 위해 그대로 둬야 한다',{kh:-0.7,tm:-0.6,mu:0,jm:0.8,sh:0.9},'s'],
+  ['기초생활보장','kh','sh','최저 생계를 국가가 권리로 보장해야 한다','근로 의욕을 떨어뜨릴 수 있다',{kh:-0.9,tm:-0.6,mu:0,jm:0.4,sh:0.6},'e'],
+  ['국가인권위원회','kh','sh','독립적인 국가인권위원회를 세워야 한다','법무부 산하로 충분하다',{kh:-0.8,tm:-0.6,mu:0,jm:0.6,sh:0.8},'s'],
+  ['금강산 관광','kh','sh','금강산 관광으로 교류의 물꼬를 터야 한다','현금이 군사비로 갈 수 있다',{kh:-0.9,tm:-0.5,mu:0,jm:0.4,sh:0.8},'s'],
+  ['전교조 합법화','kh','sh','전교조를 합법화해야 한다','교육 현장에 혼란을 부른다',{kh:-0.8,tm:-0.6,mu:0,jm:0.8,sh:0.8},'e']]},
+{n:16,y:2000,date:'2000.4.13',term:'2000–2004',pres:'김대중 → 노무현',N:273,sys:'smd',D:227,Lst:46,gov:['mj'],era:'제6공화국',
+ desc:'남북정상회담 사흘 전에 치른 선거. 한나라당이 제1당이 됐고, 2004년 노무현 대통령 탄핵 소추를 의결합니다.',
+ P:[['mj','새천년민주당','#2f8f4e',-0.7,115,'김대중의 여당'],['mu','무소속',MU,0,5,''],['hs','한국신당','#8e5a9b',0.3,1,''],['mk','민주국민당','#c98a2b',0.4,2,''],['jm','자유민주연합','#2e8c8c',0.6,17,''],['hn','한나라당','#1f5fa8',0.8,133,'이회창의 제1당']],
+ Q:[['햇볕정책','mj','hn','정상회담과 교류로 평화를 넓혀야 한다','일방적 지원을 멈추고 상호주의로 가야 한다',{mj:-0.9,mu:0,hs:0.3,mk:0.4,jm:0.6,hn:0.85},'s'],
+  ['국가보안법','mj','hn','시대에 맞게 개정해야 한다','안보를 위해 그대로 둬야 한다',{mj:-0.7,mu:0,hs:0.4,mk:0.5,jm:0.8,hn:0.9},'s'],
+  ['행정수도 이전','mj','hn','충청권 신행정수도로 국토 균형 발전을','수도 이전은 국가적 낭비다',{mj:-0.8,mu:0,hs:-0.3,mk:0.4,jm:-0.4,hn:0.7},''],
+  ['복지 확대','mj','hn','생산적 복지를 넓혀야 한다','감세와 작은 정부로 성장해야 한다',{mj:-0.8,mu:0,hs:0.3,mk:0.4,jm:0.5,hn:0.8},'e'],
+  ['의약분업','mj','hn','약 오남용을 막기 위해 의약분업을 시행해야 한다','준비가 부족하다, 보완 후 시행해야 한다',{mj:-0.8,mu:0,hs:0.2,mk:0.3,jm:0.4,hn:0.6},'e'],
+  ['언론사 세무조사','mj','hn','언론사도 성역 없이 세무조사해야 한다','비판 언론 길들이기다',{mj:-0.9,mu:0,hs:0.4,mk:0.5,jm:0.6,hn:0.9},'s'],
+  ['주 5일 근무제','mj','hn','주 5일 근무제를 서둘러 도입해야 한다','기업 부담을 생각해 단계적으로',{mj:-0.8,mu:0,hs:0.3,mk:0.4,jm:0.5,hn:0.6},'e'],
+  ['출자총액제한','mj','hn','재벌의 문어발 확장을 막는 제도를 유지해야 한다','투자를 막는 규제다, 풀어야 한다',{mj:-0.7,mu:0,hs:0.4,mk:0.5,jm:0.6,hn:0.85},'e'],
+  ['대북송금 특검','mj','hn','남북관계를 해치는 특검에 반대한다','특검으로 진상을 밝혀야 한다',{mj:-0.9,mu:0,hs:0.5,mk:0.6,jm:0.7,hn:0.95},'s'],
+  ['부동산 보유세','mj','hn','보유세를 높여 투기를 막아야 한다','거래세를 낮추고 시장에 맡겨야 한다',{mj:-0.7,mu:0,hs:0.3,mk:0.4,jm:0.5,hn:0.8},'e']]},
+{n:17,y:2004,date:'2004.4.15',term:'2004–2008',pres:'노무현',N:299,sys:'smd',D:243,Lst:56,thr:3,gov:['ur'],era:'제6공화국',
+ desc:'1인 2표제가 처음 도입된 선거. 탄핵 역풍 속에 열린우리당이 과반을 얻고, 민주노동당이 처음 원내에 진출했습니다.',
+ P:[['dn','민주노동당','#f37321',-1,10,'원내에 처음 진출한 진보 정당'],['ur','열린우리당','#f2b705',-0.55,152,'노무현의 여당'],['mj','새천년민주당','#2f8f4e',-0.1,9,''],['mu','무소속',MU,0,2,''],['tg','국민통합21','#8e5a9b',0.3,1,''],['jm','자유민주연합','#2e8c8c',0.7,4,''],['hn','한나라당','#1f5fa8',0.8,121,'박근혜 대표 체제의 제1야당']],
+ Q:[['국가보안법 폐지','ur','hn','국가보안법을 폐지해야 한다','국가보안법을 지켜야 한다',{dn:-1,ur:-0.8,mj:0,mu:0,tg:0.4,jm:0.9,hn:0.9},'s'],
+  ['한미 FTA','dn','hn','한미 FTA를 막아야 한다','한미 FTA로 시장을 넓혀야 한다',{dn:-0.95,ur:0.2,mj:0,mu:0,tg:0.4,jm:0.5,hn:0.8},'e'],
+  ['행정중심복합도시','ur','hn','세종시로 국토 균형 발전을','수도 분할은 비효율적이다',{dn:-0.5,ur:-0.85,mj:-0.2,mu:0,tg:0.2,jm:-0.6,hn:0.5},''],
+  ['종합부동산세','ur','hn','보유세를 강화해 집값을 잡아야 한다','세금 폭탄이다, 시장에 맡겨야 한다',{dn:-0.95,ur:-0.8,mj:-0.2,mu:0,tg:0.4,jm:0.6,hn:0.85},'e'],
+  ['이라크 파병','dn','hn','명분 없는 파병에 반대한다','한미동맹을 위해 파병해야 한다',{dn:-1,ur:0.2,mj:0,mu:0,tg:0.4,jm:0.8,hn:0.85},'s'],
+  ['사립학교법','ur','hn','개방형 이사제로 사학 비리를 막아야 한다','사학의 자율을 침해한다',{dn:-0.9,ur:-0.85,mj:-0.2,mu:0,tg:0.4,jm:0.8,hn:0.95},'s'],
+  ['과거사 진상규명','ur','hn','국가 폭력의 과거사를 조사해야 한다','정치 보복으로 흐를 수 있다',{dn:-0.95,ur:-0.85,mj:-0.4,mu:0,tg:0.3,jm:0.7,hn:0.7},'s'],
+  ['비정규직법','dn','hn','비정규직을 쓸 수 있는 사유 자체를 제한해야 한다','2년 기간 제한이면 충분하다',{dn:-1,ur:-0.2,mj:-0.3,mu:0,tg:0.4,jm:0.6,hn:0.5},'e'],
+  ['개성공단','ur','hn','개성공단을 넓혀 평화경제로','핵실험 이후 재검토해야 한다',{dn:-0.9,ur:-0.8,mj:-0.4,mu:0,tg:0.3,jm:0.7,hn:0.7},'s'],
+  ['금산분리','ur','hn','재벌의 은행 소유를 막아야 한다','금산분리를 완화해야 한다',{dn:-0.95,ur:-0.6,mj:-0.3,mu:0,tg:0.4,jm:0.6,hn:0.8},'e']]},
+{n:18,y:2008,date:'2008.4.9',term:'2008–2012',pres:'이명박',N:299,sys:'smd',D:245,Lst:54,thr:3,gov:['hn'],era:'제6공화국',
+ desc:'한나라당이 과반을 얻었지만 친박연대와 친박 무소속이 따로 당선됐습니다. 쇠고기 촛불집회와 4대강이 쟁점이었습니다.',
+ P:[['dn','민주노동당','#f37321',-1,5,''],['ch','창조한국당','#c0506a',-0.5,3,'문국현의 정당'],['tm','통합민주당','#2f8f4e',-0.6,81,'제1야당'],['mu','무소속',MU,0.4,25,'친박 무소속 다수'],['sj','자유선진당','#2e8c8c',0.6,18,'이회창의 충청 기반 보수 정당'],['cp','친박연대','#8e5a9b',0.65,14,'공천에서 탈락한 박근혜계'],['hn','한나라당','#1f5fa8',0.75,153,'이명박의 여당']],
+ Q:[['4대강 사업','tm','hn','대운하로 이어질 4대강 사업을 멈춰야 한다','치수와 경기 부양을 위해 추진해야 한다',{dn:-1,ch:-0.9,tm:-0.9,mu:0.3,sj:0.1,cp:0.4,hn:0.9},'e'],
+  ['미국산 쇠고기','tm','hn','광우병이 우려된다, 재협상해야 한다','추가 협의로 충분하다, 협정을 지켜야 한다',{dn:-1,ch:-0.9,tm:-0.85,mu:0.2,sj:0.2,cp:0.3,hn:0.85},'e'],
+  ['세종시 수정안','tm','hn','세종시는 원안대로 가야 한다','행정부처 대신 기업도시로 수정해야 한다',{dn:-0.8,ch:-0.7,tm:-0.9,mu:-0.3,sj:-0.95,cp:-0.7,hn:0.6},''],
+  ['미디어법','tm','hn','신문·대기업의 방송 진출은 여론 독점이다','규제를 풀어 미디어 산업을 키워야 한다',{dn:-1,ch:-0.9,tm:-0.9,mu:0.3,sj:0.3,cp:0.4,hn:0.9},'s'],
+  ['무상급식','tm','hn','모든 학생에게 무상급식을','필요한 학생에게만 선별 지원을',{dn:-1,ch:-0.8,tm:-0.85,mu:0.3,sj:0.5,cp:0.4,hn:0.8},'e'],
+  ['감세 정책','tm','hn','부자 감세에 반대한다','법인세·소득세 감세로 투자를 늘려야 한다',{dn:-1,ch:-0.8,tm:-0.85,mu:0.3,sj:0.4,cp:0.3,hn:0.9},'e'],
+  ['한미 FTA 비준','tm','hn','독소 조항을 고치기 전엔 비준할 수 없다','하루빨리 비준해야 한다',{dn:-1,ch:-0.8,tm:-0.7,mu:0.4,sj:0.6,cp:0.6,hn:0.9},'e'],
+  ['천안함 이후 대북','tm','hn','긴장을 낮추기 위해 대화를 재개해야 한다','5·24 조치로 강경하게 대응해야 한다',{dn:-1,ch:-0.6,tm:-0.6,mu:0.5,sj:0.8,cp:0.7,hn:0.9},'s'],
+  ['야간 집회','tm','hn','야간 집회도 자유롭게 허용해야 한다','심야 집회는 제한해야 한다',{dn:-1,ch:-0.8,tm:-0.85,mu:0.3,sj:0.5,cp:0.5,hn:0.85},'s'],
+  ['비정규직 기간','tm','hn','2년 제한을 지키고 정규직 전환을 늘려야 한다','4년으로 늘려 해고를 막아야 한다',{dn:-1,ch:-0.8,tm:-0.85,mu:0.2,sj:0.3,cp:0.3,hn:0.8},'e']]},
+{n:19,y:2012,date:'2012.4.11',term:'2012–2016',pres:'이명박 → 박근혜',N:300,sys:'smd',D:246,Lst:54,thr:3,gov:['sn'],era:'제6공화국',
+ desc:'정원 300석 시대의 시작. 국회선진화법이 통과돼 쟁점 법안 처리에 5분의 3이 필요해졌습니다.',
+ P:[['tj','통합진보당','#7b3fa0',-0.95,13,'진보 정당, 2014년 헌법재판소 결정으로 해산'],['mt','민주통합당','#3d9a50',-0.6,127,'제1야당, 2014년 새정치민주연합'],['mu','무소속',MU,0,3,''],['sj','자유선진당','#2e8c8c',0.6,5,''],['sn','새누리당','#c9151e',0.8,152,'한나라당이 이름을 바꾼 여당']],
+ Q:[['복지 확대','mt','sn','보편적 복지를 넓혀야 한다','재원에 맞춘 맞춤형 복지가 낫다',{tj:-1,mt:-0.8,mu:0,sj:0.5,sn:0.7},'e'],
+  ['국정원 대선 개입','mt','sn','특검으로 진상을 밝혀야 한다','재판 결과를 지켜보면 된다',{tj:-1,mt:-0.9,mu:-0.2,sj:0.4,sn:0.85},'s'],
+  ['세월호 특별법','mt','sn','진상조사위원회에 수사권을 줘야 한다','수사권 부여는 사법 체계에 어긋난다',{tj:-1,mt:-0.85,mu:-0.3,sj:0.3,sn:0.8},'s'],
+  ['테러방지법','mt','sn','국정원 권한 확대는 인권 침해다','테러를 막으려면 법이 필요하다',{tj:-1,mt:-0.9,mu:0,sj:0.6,sn:0.95},'s'],
+  ['노동 개혁','mt','sn','쉬운 해고와 비정규직 확대에 반대한다','노동시장 유연화로 일자리를 늘려야 한다',{tj:-1,mt:-0.8,mu:0,sj:0.5,sn:0.85},'e'],
+  ['경제민주화','mt','sn','재벌의 기존 순환출자까지 해소해야 한다','신규 순환출자만 막으면 된다',{tj:-1,mt:-0.85,mu:0,sj:0.4,sn:0.6},'e'],
+  ['기초연금','mt','sn','모든 노인에게 기초연금을 똑같이','소득 하위 70%에게, 국민연금과 연계해',{tj:-1,mt:-0.8,mu:0,sj:0.4,sn:0.8},'e'],
+  ['통합진보당 해산','tj','sn','정당 해산은 정치 탄압이다','내란 음모 정당은 해산해야 한다',{tj:-1,mt:0.2,mu:0.3,sj:0.8,sn:0.95},'s'],
+  ['개성공단 중단','mt','sn','개성공단을 다시 열어야 한다','핵실험에 맞서 중단해야 한다',{tj:-1,mt:-0.8,mu:0,sj:0.7,sn:0.9},'s'],
+  ['법인세','mt','sn','법인세를 정상화하고 서민 증세는 멈춰야 한다','기업 경쟁력을 위해 법인세를 유지해야 한다',{tj:-1,mt:-0.8,mu:0,sj:0.5,sn:0.85},'e']]},
+{n:20,y:2016,date:'2016.4.13',term:'2016–2020',pres:'박근혜 → 문재인',N:300,sys:'smd',D:253,Lst:47,thr:3,gov:['sn'],era:'제6공화국',
+ desc:'16년 만의 여소야대와 국민의당의 3당 돌풍. 이 국회가 박근혜 대통령 탄핵 소추안을 가결했습니다.',
+ P:[['jd','정의당','#f5c400',-0.9,6,''],['dm','더불어민주당','#1b4fb3',-0.6,123,'원내 제1당이 된 야당'],['kp','국민의당','#00a05e',-0.1,38,'안철수의 제3당, 호남 기반'],['mu','무소속',MU,0.3,11,''],['sn','새누리당','#c9151e',0.8,122,'2017년 자유한국당으로']],
+ Q:[['박근혜 탄핵 소추','dm','sn','국정농단에 책임을 물어 탄핵해야 한다','탄핵보다 질서 있는 퇴진이 낫다',{jd:-1,dm:-1,kp:-0.95,mu:-0.3,sn:0.3},'s'],
+  ['사드 배치','dm','sn','절차와 외교 영향을 재검토해야 한다','북한 미사일 방어를 위해 배치해야 한다',{jd:-0.95,dm:-0.4,kp:-0.6,mu:0.5,sn:0.95},'s'],
+  ['선거제 개혁','jd','sn','연동형 비례대표제로 표의 비례성을 높여야 한다','현행 제도를 유지하고 비례대표는 줄여야 한다',{jd:-1,dm:-0.5,kp:-0.85,mu:0,sn:0.9},'s'],
+  ['최저임금','dm','sn','최저임금 1만원, 소득주도성장','급격한 인상은 일자리를 줄인다',{jd:-0.95,dm:-0.8,kp:-0.1,mu:0.3,sn:0.85},'e'],
+  ['공수처 설치','dm','sn','고위공직자범죄수사처를 설치해야 한다','옥상옥 수사기관이 될 것이다',{jd:-0.8,dm:-0.9,kp:-0.3,mu:0.3,sn:0.95},'s'],
+  ['법인세 인상','dm','sn','대기업 법인세 최고세율을 올려야 한다','기업 경쟁력을 떨어뜨린다',{jd:-1,dm:-0.8,kp:-0.3,mu:0.3,sn:0.9},'e'],
+  ['탈원전','dm','sn','원전을 단계적으로 줄여야 한다','값싼 원전을 유지해야 한다',{jd:-0.95,dm:-0.8,kp:0,mu:0.4,sn:0.95},'e'],
+  ['주 52시간','jd','sn','주 52시간을 예외 없이 바로 시행해야 한다','탄력근로를 넓히고 시행을 늦춰야 한다',{jd:-1,dm:-0.6,kp:-0.1,mu:0.3,sn:0.85},'e'],
+  ['9·19 군사합의','dm','sn','평화 프로세스를 이어가야 한다','안보를 스스로 무장해제하는 것이다',{jd:-0.9,dm:-0.9,kp:-0.2,mu:0.4,sn:0.95},'s'],
+  ['검경 수사권 조정','dm','sn','검찰 권한을 나눠 경찰에 수사권을','수사 혼선과 경찰 권력 비대화가 우려된다',{jd:-0.6,dm:-0.9,kp:-0.3,mu:0.3,sn:0.9},'s']]},
+{n:21,y:2020,date:'2020.4.15',term:'2020–2024',pres:'문재인 → 윤석열',N:300,sys:'smd',D:253,Lst:47,semi:30,thr:3,gov:['dm'],era:'제6공화국',
+ desc:'준연동형 비례대표제(30석)와 병립형(17석)이 함께 쓰인 첫 선거. 위성정당이 등장했고 민주당 계열이 180석을 얻었습니다.',
+ P:[['jd','정의당','#f5c400',-0.9,6,''],['ym','열린민주당','#5fc0c8',-0.8,3,''],['dm','더불어민주당','#1b4fb3',-0.6,180,'더불어시민당 17석 포함'],['mu','무소속',MU,0,5,''],['kp','국민의당','#ea5504',0.3,3,'안철수'],['tt','미래통합당','#e8467c',0.8,103,'미래한국당 19석 포함, 이후 국민의힘']],
+ Q:[['검찰 수사권','dm','tt','검찰 수사권을 분리해 권력을 나눠야 한다','검찰 수사권 축소는 범죄 대응을 약화시킨다',{jd:-0.3,ym:-1,dm:-0.9,mu:0,kp:0.7,tt:0.95},'s'],
+  ['임대차 3법','dm','tt','계약갱신청구권과 전월세상한제로 세입자 보호','시장을 왜곡해 전셋값만 오른다',{jd:-0.9,ym:-0.8,dm:-0.9,mu:0,kp:0.6,tt:0.9},'e'],
+  ['재난지원금','dm','tt','모든 국민에게 보편 지급','어려운 계층에 선별 지급',{jd:-0.6,ym:-0.8,dm:-0.8,mu:0,kp:0.5,tt:0.6},'e'],
+  ['중대재해처벌법','jd','tt','기업 경영책임자를 강하게 처벌해야 한다','과잉 처벌로 기업 활동이 위축된다',{jd:-1,ym:-0.6,dm:-0.4,mu:0,kp:0.4,tt:0.8},'e'],
+  ['대북전단 금지','dm','tt','접경 주민 안전을 위해 전단 살포를 금지해야 한다','표현의 자유를 침해한다',{jd:-0.3,ym:-0.8,dm:-0.85,mu:0,kp:0.7,tt:0.95},'s'],
+  ['언론중재법','dm','tt','허위 보도에 징벌적 손해배상을','언론 자유를 위축시킨다',{jd:0.4,ym:-0.9,dm:-0.8,mu:0,kp:0.8,tt:0.95},''],
+  ['종합부동산세 강화','dm','tt','다주택자 종부세를 강화해야 한다','세금 폭탄으로 집값을 못 잡는다',{jd:-0.9,ym:-0.8,dm:-0.8,mu:0,kp:0.6,tt:0.9},'e'],
+  ['차별금지법','jd','tt','포괄적 차별금지법을 제정해야 한다','사회적 합의가 부족하다',{jd:-1,ym:-0.4,dm:-0.3,mu:0,kp:0.5,tt:0.8},'s'],
+  ['공공의대','dm','tt','공공의대를 세워 지역 의료를 살려야 한다','의료계와 합의 없이 추진할 수 없다',{jd:-0.8,ym:-0.7,dm:-0.8,mu:0,kp:0.5,tt:0.8},'e'],
+  ['여성가족부','dm','tt','여성가족부를 유지·강화해야 한다','여성가족부를 폐지해야 한다',{jd:-1,ym:-0.8,dm:-0.85,mu:0,kp:0.3,tt:0.85},'s']]},
+{n:22,y:2024,date:'2024.4.10',term:'2024–2028',pres:'윤석열 → 이재명',N:300,sys:'smd',D:254,Lst:46,semi:46,thr:3,gov:['pp'],era:'제6공화국',
+ desc:'비례대표 46석 전부를 준연동형으로 뽑은 두 번째 위성정당 선거. 조국혁신당이 돌풍을 일으켰고, 이 국회가 윤석열 대통령 탄핵 소추안을 가결했습니다.',
+ P:[['jb','진보당','#d6001c',-1,1,'지역구 1석 (비례 당선자는 더불어민주연합에 포함)'],['jk','조국혁신당','#3aa0e0',-0.8,12,'조국의 신생 정당'],['dm','더불어민주당','#1b4fb3',-0.6,175,'더불어민주연합 14석 포함'],['sm','새로운미래','#45babd',-0.2,1,'이낙연'],['gs','개혁신당','#ff7210',0.4,3,'이준석'],['pp','국민의힘','#e61e2b',0.8,108,'국민의미래 18석 포함']],
+ Q:[['윤석열 탄핵 소추','dm','pp','비상계엄 선포에 책임을 물어 탄핵해야 한다','탄핵은 국정 혼란을 키운다, 반대한다',{jb:-1,jk:-1,dm:-1,sm:-0.9,gs:-0.8,pp:0.5},'s'],
+  ['김건희 특검법','jk','pp','특검으로 의혹을 철저히 수사해야 한다','정치 공세용 특검에 반대한다',{jb:-1,jk:-1,dm:-0.95,sm:-0.7,gs:-0.4,pp:0.9},'s'],
+  ['민생회복지원금','dm','pp','전 국민 25만원 지원금으로 내수를 살리자','재정 부담과 물가를 생각해 반대한다',{jb:-0.9,jk:-0.6,dm:-0.9,sm:-0.2,gs:0.7,pp:0.9},'e'],
+  ['금융투자소득세','jk','pp','예정대로 시행해야 공평 과세다','투자자 이탈을 막기 위해 폐지해야 한다',{jb:-1,jk:-0.9,dm:0.4,sm:0,gs:0.7,pp:0.95},'e'],
+  ['노란봉투법','dm','pp','하청노동자 교섭권을 보장하고 손해배상을 제한해야 한다','산업 현장의 파업을 부추긴다',{jb:-1,jk:-0.9,dm:-0.9,sm:-0.5,gs:0.6,pp:0.95},'e'],
+  ['의대 정원','dm','pp','일방적 증원을 멈추고 공공의료를 확충해야 한다','필수의료를 위해 2천 명 증원이 필요하다',{jb:-0.6,jk:-0.7,dm:-0.7,sm:-0.3,gs:-0.3,pp:0.8},''],
+  ['방송3법','dm','pp','공영방송 이사회를 넓혀 정치에서 독립시켜야 한다','특정 진영의 방송 장악이 될 것이다',{jb:-0.9,jk:-0.9,dm:-0.9,sm:-0.3,gs:0.6,pp:0.95},'s'],
+  ['대북 정책','dm','pp','9·19 군사합의를 복원하고 대화해야 한다','힘에 의한 평화로 맞서야 한다',{jb:-1,jk:-0.8,dm:-0.8,sm:-0.3,gs:0.6,pp:0.9},'s'],
+  ['연금개혁','dm','pp','소득대체율을 높여 노후를 보장해야 한다','재정 안정을 위해 보험료 인상이 먼저다',{jb:-1,jk:-0.7,dm:-0.7,sm:-0.2,gs:0.8,pp:0.7},'e'],
+  ['상속세','jk','pp','부의 대물림을 막기 위해 세율을 유지해야 한다','최고세율을 낮춰야 한다',{jb:-1,jk:-0.9,dm:-0.2,sm:0,gs:0.8,pp:0.95},'e']]}
+];
+DATA.forEach(a=>{ a.P=a.P.map(([k,n,c,l,s,d])=>({k,n,c,l,s,d})); a.Q=a.Q.map(([t,L,R,A,B,p,ax])=>({t,L,R,A,B,p,ax})); a.fixed=a.fixed||{}; a.bonus=a.bonus||0; a.semi=a.semi||0; a.thr=a.thr||0; a.ln=a.n<=15?'전국구':'비례대표'; });
+// 시대를 넘는 정치 의견 질문: 정당 위치는 그 국회의 쟁점 입장(경제/정치·안보 축 평균)에서 계산
+const GENERAL=[
+ ['세금과 복지','부유층과 큰 기업에 세금을 더 걷어 복지를 늘려야 한다','세금을 줄이고 시장의 활력에 맡겨야 한다','e'],
+ ['북한을 대하는 방법','대화와 교류로 긴장을 풀어야 한다','강한 군사력과 압박으로 맞서야 한다','s'],
+ ['안보와 자유','안보를 이유로 시민의 자유를 제한해선 안 된다','나라를 지키려면 일부 자유는 제한할 수 있다','s'],
+ ['대통령과 국회','국회가 대통령을 강하게 견제해야 한다','대통령에게 힘을 실어 강하게 이끌어야 한다','s'],
+ ['노동과 기업','노동자의 권리와 임금이 먼저다','기업 활동이 살아야 일자리도 생긴다','e'],
+ ['재벌과 큰 기업','큰 기업의 경제력 집중을 규제해야 한다','큰 기업이 성장을 이끌도록 밀어줘야 한다','e'],
+ ['집회와 시위','집회와 시위의 자유를 넓게 보장해야 한다','사회 질서를 위해 집회를 엄격히 관리해야 한다','s'],
+ ['과거사','과거의 잘못은 끝까지 밝히고 책임을 물어야 한다','지나간 일보다 국민 화합과 미래가 중요하다','s'],
+ ['개방과 보호','농민과 중소기업을 지키려면 시장 개방은 신중해야 한다','개방과 경쟁으로 경제를 키워야 한다','e'],
+ ['성장과 분배','분배와 균형 발전이 성장보다 먼저다','파이를 키우는 성장이 먼저다','e'],
+ ['언론의 자유','정부를 비판하는 언론이 넓게 보장돼야 한다','허위·선동 보도는 국가가 규제해야 한다','s'],
+ ['공기업과 민영화','전기·철도 같은 기간산업은 국가가 운영해야 한다','민간에 맡겨 효율을 높여야 한다','e'],
+ ['권력기관 견제','검찰·정보기관의 권한을 나누고 견제해야 한다','강한 수사·정보기관이 나라를 지킨다','s'],
+ ['형벌과 사형제','처벌보다 교화와 인권을 중시해야 한다','흉악범은 엄벌하고 사형제를 유지해야 한다','s'],
+ ['교육 정책','평준화와 공교육 강화로 기회를 고르게 줘야 한다','경쟁과 수월성 교육으로 인재를 키워야 한다','e'],
+ ['전통과 다양성','개인의 다양한 삶의 방식을 존중해야 한다','가족과 공동체의 전통 가치를 지켜야 한다','s'],
+ ['의료','공공의료를 늘리고 건강보험 보장을 넓혀야 한다','민간 의료의 경쟁과 선택을 넓혀야 한다','e'],
+ ['수도권과 지방','수도권 집중을 막고 지방에 권한과 예산을 나눠야 한다','경쟁력 있는 수도권 중심 발전이 효율적이다','e'],
+ ['농업 보호','식량 주권을 위해 농업을 보호하고 지원해야 한다','경쟁력 없는 농업은 구조조정하고 수입을 늘려야 한다','e'],
+ ['징병과 군 복무','복무 기간을 줄이고 대체복무를 넓혀야 한다','병력 유지를 위해 징병을 엄격히 해야 한다','s'],
+ ['국방 예산','국방비보다 민생 예산이 먼저다','국방비를 늘려 자주국방을 해야 한다','s'],
+ ['미국과의 관계','강대국 사이에서 자주적인 균형 외교를 해야 한다','한미동맹을 외교의 최우선으로 삼아야 한다','s']];
+DATA.forEach(a=>{
+  const ax=a.P.map(p=>{ const m=k=>{ const qs=a.Q.filter(q=>q.ax===k); return qs.length?qs.reduce((s,q)=>s+(q.p[p.k]!=null?q.p[p.k]:p.l),0)/qs.length:p.l; }; return {e:m('e'),s:m('s')}; });
+  const gen=GENERAL.map(([t,A,B,k])=>{ const p={}; a.P.forEach((pp,f)=>{ p[pp.k]=Math.max(-1,Math.min(1,ax[f][k]*1.15)); }); return {t,L:null,R:null,A,B,p,ax:k,g:true}; });
+  const ev=a.Q.map(q=>Object.assign(q,{g:false})), out=[];
+  for(let i=0;i<Math.max(ev.length,gen.length);i++){ if(ev[i]) out.push(ev[i]); if(gen[i]) out.push(gen[i]); }
+  a.Q=out; });
+// 나무위키 당색 (선거 당시 기준). 나무위키에 당색이 없는 단체는 기존 구분색 유지
+const NAMU={1:{hm:'#008000',dc:'#1271B5'},2:{mg:'#ADFF2F',dk:'#0087BD',dh:'#DA251D'},3:{mg:'#ADFF2F'},4:{mj:'#000080',tu:'#008080'},5:{mj:'#000080',sd:'#DC143C'},
+ 6:{mj:'#FFD700',md:'#332B43',ku:'#C2C247',ja:'#005848',gh:'#835B38'},7:{sm:'#DC352A',dj:'#3069A5',gh:'#835B38'},8:{sm:'#DC352A',gh:'#835B38'},
+ 9:{tt:'#FAC813',sm:'#DC352A',gh:'#835B38',yj:'#DAA520'},10:{tt:'#FAC813',sm:'#DC352A',gh:'#835B38',yj:'#DAA520'},
+ 11:{ms:'#FF8000',mh:'#ED2939',mk:'#4CA459',sj:'#4697B2',kn:'#F8C050',mjj:'#004C97'},12:{shm:'#E6573B',sjs:'#FF4500',mh:'#ED2939',kn:'#F8C050',mjj:'#004C97'},
+ 13:{hg:'#FF7F50',pm:'#FADA5E',tm:'#211B7D',gj:'#59955E',mjj:'#004C97'},14:{md:'#D82634',sj:'#101299',tk:'#22B14C',mja:'#003990'},
+ 15:{kh:'#009A44',tm:'#D82634',jm:'#1B5B40',sh:'#003990'},16:{mj:'#00AA7B',hs:'#283C7B',mk:'#353099',jm:'#1B5B40',hn:'#0000A8'},
+ 17:{dn:'#EE7700',ur:'#FCD31D',mj:'#00AA7B',tg:'#282D7B',jm:'#1B5B40',hn:'#0095DA'},18:{dn:'#EE7700',ch:'#B30000',tm:'#419639',sj:'#00529C',cp:'#0065B3',hn:'#0095DA'},
+ 19:{tj:'#782B90',mt:'#FFD504',sj:'#00529C',sn:'#C9252B'},20:{jd:'#FFCC00',dm:'#004EA2',kp:'#006241',sn:'#C9252B'},
+ 21:{jd:'#FFCC00',ym:'#003E98',dm:'#004EA2',kp:'#EA5504',tt:'#EF426F'},22:{jb:'#D6001C',jk:'#0073CF',dm:'#003B96',sm:'#45BABD',gs:'#FF7210',pp:'#E61E2B'}};
+const OLDC={};
+DATA.forEach(a=>{ OLDC[a.n]={}; a.P.forEach(p=>{ OLDC[a.n][p.k]=p.c.toLowerCase(); const c=(NAMU[a.n]||{})[p.k]; if(c) p.c=c; }); });
+const ERAS=[['제1공화국',[1,2,3,4]],['제2공화국',[5]],['제3공화국',[6,7,8]],['유신',[9,10]],['제5공화국',[11,12]],['제6공화국',[13,14,15,16,17,18,19,20,21,22]]];
+// ── 분야 기본값과 분류
+const DEF_FIELDS=[
+ {k:'pol',n:'정치·권력구조',c:'#5b6fa8',d:'헌법·선거·탄핵·권력기관'},
+ {k:'soc',n:'국가·사회',c:'#9a5fa0',d:'인권·언론·집회·과거사·교육·가치관'},
+ {k:'eco',n:'경제·재정',c:'#3e8a6e',d:'세금·재벌·금융·부동산·개방'},
+ {k:'lab',n:'노동·복지',c:'#b0753a',d:'노동권·임금·복지·연금·의료'},
+ {k:'reg',n:'국토·농업',c:'#7a8a3a',d:'지방자치·행정수도·농업·국토개발'},
+ {k:'sec',n:'안보·국방',c:'#9a4a4a',d:'군·파병·방위·병역·테러'},
+ {k:'uni',n:'외교·통일',c:'#3f7fa8',d:'대북·통일·동맹·대일 관계'}];
+const GEN_F={'세금과 복지':'lab','북한을 대하는 방법':'uni','안보와 자유':'soc','대통령과 국회':'pol','노동과 기업':'lab','재벌과 큰 기업':'eco','집회와 시위':'soc','과거사':'soc','개방과 보호':'eco','성장과 분배':'eco','언론의 자유':'soc','공기업과 민영화':'eco',
+  '권력기관 견제':'pol','형벌과 사형제':'soc','교육 정책':'soc','전통과 다양성':'soc','의료':'lab','수도권과 지방':'reg','농업 보호':'reg','징병과 군 복무':'sec','국방 예산':'sec','미국과의 관계':'uni'};
+const RX=[
+  ['eco',/FTA|경제협정/],
+  ['reg',/지방|단체장|행정수도|행정중심|세종시|4대강|고속도로|새마을|농지|농가|쌀|농산물|추곡|토지|고리채|농어촌|곡가/],
+  ['sec',/파병|사드|방위|예비군|군사|군 병력|미군|외국군|천안함|평화의 댐|테러|병역|국방|푸에블로|휴전/],
+  ['uni',/북|통일|한미|한일|대일|외교|개성|금강산|햇볕|전단|4대국/],
+  ['soc',/언론|보도|방송|미디어|신문|동아|인권|집회|시위|데모|과거사|진상|청산|반민족|고문|차별|여성|교육|과외|교원|전교조|학원|사립학교|급식|정치범|조봉암|세월호|5·18|광주|부마|보안법/],
+  ['pol',/선거|헌법|개헌|탄핵|특검|국정원|중앙정보부|안기부|검찰|공수처|수사권|제명|계엄|긴급조치|유신|정치|비리|사찰|대통령|총리|정부 형태|정계|국정감사|보위법|중임/],
+  ['lab',/노동|노조|근로|임금|복지|연금|의료|의약|의대|비정규|주 5일|주 52|정리해고|무노동|기초|YH|노란봉투|지원금|중대재해|이익균점|보험|최저/]];
+function classify(q){ if(q.g) return GEN_F[q.t]||'pol'; for(const [k,r] of RX) if(r.test(q.t)) return k; return q.ax==='e'?'eco':'pol'; }
+DATA.forEach(a=>a.Q.forEach(q=>{ q.f=classify(q); }));
+// 이념적 특성: [id, 이름, 경제축(-1 분배 … +1 시장), 정치축(-1 자유·개혁 … +1 질서·안보)]
+const DEF_TRAITS=[['welfare','복지 확대',-1,0],['redist','분배·증세',-1,0],['labor','노동 중시',-1,0],['farm','농민 보호',-.5,0],['green','환경',-.5,-.5],['balance','균형 발전',-.5,0],
+  ['market','시장경제',1,0],['growth','성장 우선',1,0],['chaebol','대기업 친화',1,0],['openness','개방·세계화',.5,0],
+  ['democ','민주화·개혁',0,-1],['rights','인권·자유',0,-1],['engage','대북 포용',0,-1],['parl','의회 중심',0,-.5],['prog','진보적 가치',-.5,-.5],
+  ['anticom','반공',0,1],['security','안보 강경',0,1],['alliance','한미동맹',0,.5],['order','법질서',0,1],['strongpres','강한 대통령',0,1],['trad','전통 가치',0,.5],['region','지역 기반',0,0]]
+  .map(([id,n,e,s])=>({id,n,e,s}));
+const NAMED={13:[['3당 합당',['mjj','tm','gj']],['야3당 공조',['pm','tm','gj']]],15:[['DJP 연합',['kh','jm']]],16:[['DJP 공조',['mj','jm']]],18:[['보수 대연합',['hn','sj','cp']]],20:[['야3당 공조',['dm','kp','jd']]],22:[['범야권 연대',['dm','jk','jb','sm','gs']]]};
+// 선거 당시 정당 대표(편집 화면에서 고칠 수 있음)
+const LEADERS={1:{dc:'이승만',hm:'김성수',dd:'지청천',jm:'이범석'},2:{mg:'신익희'},3:{jy:'이승만',mg:'신익희'},4:{jy:'이승만',mj:'조병옥'},
+ 6:{gh:'박정희',mj:'윤보선',md:'박순천',ja:'김도연',ku:'허정'},7:{gh:'박정희',sm:'유진오'},8:{gh:'박정희'},9:{gh:'박정희',sm:'유진산',yj:'백두진',tt:'양일동'},10:{gh:'박정희',sm:'이철승'},
+ 11:{mjj:'전두환',mh:'유치송',kn:'김종철'},12:{mjj:'전두환',shm:'이민우',mh:'유치송'},13:{mjj:'노태우',pm:'김대중',tm:'김영삼',gj:'김종필'},14:{md:'김대중·이기택',tk:'정주영'},
+ 15:{sh:'김영삼',kh:'김대중',jm:'김종필'},16:{hn:'이회창',mj:'김대중',jm:'이한동',mk:'조순'},17:{ur:'정동영',hn:'박근혜',dn:'권영길',mj:'조순형',jm:'김종필'},
+ 18:{hn:'강재섭',tm:'손학규·박상천',sj:'이회창',cp:'서청원',dn:'천영세',ch:'문국현'},19:{sn:'박근혜',mt:'한명숙',tj:'이정희·유시민·심상정',sj:'심대평'},
+ 20:{dm:'김종인',sn:'김무성',kp:'안철수·천정배',jd:'심상정'},21:{dm:'이해찬',tt:'황교안',jd:'심상정',kp:'안철수'},22:{dm:'이재명',pp:'한동훈',jk:'조국',gs:'이준석',sm:'이낙연',jb:'윤희숙'}};
+const LV=[{n:'관심 없음',w:0},{n:'조금',w:1},{n:'보통',w:2},{n:'중요',w:3.5},{n:'매우 중요',w:5}];
+const TS=[0,.35,.7,1], SL=['','약','중','강'];
+const MIN=[['국무총리',''],['기획재정부','eco'],['외교부','uni'],['통일부','uni'],['법무부','pol'],['국방부','sec'],['행정안전부','pol'],['교육부','soc'],['보건복지부','lab'],['고용노동부','lab'],['산업통상자원부','eco'],['국토교통부','reg'],['농림축산식품부','reg'],['과학기술정보통신부','eco'],['문화체육관광부','soc'],['환경부','reg'],['여성가족부','soc'],['해양수산부','reg'],['국가보훈부','sec'],['중소벤처기업부','eco']];
+
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sum=a=>a.reduce((s,v)=>s+v,0);
+const argmax=a=>{ let b=0; a.forEach((v,i)=>{ if(v>a[b]) b=i; }); return b; };
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const ci=(v,lo,hi)=>clamp(Math.round(+v)||0,lo,hi);
+const HEX=/^#[0-9a-f]{6}$/i;
+const app=$('#app'), toHome=$('#toHome');
+// 계산 상수: 입장 거리의 폭, 소선거구 승자독식 정도, 실제 지지 기반 반영 정도, 무소속 감점
+const SIG=0.4, KX=2.5, PE=.8, MUP=.4;
+const S={ai:21,ans:[],fimp:{},fcnt:{},order:[],seq:[],qi:0,prior:true,view:'mine',pick:[],cab:null};
+try{ const v=+localStorage.getItem('kr-asm-sel'); if(v>=0&&v<DATA.length) S.ai=v; }catch(e){}
+
+// ── 편집 가능한 시험(시나리오)
+let C=null, FIELDS=[], FK=[];
+const fld=k=>FIELDS.find(F=>F.k===k)||{k,n:k,c:'#888888',d:''};
+const SKEY=n=>'kr-asm-edit-'+n;
+function baseScenario(i){ const a=JSON.parse(JSON.stringify(DATA[i]));
+  a.Q.forEach(q=>{ if(q.g) q.p={}; q.on=true; });
+  a.F=JSON.parse(JSON.stringify(DEF_FIELDS)); a.T=JSON.parse(JSON.stringify(DEF_TRAITS));
+  a.P.forEach(p=>{ p.tr={}; p.ld=(LEADERS[a.n]||{})[p.k]||''; });
+  const keys=a.P.map(p=>p.k);
+  a.co={span:true,veto:[],named:(NAMED[a.n]||[]).map(([n,m])=>({n,m:m.filter(k=>keys.includes(k))}))};
+  a.N=a.D+a.Lst+sum(Object.values(a.fixed)); return a; }
+function norm(c){
+  if(!c||!Array.isArray(c.P)||!Array.isArray(c.Q)||!Array.isArray(c.F)||c.P.length<2||!c.F.length) return null;
+  const base=DATA.find(d=>d.n===Math.round(+c.n)); if(!base) return null;
+  ['n','y','date','term','pres','era','desc'].forEach(k=>{ if(c[k]==null) c[k]=base[k]; });
+  c.sys=c.sys==='mmd'?'mmd':'smd'; c.ln=c.ln==='전국구'?'전국구':'비례대표';
+  c.D=ci(c.D,0,1000); c.Lst=ci(c.Lst,0,1000); c.semi=ci(c.semi,0,c.Lst); c.bonus=ci(c.bonus,0,c.Lst-c.semi); c.thr=clamp(+c.thr||0,0,20);
+  const seen=new Set();
+  c.P=c.P.slice(0,12).map(p=>{ let k=String(p&&p.k||'p'+Math.random().toString(36).slice(2,7)); while(seen.has(k)) k+='x'; seen.add(k);
+    const tr={}; Object.keys(p.tr||{}).forEach(id=>{ const l=ci(p.tr[id],0,3); if(l) tr[id]=l; });
+    return {k,n:String(p.n||'정당').slice(0,40),c:HEX.test(p.c)?p.c:'#888888',l:clamp(+p.l||0,-1,1),s:ci(p.s,0,1000),d:String(p.d||'').slice(0,120),ld:String(p.ld||'').slice(0,30),tr}; });
+  const keys=new Set(c.P.map(p=>p.k));
+  const fseen=new Set(); c.F=c.F.slice(0,12).map(F=>{ let k=String(F.k||'f'); while(fseen.has(k)) k+='x'; fseen.add(k); return {k,n:String(F.n||'분야').slice(0,30),c:HEX.test(F.c)?F.c:'#888888',d:String(F.d||'').slice(0,80)}; });
+  c.T=(Array.isArray(c.T)?c.T:DEF_TRAITS).slice(0,60).filter(t=>t&&t.id).map(t=>({id:String(t.id),n:String(t.n||t.id).slice(0,30),e:clamp(+t.e||0,-1,1),s:clamp(+t.s||0,-1,1)}));
+  c.Q=c.Q.filter(q=>q&&typeof q.t==='string').slice(0,300).map(q=>{ const p={}; Object.keys(q.p||{}).forEach(k=>{ if(keys.has(k)&&Number.isFinite(+q.p[k])) p[k]=clamp(+q.p[k],-1,1); });
+    return {t:q.t.slice(0,80),A:String(q.A||'').slice(0,200),B:String(q.B||'').slice(0,200),L:keys.has(q.L)?q.L:null,R:keys.has(q.R)?q.R:null,p,ax:q.ax==='e'||q.ax==='s'?q.ax:'',g:!!q.g,f:fseen.has(q.f)?q.f:c.F[0].k,on:q.on!==false}; });
+  const fx={}; Object.keys(c.fixed||{}).forEach(k=>{ const n=ci(c.fixed[k],0,1000); if(keys.has(k)&&n) fx[k]=n; }); c.fixed=fx;
+  c.gov=(Array.isArray(c.gov)?c.gov:[]).filter(k=>keys.has(k));
+  const co=c.co||{}; c.co={span:co.span!==false,veto:(Array.isArray(co.veto)?co.veto:[]).filter(v=>Array.isArray(v)&&keys.has(v[0])&&keys.has(v[1])&&v[0]!==v[1]),
+    named:(Array.isArray(co.named)?co.named:[]).slice(0,20).map(x=>({n:String(x&&x.n||'연합').slice(0,40),m:(Array.isArray(x&&x.m)?x.m:[]).filter(k=>keys.has(k))}))};
+  c.N=c.D+c.Lst+sum(Object.values(c.fixed));
+  return c; }
+const strip=c=>JSON.stringify(c,(k,v)=>k[0]==='_'?undefined:v);
+function setFields(){ FIELDS=C.F; FK=FIELDS.map(F=>F.k); C._ax=null; }
+function loadScenario(){ let c=null; try{ const raw=localStorage.getItem(SKEY(DATA[S.ai].n)); if(raw) c=norm(JSON.parse(raw)); }catch(e){}
+  // 예전에 저장한 시험도 기본 색을 그대로 쓰던 정당은 나무위키 당색으로 바꿔 줌
+  if(c){ let ch=false; c.P.forEach(p=>{ const o=(OLDC[c.n]||{})[p.k], nw=(NAMU[c.n]||{})[p.k]; if(o&&nw&&p.c.toLowerCase()===o){ p.c=nw; ch=true; } }); if(ch) try{ localStorage.setItem(SKEY(c.n),strip(c)); }catch(e){} }
+  C=c||baseScenario(S.ai); C._edited=!!c; setFields(); }
+function save(){ C._ax=null; C.N=C.D+C.Lst+sum(Object.values(C.fixed)); try{ localStorage.setItem(SKEY(C.n),strip(C)); C._edited=true; }catch(e){} }
+const A=()=>C;
+
+const party=(a,k)=>a.P.find(p=>p.k===k);
+const PA={n:'A안',c:'var(--pa)'}, PB={n:'B안',c:'var(--pb)'};
+const sides=(a,q)=>{ const L=!q.g&&party(a,q.L), R=!q.g&&party(a,q.R); return L&&R?[L,R]:[PA,PB]; };
+// 정당의 두 축 좌표: 이념적 특성이 있으면 특성에서, 없으면 역사 쟁점 입장 평균에서
+function partyAx(a){ if(a._ax) return a._ax;
+  const ev=a.Q.filter(q=>!q.g&&q.on&&q.ax);
+  a._ax=a.P.map(p=>{ const ks=Object.keys(p.tr||{}).filter(id=>a.T.some(t=>t.id===id));
+    if(ks.length){ let x=0,xw=0,y=0,yw=0; ks.forEach(id=>{ const t=a.T.find(t=>t.id===id), v=TS[p.tr[id]]; x+=v*t.e; xw+=v*Math.abs(t.e); y+=v*t.s; yw+=v*Math.abs(t.s); });
+      return {e:x/(xw+.3),s:y/(yw+.3),src:'tr'}; }
+    const m=k=>{ const qs=ev.filter(q=>q.ax===k); return qs.length?sum(qs.map(q=>q.p[p.k]!=null?q.p[p.k]:p.l))/qs.length:p.l; };
+    return {e:m('e'),s:m('s'),src:'q'}; });
+  return a._ax; }
+function pos(q,p){ if(q.p[p.k]!=null) return q.p[p.k];
+  if(q.g&&q.ax){ const ax=partyAx(C)[C.P.indexOf(p)]; return ax?clamp(ax[q.ax]*1.15,-1,1):p.l; }
+  return p.l; }
+const maj=N=>Math.floor(N/2)+1, two3=N=>Math.ceil(N*2/3), three5=N=>Math.ceil(N*3/5);
+const asmName=a=>a.n===1?'제헌국회':'제'+a.n+'대 국회';
+const sysName=a=>a.sys==='mmd'?'중대선거구':'소선거구';
+const fixSum=a=>sum(Object.values(a.fixed));
+function sysText(a){ const p=[sysName(a)+' '+a.D];
+  if(fixSum(a)) p.push('간선·고정 '+fixSum(a));
+  if(a.semi&&a.semi<a.Lst) p.push('준연동형 비례 '+a.semi+' · 병립형 비례 '+(a.Lst-a.semi));
+  else if(a.semi) p.push('준연동형 비례 '+a.semi);
+  else if(a.Lst) p.push(a.ln+' '+a.Lst);
+  return p.join(' · '); }
+function lr(w,total){ const s=sum(w); if(!s||total<=0) return w.map(()=>0);
+  const raw=w.map(x=>x/s*total), fl=raw.map(Math.floor);
+  raw.map((r,i)=>[r-fl[i],i]).sort((a,b)=>b[0]-a[0]||a[1]-b[1]).slice(0,total-sum(fl)).forEach(x=>fl[x[1]]++);
+  return fl; }
+
+// ── 분야별 의석 모델
+const fw=k=>(LV[S.fimp[k]]||LV[0]).w;
+const qsOf=(a,k,n)=>{ const all=a.Q.map((q,i)=>i).filter(i=>a.Q[i].on&&a.Q[i].f===k); return n==null?all:all.slice(0,n); };
+const fieldsOf=a=>FK.filter(k=>qsOf(a,k).length);
+const activeOf=a=>fieldsOf(a).filter(k=>fw(k)>0);
+function chunks(a,act){ const w=FK.map(k=>act.includes(k)?fw(k):0), d=lr(w,a.D), l=lr(w,a.Lst-a.bonus), o={};
+  FK.forEach((k,j)=>{ o[k]={d:d[j],l:l[j],t:d[j]+l[j]}; }); return o; }
+function priorArr(a){ const elig=a.P.map(p=>!(p.k in a.fixed)), base=sum(a.P.filter((p,f)=>elig[f]).map(p=>p.s))||1;
+  return a.P.map((p,f)=>!elig[f]?0:(S.prior?Math.pow(Math.max(p.s/base,.004),PE):1)*(p.k==='mu'?MUP:1)); }
+function fieldRes(a,k,C2,ans){
+  const P=a.P, nF=P.length, pr=priorArr(a), Z=()=>Array(nF).fill(0), kx=a.sys==='mmd'?1.5:KX;
+  const qs=qsOf(a,k).filter(i=>ans[i]!==undefined), ansd=qs.filter(i=>ans[i]!=null), per={};
+  if(!ansd.length){ const dd=lr(pr,C2.d), ll=lr(pr.map((x,f)=>P[f].k==='mu'?0:x),C2.l), T=sum(pr)||1;
+    return {dist:dd,list:ll,tot:dd.map((x,f)=>x+ll[f]),vs:pr.map(x=>x/T),per,empty:true}; }
+  const dq=lr(qs.map(()=>1),C2.d), dist=Z(), vs=Z(); let Lc=C2.l, spare=0;
+  qs.forEach((i,j)=>{ if(ans[i]==null){ spare+=dq[j]; return; }
+    const q=a.Q[i], g=P.map((p,f)=>pr[f]?Math.exp(-Math.pow(ans[i]-pos(q,p),2)/(2*SIG*SIG))*pr[f]:0), G=sum(g)||1;
+    g.forEach((x,f)=>vs[f]+=x/G/ansd.length);
+    const d=lr(g.map(x=>Math.pow(x/G,kx)),dq[j]); d.forEach((x,f)=>dist[f]+=x); per[i]={seats:dq[j],d}; });
+  if(a.Lst) Lc+=spare; else lr(vs,spare).forEach((x,f)=>dist[f]+=x);
+  const list=Z();
+  if(Lc>0){
+    let lv=vs.map((x,f)=>P[f].k==='mu'?0:x);
+    if(a.thr){ const T=sum(lv); lv=lv.map(x=>T&&x/T*100>=a.thr?x:0); }
+    if(!sum(lv)) lv=pr.map((x,f)=>P[f].k==='mu'?0:x);
+    if(!sum(lv)) lv=pr.slice();
+    const T=sum(lv)||1, sh=lv.map(x=>x/T); let rest=Lc;
+    if(a.semi&&a.Lst){ const sp=Math.round(Lc*a.semi/a.Lst), ind=sum(P.map((p,f)=>p.k==='mu'?dist[f]:0)), basis=C2.d+Lc-ind;
+      let c=sh.map((s,f)=>Math.max(0,Math.round((basis*s-dist[f])/2)));
+      if(sum(c)>sp) c=lr(c,sp); else { const r=lr(sh,sp-sum(c)); c=c.map((x,f)=>x+r[f]); }
+      c.forEach((x,f)=>list[f]+=x); rest-=sp; }
+    if(rest>0) lr(sh,rest).forEach((x,f)=>list[f]+=x);
+  }
+  return {dist,list,tot:dist.map((x,f)=>x+list[f]),vs,per,empty:false}; }
+function simAll(a,ans,upto){
+  const act=activeOf(a), C2=chunks(a,act), nF=a.P.length, Z=()=>Array(nF).fill(0), dist=Z(), list=Z(), vs=Z(), fields={};
+  act.forEach(k=>{ const r=fieldRes(a,k,C2[k],ans); fields[k]=r; vs.forEach((_,f)=>vs[f]+=r.vs[f]*fw(k));
+    if(!upto||upto.includes(k)) r.dist.forEach((x,f)=>{ dist[f]+=x; list[f]+=r.list[f]; }); });
+  const fix=a.P.map(p=>upto?0:(a.fixed[p.k]||0)); let bonusTo=-1;
+  if(!upto&&a.bonus){ bonusTo=argmax(vs.map((x,f)=>a.P[f].k==='mu'?0:x)); list[bonusTo]+=a.bonus; }
+  if(!act.length&&!upto){ const pr=priorArr(a); lr(pr,a.D).forEach((x,f)=>dist[f]+=x); lr(pr.map((x,f)=>a.P[f].k==='mu'?0:x),a.Lst-a.bonus).forEach((x,f)=>list[f]+=x); }
+  const VT=sum(vs);
+  return {act,C:C2,fields,dist,list,fix,bonusTo,vs:VT?vs.map(x=>x/VT):vs,tot:dist.map((x,f)=>x+list[f]+fix[f])}; }
+
+// ── 위키백과식 선거 결과표
+function flagSvg(){
+  const bar=(y,broken)=>broken?'<rect x="-6" y="'+y+'" width="5.3" height="2"/><rect x="0.7" y="'+y+'" width="5.3" height="2"/>':'<rect x="-6" y="'+y+'" width="12" height="2"/>';
+  const tri=(phi,kind)=>{ const r=phi*Math.PI/180, cx=45+22*Math.cos(r), cy=30+22*Math.sin(r), rows=[-4.5,-1,2.5];
+    return '<g transform="translate('+cx.toFixed(2)+' '+cy.toFixed(2)+') rotate('+(phi-90).toFixed(2)+')">'+rows.map((y,i)=>bar(y,kind[i]==='0')).join('')+'</g>'; };
+  return '<svg class="wb-flag" viewBox="0 0 90 60" role="img" aria-label="태극기"><rect width="90" height="60" fill="#ffffff"/>'+
+    '<g transform="rotate(33.69 45 30)"><circle cx="45" cy="30" r="15" fill="#0047a0"/><path d="M30 30a15 15 0 0 1 30 0a7.5 7.5 0 0 1-15 0a7.5 7.5 0 0 0-15 0z" fill="#cd2e3a"/></g>'+
+    '<g fill="#000000">'+tri(213.69,'111')+tri(326.31,'010')+tri(146.31,'101')+tri(33.69,'000')+'</g></svg>'; }
+const abbr=n=>{ const w=n.replace(/[()·]/g,' ').split(/\s+/).filter(Boolean); return w.length>1?w.map(x=>x[0]).join('').slice(0,3):n.slice(0,2); };
+function wikibox(a,mode,R){
+  const real=mode==='real', st=real?actual(a):R.tot, N=a.N, M=maj(N), sumSt=Math.max(1,sum(st));
+  const ord=a.P.map((p,f)=>f).filter(f=>st[f]>0).sort((x,y)=>st[y]-st[x]), top=ord.slice(0,6), rest=ord.slice(6);
+  const prv=DATA[DATA.findIndex(d=>d.n===a.n)-1], nxt=DATA[DATA.findIndex(d=>d.n===a.n)+1], anyLd=top.some(f=>a.P[f].ld);
+  const pct=v=>(v*100).toFixed(1)+'%';
+  let rows='';
+  for(let k=0;k<top.length;k+=3){ const g=top.slice(k,k+3), pad='<td></td>'.repeat(3-g.length), row=(th,fn,cls)=>'<tr'+(cls?' class="'+cls+'"':'')+'><th scope="row">'+th+'</th>'+g.map(f=>'<td>'+fn(f,a.P[f])+'</td>').join('')+pad+'</tr>';
+    rows+=row('',(f,p)=>'<div class="wb-ph" style="--c:'+p.c+'"><span>'+esc(abbr(p.n))+'</span></div><div class="wb-cb" style="background:'+p.c+'"></div>','wb-pics')+
+      (anyLd?row('대표',(f,p)=>p.ld?(f===ord[0]?'<b>'+esc(p.ld)+'</b>':esc(p.ld)):'—'):'')+
+      row('정당',(f,p)=>'<span class="wb-link">'+esc(p.n)+'</span>')+
+      (!real?row('득표율',f=>pct(R.vs[f])):'')+
+      row('의석',f=>f===ord[0]?'<b>'+st[f]+'</b>':String(st[f]))+
+      row('의석 비율',f=>pct(st[f]/N))+
+      (!real&&a.Lst?row('지역구 / '+a.ln,f=>(R.dist[f]+R.fix[f])+' / '+R.list[f]):'')+
+      (!real?row('실제 의석',f=>{ const d=st[f]-a.P[f].s; return a.P[f].s+' <small class="'+(d>0?'up':d<0?'down':'')+'">('+(d>0?'▲'+d:d<0?'▼'+(-d):'±0')+')</small>'; }):'')+
+      '<tr><td colspan="4" class="wb-hr"></td></tr>'; }
+  const gov=a.gov.map(k=>a.P.findIndex(p=>p.k===k)).filter(f=>f>=0), govSeats=sum(gov.map(f=>st[f])), L=ord[0];
+  return '<table class="wb"><tbody>'+
+    '<tr><th colspan="4" class="wb-title">'+(a.n===1?'제헌':'제'+a.n+'대')+' 대한민국 국회의원 선거<div>'+(real?'실제 결과':'시험 답변 기준 가상 결과')+'</div></th></tr>'+
+    '<tr><td colspan="4" class="wb-c">'+flagSvg()+'</td></tr>'+
+    '<tr><td colspan="4"><div class="wb-nav"><span>'+(prv?'<button type="button" class="wb-a" data-go="'+(prv.n-1)+'">← '+prv.y+'</button>':'')+'</span><b>'+a.date.replace(/^(\d+)\.(\d+)\.(\d+)$/,'$1년 $2월 $3일')+'</b><span>'+(nxt?'<button type="button" class="wb-a" data-go="'+(nxt.n-1)+'">'+nxt.y+' →</button>':'')+'</span></div></td></tr>'+
+    '<tr><th scope="row" class="wb-l">의원 정수</th><td colspan="3" class="wb-r">'+N+'석 ('+esc(sysText(a))+')</td></tr>'+
+    '<tr><th scope="row" class="wb-l">과반</th><td colspan="3" class="wb-r">'+M+'석 · 개헌선 '+two3(N)+'석</td></tr>'+
+    '<tr><td colspan="4" class="wb-hr"></td></tr>'+rows+
+    '<tr><td colspan="4"><div class="hemi" id="wbh">'+hemiSvg(N)+'</div><div class="wb-cap">'+(real?'실제':'시험 답변 기준')+' 의석 분포</div></td></tr>'+
+    (rest.length?'<tr><th scope="row" class="wb-l">기타</th><td colspan="3" class="wb-r">'+rest.map(f=>esc(a.P[f].n)+' '+st[f]).join(', ')+'</td></tr>':'')+
+    '<tr><th scope="row" class="wb-l">제1당</th><td colspan="3" class="wb-r">'+esc(a.P[L].n)+' ('+st[L]+'석, '+(st[L]>=M?'단독 과반':'과반 미달')+')</td></tr>'+
+    (gov.length?'<tr><th scope="row" class="wb-l">정국 구도</th><td colspan="3" class="wb-r">'+(govSeats>=M?'여대야소':'여소야대')+' · 여당 '+gov.map(f=>esc(a.P[f].n)).join('·')+' '+govSeats+'석</td></tr>':'')+
+    '<tr><th scope="row" class="wb-l">대통령</th><td colspan="3" class="wb-r">'+esc(a.pres)+'</td></tr>'+
+    '</tbody></table>'; }
+const actual=a=>a.P.map(p=>p.s);
+
+// ── 연립 정부
+const vetoed=(a,x,y)=>a.co.veto.some(v=>(v[0]===x&&v[1]===y)||(v[0]===y&&v[1]===x));
+function badPair(a,m){ for(let i=0;i<m.length;i++) for(let j=i+1;j<m.length;j++) if(vetoed(a,a.P[m[i]].k,a.P[m[j]].k)) return [m[i],m[j]]; return null; }
+function coName(a,m){ const key=m.map(f=>a.P[f].k).sort().join(','); const c=a.co.named.find(x=>x.m.length&&x.m.slice().sort().join(',')===key); return c?c.n:''; }
+function coalitions(a,st){
+  const M=maj(a.N), ord=a.P.map((p,f)=>f).sort((x,y)=>a.P[x].l-a.P[y].l||x-y), rank={}; ord.forEach((f,i)=>{ rank[f]=i; });
+  const fs=ord.filter(f=>st[f]>0), res=[];
+  (function rec(s,cur){ if(cur.length){ const sp=rank[cur[cur.length-1]]-rank[cur[0]]; if((a.co.span&&sp>3)||badPair(a,cur)) return; const t=sum(cur.map(f=>st[f]));
+      if(t>=M){ if(cur.every(f=>t-st[f]<M)) res.push({m:cur.slice(),t,sp}); return; } }
+    if(cur.length>=6) return; for(let k=s;k<fs.length;k++){ cur.push(fs[k]); rec(k+1,cur); cur.pop(); } })(0,[]);
+  res.sort((x,y)=>x.m.length-y.m.length||x.sp-y.sp||y.t-x.t);
+  const named=a.co.named.map(c=>({m:c.m.map(k=>a.P.findIndex(p=>p.k===k)).filter(f=>f>=0&&st[f]>0)})).filter(c=>c.m.length&&!badPair(a,c.m)).map(c=>({m:c.m.sort((x,y)=>rank[x]-rank[y]),t:sum(c.m.map(f=>st[f]))})).filter(c=>c.t>=M);
+  const seen={}, out=[]; named.concat(res.slice(0,5)).forEach(c=>{ const k=c.m.slice().sort().join(','); if(!seen[k]){ seen[k]=1; out.push(c); } });
+  return out.slice(0,6); }
+// 국무위원 배분: 의석 수로 순번을 정하고(동트 방식), 각 당은 자기가 강한 분야의 부처를 먼저 고름
+function cabinet(a,m,st,R){ const k={}, out=[], left=MIN.slice(); m.forEach(f=>{ k[f]=0; });
+  for(let n=0;left.length;n++){ let f=m[0]; m.forEach(x=>{ if(st[x]/(k[x]+1)>st[f]/(k[f]+1)+1e-9) f=x; });
+    let pick=left[0];
+    if(n>0){ const aff=fk=>R.fields[fk]&&R.C[fk]&&R.C[fk].t?R.fields[fk].tot[f]/R.C[fk].t:0; pick=left.filter(x=>x[0]!=='국무총리').sort((x,y)=>aff(y[1])-aff(x[1])||MIN.indexOf(x)-MIN.indexOf(y))[0]; }
+    out.push({min:pick[0],f,n:n+1}); left.splice(left.indexOf(pick),1); k[f]++; }
+  return out; }
+
+// ── 본회의장
+function layout(N){
+  const inner=0.36, cap=R=>{ let s=0; const sp=(1-inner)/R; for(let i=0;i<R;i++) s+=Math.floor(Math.PI*(inner+sp*(i+.5))/sp); return s; };
+  let R=1; while(cap(R)<N&&R<60) R++;
+  const sp=(1-inner)/R, radii=[...Array(R)].map((_,i)=>inner+sp*(i+.5)), counts=lr(radii,N), seats=[];
+  radii.forEach((r,i)=>{ const n=counts[i]; for(let j=0;j<n;j++) seats.push({t:n===1?Math.PI/2:Math.PI*(1-j/(n-1)),r}); });
+  seats.sort((a,b)=>b.t-a.t||a.r-b.r);
+  return {seats,rad:sp*.4}; }
+function hemiSvg(N){
+  const L=layout(N), K=290, r=K*L.rad;
+  return '<svg viewBox="0 0 600 312" role="img" aria-label="본회의장 의석 배치" data-rw="'+(r*0.42).toFixed(2)+'">'+L.seats.map(s=>'<circle class="seat" cx="'+(300+K*s.r*Math.cos(s.t)).toFixed(1)+'" cy="'+(302-K*s.r*Math.sin(s.t)).toFixed(1)+'" r="'+r.toFixed(2)+'" fill="var(--line)"/>').join('')+
+    '<text class="big" x="300" y="268" text-anchor="middle">'+N+'</text><text class="sm" x="300" y="296" text-anchor="middle">석</text></svg>'; }
+function paint(el,a,R,label,big,dim){
+  const order=a.P.map((p,f)=>f).sort((x,y)=>a.P[x].l-a.P[y].l||x-y), seq=[];
+  order.forEach(f=>{ const c=a.P[f].c, o=dim&&!dim.includes(f); for(let k=0;k<R.dist[f]+R.fix[f];k++) seq.push({c,ring:false,o}); for(let k=0;k<R.list[f];k++) seq.push({c,ring:true,o}); });
+  const rw=$('svg',el).dataset.rw;
+  $$('.seat',el).forEach((c,i)=>{ const s=seq[i]; c.style.opacity=s&&s.o?.2:'';
+    if(!s){ c.setAttribute('fill','var(--line)'); c.setAttribute('stroke','none'); return; }
+    if(s.ring){ c.setAttribute('fill','var(--surface)'); c.setAttribute('stroke',s.c); c.setAttribute('stroke-width',rw); }
+    else { c.setAttribute('fill',s.c); c.setAttribute('stroke','none'); } });
+  if(label!=null) $('.sm',el).textContent=label;
+  if(big!=null) $('.big',el).textContent=big; }
+const plain=st=>({dist:st,list:st.map(()=>0),fix:st.map(()=>0)});
+
+// ── 정당 스펙트럼 맵
+const axes=a=>partyAx(a).map(x=>[x.e,x.s]);
+function userAxes(a){ const o=[0,0], w=[0,0]; a.Q.forEach((q,i)=>{ const v=S.ans[i]; if(v==null||!q.ax) return; const k=q.ax==='e'?0:1, ww=Math.max(1,fw(q.f)); o[k]+=v*ww; w[k]+=ww; });
+  return w[0]+w[1]?[w[0]?o[0]/w[0]:0,w[1]?o[1]/w[1]:0]:null; }
+function compass(a,st,withUser){
+  const W=380, p0=40, p1=W-40, sc=v=>p0+(clamp(v,-1,1)+1)/2*(p1-p0), mid=W/2, xy=axes(a);
+  const pts=a.P.map((p,f)=>({x:sc(xy[f][0]),y:sc(-xy[f][1]),c:p.c,n:p.n,r:st[f]?4+13*Math.sqrt(st[f]/Math.max(1,a.N)):3,o:st[f]?1:.35}));
+  const u=withUser?userAxes(a):null; if(u) pts.push({x:sc(u[0]),y:sc(-u[1]),you:true,n:'나',r:7});
+  let g='<rect x="'+p0+'" y="'+p0+'" width="'+(p1-p0)+'" height="'+(p1-p0)+'" fill="var(--sunk)" stroke="var(--line2)"/>'+
+    '<line x1="'+mid+'" y1="'+p0+'" x2="'+mid+'" y2="'+p1+'" stroke="var(--line2)"/><line x1="'+p0+'" y1="'+mid+'" x2="'+p1+'" y2="'+mid+'" stroke="var(--line2)"/>'+
+    '<text x="'+mid+'" y="'+(p0-12)+'" text-anchor="middle" class="ax">질서 · 안보 · 정부 권한</text><text x="'+mid+'" y="'+(p1+22)+'" text-anchor="middle" class="ax">자유 · 개혁 · 평화 교류</text>'+
+    '<text x="'+(p0-14)+'" y="'+mid+'" text-anchor="middle" class="ax" transform="rotate(-90 '+(p0-14)+' '+mid+')">분배 · 국가 역할</text><text x="'+(p1+14)+'" y="'+mid+'" text-anchor="middle" class="ax" transform="rotate(90 '+(p1+14)+' '+mid+')">시장 · 성장</text>';
+  pts.slice().sort((x,y)=>y.r-x.r).forEach(p=>{ g+=p.you?'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="7" fill="var(--surface)" stroke="var(--ink)" stroke-width="3"/>':'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+p.r.toFixed(1)+'" fill="'+p.c+'" fill-opacity="'+(.85*p.o)+'" stroke="var(--surface)" stroke-width="1.5"><title>'+esc(p.n)+'</title></circle>'; });
+  const placed=[]; let lab='';
+  pts.slice().sort((x,y)=>x.y-y.y).forEach(p=>{ const t=p.n.length>9?p.n.slice(0,8)+'…':p.n, w=t.length*10+4, left=p.x>W*.62, gap=p.r+4, x0=left?p.x-gap-w:p.x+gap; let y=p.y+4;
+    for(let k=0;k<8&&placed.some(b=>Math.abs(b.y-y)<12&&x0<b.x1&&x0+w>b.x0);k++) y+=12;
+    placed.push({x0,x1:x0+w,y}); lab+='<text x="'+(left?p.x-gap:p.x+gap).toFixed(1)+'" y="'+y.toFixed(1)+'" text-anchor="'+(left?'end':'start')+'" class="lb'+(p.you?' you':'')+'">'+esc(t)+'</text>'; });
+  return '<div class="cmp"><svg viewBox="0 0 '+W+' '+(W+6)+'" role="img" aria-label="정당 스펙트럼 맵">'+g+lab+'</svg></div>'; }
+
+// ── 1. 국회 고르기
+function viewHome(){
+  toHome.hidden=true; window.scrollTo(0,0);
+  app.innerHTML='<div class="stack">'+
+   '<div class="intro"><h1>내가 뽑는 대한민국 국회</h1><p>제헌국회부터 제22대까지 한 국회를 고르세요. 분야마다 중요도를 정하면 그만큼 의석과 질문이 걸리고, 분야별 질문에 답하면 당시 선거제도대로 지역구와 비례 의석이 나뉘어 나만의 국회가 만들어집니다. 국회·정당·질문은 직접 고칠 수도 있습니다.</p></div>'+
+   '<section class="box"><div class="eras">'+ERAS.map(([nm,ns])=>'<div class="era"><span>'+nm+'</span><div class="row">'+ns.map(n=>{ const d=DATA[n-1]; return '<button type="button" class="asm" data-ai="'+(n-1)+'" aria-pressed="'+(n-1===S.ai)+'"><b>'+(n===1?'제헌':'제'+n+'대')+'</b><small>'+d.y+'</small></button>'; }).join('')+'</div></div>').join('')+'</div></section>'+
+   '<section class="box detail" id="detail"></section></div>';
+  $$('.asm',app).forEach(b=>b.addEventListener('click',()=>{ S.ai=+b.dataset.ai; try{ localStorage.setItem('kr-asm-sel',S.ai); }catch(e){} loadScenario(); $$('.asm',app).forEach(x=>x.setAttribute('aria-pressed',x===b)); detail(); }));
+  detail(); }
+function sysBar(a){ const seg=[[a.D,'var(--ink2)',sysName(a)]];
+  if(fixSum(a)) seg.push([fixSum(a),'var(--gold)','간선·고정']);
+  if(a.semi&&a.semi<a.Lst){ seg.push([a.semi,'var(--accent)','준연동형 비례']); seg.push([a.Lst-a.semi,'var(--line2)','병립형 비례']); }
+  else if(a.semi) seg.push([a.semi,'var(--accent)','준연동형 비례']);
+  else if(a.Lst) seg.push([a.Lst,'var(--accent)',a.ln]);
+  const N=Math.max(1,a.N);
+  return '<div class="sysbar">'+seg.map(s=>'<span style="width:'+(s[0]/N*100)+'%;background:'+s[1]+'"></span>').join('')+'</div><div class="syslg">'+seg.map(s=>'<span><i class="dot" style="background:'+s[1]+'"></i>'+s[2]+' <b class="num">'+s[0]+'</b></span>').join('')+'</div>'; }
+function detail(){
+  const a=A(), el=$('#detail'), sorted=a.P.map((p,f)=>f).sort((x,y)=>a.P[y].s-a.P[x].s), xy=axes(a), notes=[];
+  if(a.sys==='mmd') notes.push('중대선거구: 한 선거구에서 2명을 뽑아 2위 정당도 당선되기 쉽습니다.');
+  if(a.bonus) notes.push(a.ln+' '+a.Lst+'석 중 '+a.bonus+'석은 제1당에 먼저 돌아갑니다 (실제 규칙 단순화).');
+  if(fixSum(a)) notes.push('간선·고정 의석 '+fixSum(a)+'석은 답변과 상관없이 고정됩니다.');
+  if(a.semi) notes.push('준연동형: 득표율보다 지역구 의석이 적은 정당에 부족분의 절반을 채워 줍니다. 위성정당을 모정당에 합산했기 때문에 실제 선거보다 보정 효과가 크게 나타날 수 있습니다.');
+  if(a.thr) notes.push('비례 봉쇄조항: 득표율 '+a.thr+'% 미만 정당은 비례 의석을 받지 못합니다.');
+  const nq=a.Q.filter(q=>q.on).length;
+  el.innerHTML='<span class="eyebrow">'+esc(a.era)+'</span><h2>'+(a.n===1?'제헌국회 (제1대)':'제'+a.n+'대 국회')+'</h2>'+
+   (a._edited?'<p class="edited"><span class="pill strong">직접 편집한 시험</span> 원래 데이터는 편집 화면의 “원래대로 되돌리기”로 복원할 수 있습니다.</p>':'')+
+   '<dl class="facts"><div><dt>총선일</dt><dd class="num">'+a.date+'</dd></div><div><dt>임기</dt><dd class="num">'+a.term+'</dd></div><div><dt>대통령</dt><dd>'+esc(a.pres)+'</dd></div><div><dt>의원 정수</dt><dd><span class="num">'+a.N+'</span>석 · 과반 <span class="num">'+maj(a.N)+'</span></dd></div></dl>'+
+   '<p class="desc">'+esc(a.desc)+'</p>'+
+   '<h3 style="margin-top:18px">정당 성향</h3><p class="hint sub">이념적 특성이 정해진 정당은 특성으로, 아니면 쟁점 입장으로 계산했습니다. 원 크기는 실제 의석수이고, 시뮬레이션이 끝나면 내 위치가 함께 표시됩니다.</p>'+compass(a,actual(a),false)+
+   '<div class="plist">'+sorted.map(f=>{ const p=a.P[f], [x,y]=xy[f];
+     const te=x<-.33?'분배·국가 역할':x>.33?'시장·성장':'경제 중도', ts=y<-.33?'자유·개혁':y>.33?'질서·안보':'정치 중도';
+     const trs=Object.keys(p.tr).map(id=>a.T.find(t=>t.id===id)).filter(Boolean).map(t=>t.n);
+     return '<div class="prow"><i class="dot" style="background:'+p.c+'"></i><div><b>'+esc(p.n)+'</b>'+(p.d?'<small>'+esc(p.d)+'</small>':'')+'<div class="tags"><span class="tag">'+te+'</span><span class="tag">'+ts+'</span>'+trs.map(t=>'<span class="tag tr">'+esc(t)+'</span>').join('')+'</div><div class="lean" title="전체 성향"><i style="left:'+((p.l+1)/2*100)+'%;background:'+p.c+'"></i></div></div><span class="num">'+p.s+'석</span></div>'; }).join('')+'</div>'+
+   '<h3 style="margin-top:18px">선거제도와 실제 결과</h3>'+sysBar(a)+
+   (notes.length?'<p class="hint" style="margin-top:8px">'+notes.map(esc).join(' ')+'</p>':'')+
+   '<div class="hemi" id="dh" style="margin-top:12px">'+hemiSvg(a.N)+'</div>'+
+   '<div class="opts" style="margin-top:16px">'+
+    '<label class="chk"><input type="checkbox" id="opt-prior"'+(S.prior?' checked':'')+'><span>당시 지지 기반 반영<small>실제 의석이 많았던 정당이 같은 거리에서 조금 더 많은 표를 받습니다. 끄면 답변만으로 계산합니다.</small></span></label></div>'+
+   '<div class="launch" style="margin-top:16px"><button type="button" class="cta" id="start"'+(a.N&&nq?'':' disabled')+'>분야 정하고 시작하기</button><button type="button" class="cta ghost" id="edit">편집하기</button><span>질문 최대 '+nq+'개 · 분야 '+fieldsOf(a).length+'개</span></div>';
+  paint($('#dh'),a,plain(actual(a)),'석 · 실제 결과');
+  $('#opt-prior').addEventListener('change',e=>{ S.prior=e.target.checked; });
+  $('#start').addEventListener('click',()=>{ FK.forEach(k=>{ S.fimp[k]=2; }); viewPrio(); });
+  $('#edit').addEventListener('click',viewEdit); }
+
+// ── 2. 분야별 중요도 (질문 수 자동)
+const segHtml=(k,lv,mini)=>'<div class="seg5'+(mini?' mini':'')+'" role="radiogroup" aria-label="'+esc(fld(k).n)+' 중요도">'+LV.map((L,j)=>'<button type="button" role="radio" data-f="'+k+'" data-l="'+j+'" aria-checked="'+(j===lv)+'">'+L.n+'</button>').join('')+'</div>';
+const QR=[0,.4,.6,.8,1];
+function autoCount(a){ FK.forEach(k=>{ const max=qsOf(a,k).length, r=QR[S.fimp[k]]||0; S.fcnt[k]=r?Math.min(max,Math.max(2,Math.round(max*r))):0; }); }
+function seatTxt(a,c){ return a.Lst?'지역구 '+c.d+' · '+a.ln+' '+c.l:'지역구 '+c.d; }
+function viewPrio(){
+  toHome.hidden=false; window.scrollTo(0,0);
+  const a=A(), fs=fieldsOf(a); FK.forEach(k=>{ if(S.fimp[k]==null) S.fimp[k]=2; });
+  app.innerHTML='<section class="stack"><div><span class="eyebrow">'+asmName(a)+' · '+a.y+'</span><h2 style="font-size:clamp(24px,6vw,30px);margin-top:4px">분야별 중요도</h2>'+
+   '<p class="lead">매우 중요한 분야일수록 많은 의석과 많은 질문이, 덜 중요한 분야일수록 적은 의석과 적은 질문이 걸립니다. “관심 없음”으로 둔 분야는 질문 없이 건너뜁니다.</p></div>'+
+   '<div class="box"><div class="lh" style="display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--ink2)"><span>전체 '+a.N+'석 배분</span><span class="num" id="ptot"></span></div><div class="fbar" id="pbar"></div><div class="syslg" id="plg"></div>'+
+   (fixSum(a)||a.bonus?'<p class="hint" style="margin-top:6px">'+(fixSum(a)?'간선·고정 '+fixSum(a)+'석은 고정, ':'')+(a.bonus?'제1당 프리미엄 '+a.bonus+'석은 최종 결과에서 득표 1위 정당에 따로 돌아갑니다.':'나머지를 분야에 나눕니다.')+'</p>':'')+'</div>'+
+   '<div class="box" id="frows">'+fs.map(k=>'<div class="frow" data-k="'+k+'"><div class="fh"><div><span class="fchip"><i class="dot" style="background:'+fld(k).c+'"></i>'+esc(fld(k).n)+'</span><small>'+esc(fld(k).d)+'</small></div><div class="fseats" data-s="'+k+'"></div></div>'+segHtml(k,S.fimp[k])+
+     '<div class="stepper"><span>질문 <b class="num" data-n="'+k+'"></b> <span class="hint">(중요도에 따라 자동)</span></span><span class="hint" data-qinfo="'+k+'"></span></div></div>').join('')+'</div>'+
+   '<div class="launch"><button type="button" class="cta" id="go">질문 시작</button><span id="goinfo"></span></div></section>';
+  const upd=()=>{ autoCount(a); const act=fs.filter(k=>fw(k)>0&&S.fcnt[k]>0), C2=chunks(a,act), nq=sum(act.map(k=>S.fcnt[k]));
+    fs.forEach(k=>{ const on=act.includes(k), row=$('.frow[data-k="'+k+'"]',app);
+      row.classList.toggle('off',!on);
+      $('[data-s="'+k+'"]',app).innerHTML=on?C2[k].t+'석<small>'+seatTxt(a,C2[k])+'</small>':'0석<small>건너뜀</small>';
+      $('[data-n="'+k+'"]',app).textContent=on?S.fcnt[k]+'개':'없음';
+      $('[data-qinfo="'+k+'"]',app).textContent=on&&C2[k].d?'· 질문 1개당 지역구 약 '+(C2[k].d/S.fcnt[k]).toFixed(1)+'석':'';
+      $$('[data-f="'+k+'"]',app).forEach(b=>b.setAttribute('aria-checked',+b.dataset.l===S.fimp[k])); });
+    const N=Math.max(1,a.N), segs=act.map(k=>[C2[k].t,fld(k).c,fld(k).n]); if(fixSum(a)) segs.push([fixSum(a),'var(--gold)','간선·고정']); if(a.bonus) segs.push([a.bonus,'var(--ink3)','제1당 프리미엄']);
+    $('#pbar').innerHTML=segs.map(s=>'<span style="width:'+(s[0]/N*100)+'%;background:'+s[1]+'"></span>').join('');
+    $('#plg').innerHTML=segs.map(s=>'<span><i class="dot" style="background:'+s[1]+'"></i>'+esc(s[2])+' <b class="num">'+s[0]+'</b></span>').join('');
+    $('#ptot').textContent=act.length?'분야 '+act.length+'개 · 질문 '+nq+'개':'';
+    $('#go').disabled=!act.length; $('#goinfo').textContent=act.length?'질문 '+nq+'개 · 덜 중요한 분야부터 묻습니다':'최소 한 분야는 중요도를 정해 주세요'; };
+  $('#frows').addEventListener('click',e=>{ const b=e.target.closest('button[data-f]'); if(!b) return; S.fimp[b.dataset.f]=+b.dataset.l; upd(); });
+  $('#go').addEventListener('click',()=>{ autoCount(a); const act=fs.filter(k=>fw(k)>0&&S.fcnt[k]>0);
+    FK.forEach(k=>{ if(!act.includes(k)) S.fimp[k]=0; });
+    S.order=act.slice().sort((x,y)=>fw(x)-fw(y)||FK.indexOf(x)-FK.indexOf(y));
+    S.seq=[]; S.order.forEach(k=>qsOf(a,k,S.fcnt[k]).forEach(i=>S.seq.push(i)));
+    S.ans=a.Q.map(()=>undefined); S.qi=0; S.pick=[]; S.cab=null; viewQuiz(); });
+  upd(); }
+
+// ── 3. 분야별 질문
+const ICON={prev:'<svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9.5 12z"/></svg>',next:'<svg viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></svg>',end:'<svg viewBox="0 0 24 24"><path d="M4 5v14l9.5-7zM16 5h2v14h-2z"/></svg>'};
+function viewQuiz(){
+  toHome.hidden=false; window.scrollTo(0,0);
+  const a=A(), i=S.seq[S.qi], q=a.Q[i], k=q.f, F=fld(k), Lp=PA, Rp=PB;
+  const fq=S.seq.filter(j=>a.Q[j].f===k), n=fq.indexOf(i), C2=chunks(a,S.order)[k], qd=lr(fq.map(()=>1),C2.d)[n];
+  const nxt=S.seq[S.qi+1], endField=nxt==null||a.Q[nxt].f!==k, fi=S.order.indexOf(k);
+  let cur=S.ans[i]==null?null:S.ans[i], drag=false;
+  app.innerHTML='<section>'+
+   '<div class="qhead"><span class="eyebrow">'+asmName(a)+' · 분야 '+(fi+1)+' / '+S.order.length+'</span><span class="eyebrow num">'+(S.qi+1)+' / '+S.seq.length+'</span></div>'+
+   '<div class="prog" aria-hidden="true">'+S.seq.map((j,x)=>'<i class="'+(x===S.qi?'cur':S.ans[j]===null?'skip':S.ans[j]!==undefined?'done':'')+'"'+(x&&a.Q[S.seq[x-1]].f!==a.Q[j].f?' style="margin-left:6px"':'')+'></i>').join('')+'</div>'+
+   '<div class="stakebox"><span class="fchip"><i class="dot" style="background:'+F.c+'"></i>'+esc(F.n)+'</span><span>이 분야에 걸린 의석 <b>'+C2.t+'석</b>'+(a.Lst?' ('+seatTxt(a,C2)+')':'')+'</span><span>분야 질문 <b>'+(n+1)+' / '+fq.length+'</b>'+(qd?' · 이 질문이 정하는 지역구 <b>'+qd+'석</b>':'')+'</span></div>'+
+   '<div class="qmeta" style="margin-top:12px"><b>질문 '+(S.qi+1)+'</b><span>'+(q.g?'나의 정치 의견':'역사 속 쟁점')+'</span></div>'+
+   '<h2 class="qtitle">'+esc(q.t)+'</h2>'+
+   '<div class="poles"><button type="button" class="pole l" style="--pc:'+Lp.c+'" data-v="-1"><span class="pn"><i></i>A안</span><span class="ps">'+esc(q.A)+'</span><em>◂ 왼쪽 끝</em></button>'+
+     '<button type="button" class="pole r" style="--pc:'+Rp.c+'" data-v="1"><span class="pn">B안<i></i></span><span class="ps">'+esc(q.B)+'</span><em>오른쪽 끝 ▸</em></button></div>'+
+   '<div class="player">'+
+     '<div class="track" id="track" style="--lc:'+Lp.c+';--rc:'+Rp.c+'"><div class="rail"></div>'+[-1,-.5,0,.5,1].map(t=>'<div class="tick'+(t===0?' c':'')+'" style="left:'+((t+1)/2*100)+'%"></div>').join('')+
+       '<div class="fill"></div><div class="bubble"></div><div class="thumb" role="slider" tabindex="0" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0" aria-label="'+esc(q.t)+': 왼쪽 A안, 오른쪽 B안"></div></div>'+
+     '<div class="time"><span>A안</span><span>중립</span><span>B안</span></div>'+
+     '<p class="read" id="read" aria-live="polite"></p>'+
+     '<div class="controls"><button type="button" class="ic" id="prev" aria-label="이전 질문"'+(S.qi?'':' disabled')+'>'+ICON.prev+'</button>'+
+       '<button type="button" class="play" id="next">'+(endField?ICON.end+esc(F.n)+' 결과':ICON.next+'다음 질문')+'</button>'+
+       '<button type="button" class="ic" id="skip" aria-label="잘 모르겠음, 건너뛰기" title="잘 모르겠음">?</button></div>'+
+     '<div class="kbd">키보드: ← → 로 이동, Enter 로 다음 · ? 버튼은 “잘 모르겠음”(이 질문의 지역구는 분야 비례 몫으로 넘어갑니다)</div>'+
+   '</div></section>';
+  const tr=$('#track'), th=$('.thumb',tr), fill=$('.fill',tr), bub=$('.bubble',tr), lp=$('.pole.l',app), rp=$('.pole.r',app);
+  const txt=v=>{ if(v===null) return '막대를 움직여 입장을 정하세요'; const m=Math.abs(v), side=v<0?'A안':'B안';
+    return m<.08?'정확히 가운데':m<.4?side+' 쪽으로 조금':m<.8?side+' 쪽으로 상당히':side+'에 완전히 동의'; };
+  const draw=anim=>{ const v=cur===null?0:cur, x=(v+1)/2*100, col=cur===null||Math.abs(v)<.08?'var(--ink3)':(v<0?Lp.c:Rp.c);
+    tr.classList.toggle('anim',!!anim); tr.classList.toggle('set',cur!==null); tr.style.setProperty('--fc',col);
+    th.style.left=x+'%'; bub.style.left=x+'%'; fill.style.left=Math.min(50,x)+'%'; fill.style.width=Math.abs(x-50)+'%';
+    bub.textContent=cur===null?'':(Math.abs(v)<.08?'0':(v<0?'◂ ':'')+Math.round(Math.abs(v)*100)+(v>0?' ▸':''));
+    th.setAttribute('aria-valuenow',Math.round(v*100)); th.setAttribute('aria-valuetext',txt(cur));
+    $('#read').textContent=txt(cur);
+    lp.style.setProperty('--o',cur===null||v<=.08?1:Math.max(.5,1-v*.55)); rp.style.setProperty('--o',cur===null||v>=-.08?1:Math.max(.5,1+v*.55));
+    lp.classList.toggle('on',cur!==null&&v<=-.08); rp.classList.toggle('on',cur!==null&&v>=.08);
+    $('#next').disabled=cur===null; };
+  const set=(v,anim)=>{ v=clamp(v,-1,1); if(Math.abs(v)<.04) v=0; cur=Math.round(v*100)/100; draw(anim); };
+  const fromX=cx=>{ const b=tr.getBoundingClientRect(); return (cx-b.left)/b.width*2-1; };
+  tr.addEventListener('pointerdown',e=>{ drag=true; try{ tr.setPointerCapture(e.pointerId); }catch(_){} set(fromX(e.clientX),e.target!==th); th.focus({preventScroll:true}); e.preventDefault(); });
+  tr.addEventListener('pointermove',e=>{ if(drag) set(fromX(e.clientX),false); });
+  const end=()=>{ drag=false; }; tr.addEventListener('pointerup',end); tr.addEventListener('pointercancel',end);
+  th.addEventListener('keydown',e=>{ const v=cur===null?0:cur, st=e.shiftKey?.25:.1;
+    if(e.key==='ArrowLeft'||e.key==='ArrowDown'){ e.preventDefault(); set(v-st,true); }
+    else if(e.key==='ArrowRight'||e.key==='ArrowUp'){ e.preventDefault(); set(v+st,true); }
+    else if(e.key==='Home'){ e.preventDefault(); set(-1,true); } else if(e.key==='End'){ e.preventDefault(); set(1,true); }
+    else if(e.key==='Enter'&&cur!==null){ e.preventDefault(); go(cur); } });
+  [lp,rp].forEach(b=>b.addEventListener('click',()=>set(+b.dataset.v*.85,true)));
+  const go=v=>{ S.ans[i]=v; if(endField) viewBoard(k); else { S.qi++; viewQuiz(); } };
+  $('#next').addEventListener('click',()=>{ if(cur!==null) go(cur); });
+  $('#skip').addEventListener('click',()=>go(null));
+  $('#prev').addEventListener('click',()=>{ if(cur!==null) S.ans[i]=cur; S.qi--; viewQuiz(); });
+  draw(false); th.focus({preventScroll:true}); }
+
+// ── 4. 분야별 의석 발표
+function viewBoard(k){
+  window.scrollTo(0,0);
+  const a=A(), fi=S.order.indexOf(k), done=S.order.slice(0,fi+1), last=fi===S.order.length-1, F=fld(k);
+  const R=simAll(a,S.ans,done), fr=R.fields[k], C2=R.C[k], given=sum(R.tot);
+  const ord=a.P.map((p,f)=>f).sort((x,y)=>R.tot[y]-R.tot[x]||fr.tot[y]-fr.tot[x]), L=ord[0], mx=Math.max(1,R.tot[L]);
+  app.innerHTML='<section class="stack"><div class="box">'+
+   '<span class="eyebrow">분야 '+(fi+1)+' / '+S.order.length+'</span><h2 style="font-size:clamp(22px,5.5vw,28px);margin:4px 0 6px">‘'+esc(F.n)+'’ 분야가 <span class="num">'+C2.t+'</span>석을 나눠 줍니다</h2>'+
+   '<p class="hint">'+(fr.empty?'답한 질문이 없어 실제 지지율대로 나눴습니다.':seatTxt(a,C2)+(a.sys==='mmd'?' · 2인 선거구라 2위 정당도 지역구를 나눠 가졌습니다.':''))+'</p>'+
+   '<div class="hemi" id="bh" style="margin-top:10px">'+hemiSvg(a.N)+'</div>'+
+   '<div>'+ord.filter(f=>R.tot[f]||fr.tot[f]).map(f=>{ const p=a.P[f], add=fr.tot[f];
+     return '<div class="brow"><i class="dot" style="background:'+p.c+'"></i><div><b style="font-weight:600">'+esc(p.n)+'</b><div class="bar"><span style="width:'+(R.tot[f]/mx*100)+'%;background:'+p.c+'"></span></div></div><span class="add'+(add?'':' zero')+'">'+(add?'+'+add:'0')+'</span><span class="cum">'+R.tot[f]+'</span></div>'; }).join('')+'</div>'+
+   '<p class="hint" style="margin-top:10px">가운데 숫자는 이번 분야에서 얻은 의석, 오른쪽은 누적입니다. 지금까지 '+given+'석 배분'+(last?(fixSum(a)?', 간선·고정 '+fixSum(a)+'석':'')+(a.bonus?', 제1당 프리미엄 '+a.bonus+'석은 최종 결과에 더해집니다':''):', 남은 분야에 '+(sum(S.order.slice(fi+1).map(x=>R.C[x].t)))+'석')+'.</p>'+
+   '<p class="lead" style="margin-top:8px"><b>'+esc(a.P[L].n)+'</b>'+(fi===0?' 앞서 나갑니다':' 누적 1위')+' · '+R.tot[L]+'석</p></div>'+
+   '<div class="launch"><button type="button" class="cta" id="cont">'+(last?'최종 결과 보기':'다음 분야: '+esc(fld(S.order[fi+1]).n))+'</button>'+(!last?'<span>'+esc(fld(S.order[fi+1]).n)+'에 '+R.C[S.order[fi+1]].t+'석이 걸려 있습니다</span>':'')+'</div></section>';
+  paint($('#bh'),a,R,'석 중 '+given+'석 배분',a.N);
+  $('#cont').addEventListener('click',()=>{ if(last) viewResult(); else { S.qi++; viewQuiz(); } }); }
+
+// ── 5. 결과
+function bills(a,q,st){ let l=0,r=0,ab=0; a.P.forEach((p,f)=>{ const x=pos(q,p); if(x<=-.25) l+=st[f]; else if(x>=.25) r+=st[f]; else ab+=st[f]; }); return {l,r,ab}; }
+function viewResult(keep){
+  const sy=window.scrollY; toHome.hidden=false;
+  const a=A(), R=simAll(a,S.ans), mine=R.tot, real=actual(a), asked=a.Q.map((q,i)=>i).filter(i=>S.ans[i]!==undefined), answered=asked.filter(i=>S.ans[i]!=null).length, M=maj(a.N);
+  const fs=fieldsOf(a);
+  app.innerHTML='<section class="stack">'+
+   '<div class="rhead"><div class="pills"><span class="pill strong">'+a.y+'</span><span class="pill">'+esc(sysText(a))+'</span><span class="pill" id="yeoya"></span><span class="pill">답변 '+answered+' / '+asked.length+'</span></div><h2>나의 '+asmName(a)+'</h2><p class="lead" id="lead"></p></div>'+
+   '<div class="box"><div style="display:flex;justify-content:center;margin-bottom:6px"><div class="seg" role="group" aria-label="보기 전환"><button type="button" data-v="mine" aria-pressed="true">나의 결과</button><button type="button" data-v="real" aria-pressed="false">실제 결과</button></div></div>'+
+    '<div class="hemi" id="rh">'+hemiSvg(a.N)+'</div><div class="hlg" id="hlg"></div>'+
+    '<div class="tw"><table class="tbl"><thead><tr><th>정당</th><th>'+(fixSum(a)?'지역·간선':'지역구')+'</th>'+(a.Lst?'<th>'+a.ln+'</th>':'')+'<th>합계</th><th>실제</th><th>차이</th></tr></thead><tbody id="tb"></tbody></table></div></div>'+
+   '<div class="box"><h3>선거 결과</h3><p class="hint sub">위키백과 선거 인포박스 형식입니다. 득표율은 시험 답변으로 계산한 가상 비례 득표율입니다. 화살표를 누르면 앞뒤 국회로 이동합니다.</p><div style="display:flex;justify-content:center;margin-bottom:10px"><div class="seg" id="wbseg" role="group" aria-label="결과표 전환"><button type="button" data-w="mine" aria-pressed="true">나의 결과</button><button type="button" data-w="real" aria-pressed="false">실제 결과</button></div></div><div class="wb-wrap" id="wb"></div></div>'+
+   '<div class="box"><h3>분야별 의석</h3><p class="hint sub">분야마다 걸린 의석과 정당별 획득 의석입니다. 중요도를 바꾸면 분야 의석이 다시 나뉘고 국회 전체가 다시 계산됩니다. 답하지 않은 분야는 실제 지지율대로 나눕니다.</p><div class="fbar" id="fsum"></div><div class="syslg" id="fslg" style="margin-bottom:6px"></div><div id="fres"></div></div>'+
+   '<div class="box"><h3>정당 스펙트럼 맵</h3><p class="hint sub">가로는 경제, 세로는 정치·안보 성향입니다. 원 크기는 나의 결과 의석수, 흰 원이 나의 위치입니다.</p>'+compass(a,mine,true)+'</div>'+
+   '<div class="box"><h3>의결 정족수로 본 나의 국회</h3><p class="hint sub">검은 선은 과반, 금색 선은 개헌·탄핵 소추에 필요한 3분의 2입니다.</p><div class="thr" id="thr"></div></div>'+
+   '<div class="box" id="cobox"><h3>연립 정부</h3><p class="hint sub">대통령제인 한국에서는 드문 일이지만, 내각제를 가정하면 어떤 연합이 과반('+M+'석)을 만들 수 있는지 보여 줍니다.'+(a.co.span?' 성향이 가까운 정당끼리만 묶습니다.':'')+(a.co.veto.length?' 서로 연정을 거부한 정당은 함께 묶지 않습니다.':'')+' “정부 구성”을 누르면 국무위원을 나눕니다.</p><div class="coal" id="coal"></div>'+
+    '<span class="lbl" style="display:block;margin:14px 0 6px">직접 연합 만들기</span><div class="chips" id="copick"></div><div class="go" id="cogo" style="margin-top:10px"></div><div id="cab"></div></div>'+
+   '<div class="box"><h3>나와 가까운 정당</h3><p class="hint sub">답변한 질문에서 각 정당 입장과의 평균 일치도입니다. 중요한 분야일수록 크게 반영됩니다.</p><div class="match" id="match"></div></div>'+
+   '<div class="box"><h3>질문별 의석과 표결</h3><p class="hint sub">각 입장이 어느 정당의 것이었는지 여기서 공개됩니다.</p><div id="bills"></div></div>'+
+   '<div class="acts"><button type="button" class="cta" id="again">같은 국회 다시 하기</button><button type="button" class="cta ghost" id="edit2">시험 편집하기</button><button type="button" class="cta ghost" id="other">다른 국회 고르기</button></div>'+
+   '<details class="box how"><summary>계산 방식</summary>'+
+    '<p>분야 중요도(관심 없음 0 · 조금 1 · 보통 2 · 중요 3.5 · 매우 중요 5)에 비례해 지역구 '+a.D+'석'+(a.Lst?'과 '+a.ln+' '+(a.Lst-a.bonus)+'석':'')+'을 분야별로 나누고, 질문 수도 중요도에 따라 정합니다. 분야 안에서는 질문마다 지역구를 똑같이 나누고, “잘 모르겠음” 질문의 지역구는 그 분야의 비례 몫으로 넘어갑니다.</p>'+
+    '<p>각 질문에서 막대 위치와 정당 입장 사이 거리로 종 모양(가우스) 득표를 냅니다. '+(a.sys==='mmd'?'중대선거구라 2위·3위 정당도 의석을 나눠 갖습니다.':'소선거구라 가장 가까운 정당에 의석이 몰립니다.')+' 나의 정치 의견 질문에서 정당 위치는 그 정당의 이념적 특성(없으면 쟁점 입장)으로 계산합니다.</p>'+
+    (a.Lst?'<p>분야의 '+a.ln+' 몫은 그 분야 질문의 평균 득표율로 나눕니다'+(a.semi?'. 준연동형 몫은 분야 의석 × 득표율에서 지역구 의석을 뺀 값의 절반을 채워 주는 방식입니다':'')+(a.thr?'. 득표율 '+a.thr+'% 미만 정당은 제외합니다':'')+(a.bonus?'. 제1당 프리미엄 '+a.bonus+'석은 모든 분야 득표를 중요도로 가중한 1위 정당이 받습니다':'')+'. 무소속은 비례 의석을 받지 않습니다.</p>':'')+
+    (fixSum(a)?'<p>간선·고정 의석 '+fixSum(a)+'석은 답변과 무관하게 정해진 정당에 돌아갑니다.</p>':'')+
+    '<p>연립 정부의 국무위원은 동트 방식으로 순번을 정하고, 각 정당은 자기가 의석을 많이 얻은 분야의 부처를 먼저 고릅니다. 첫 순번은 국무총리입니다.</p>'+
+    '<p>“당시 지지 기반 반영”이 켜져 있으면 실제 의석 비율의 0.8제곱을 곱해, 같은 거리라도 큰 정당이 더 받습니다. 무소속은 한 덩어리 정당이 아니므로 득표 계산에서 0.4배로 줄여, 가운데 답변을 무소속이 쓸어 가지 않게 했습니다.</p></details>'+
+  '</section>';
+  const show=v=>{ S.view=v; paint($('#rh'),a,v==='mine'?R:plain(real),v==='mine'?'석 · 나의 결과':'석 · 실제 결과',a.N);
+    $('#hlg').innerHTML=v==='mine'?'<span><i class="dot" style="background:var(--ink2)"></i>'+(fixSum(a)?'지역구·간선':'지역구')+'</span>'+(a.Lst?'<span><i class="ring"></i>'+a.ln+'</span>':''):'<span>실제 결과는 지역구·비례 구분 없이 표시합니다</span>';
+    $$('.seg button[data-v]',app).forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v)); };
+  $$('.seg button[data-v]',app).forEach(b=>b.addEventListener('click',()=>show(b.dataset.v)));
+  const drawWB=w=>{ $('#wb').innerHTML=wikibox(a,w,R); paint($('#wbh'),a,w==='mine'?R:plain(real),'',''); $('#wbh .big').textContent=''; $('#wbh .sm').textContent='';
+    $$('#wbseg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.w===w)); };
+  $('#wbseg').addEventListener('click',e=>{ const b=e.target.closest('button[data-w]'); if(b) drawWB(b.dataset.w); });
+  $('#wb').addEventListener('click',e=>{ const b=e.target.closest('[data-go]'); if(!b) return; S.ai=+b.dataset.go; try{ localStorage.setItem('kr-asm-sel',S.ai); }catch(_){} loadScenario(); viewHome(); });
+  drawWB('mine');
+  const order=a.P.map((p,f)=>f).sort((x,y)=>mine[y]-mine[x]||real[y]-real[x]);
+  $('#tb').innerHTML=order.map(f=>{ const p=a.P[f], d=mine[f]-real[f];
+    return '<tr><td><span><i class="dot" style="background:'+p.c+'"></i>'+esc(p.n)+(f===R.bonusTo?' <small style="color:var(--ink3)">+프리미엄 '+a.bonus+'</small>':'')+'</span></td><td>'+(R.dist[f]+R.fix[f])+'</td>'+(a.Lst?'<td>'+R.list[f]+'</td>':'')+'<td><b>'+mine[f]+'</b></td><td>'+real[f]+'</td><td class="'+(d>0?'up':d<0?'down':'')+'">'+(d>0?'+'+d:d<0?'−'+(-d):'0')+'</td></tr>'; }).join('');
+  const L=order[0], gov=a.gov.map(k=>a.P.findIndex(p=>p.k===k)).filter(f=>f>=0), govSeats=sum(gov.map(f=>mine[f]));
+  $('#lead').innerHTML='제1당은 <b>'+esc(a.P[L].n)+'</b> '+mine[L]+'석'+(a.Lst?' (지역구 '+(R.dist[L]+R.fix[L])+' · '+a.ln+' '+R.list[L]+')':'')+'입니다. '+(mine[L]>=two3(a.N)?'혼자서 개헌선까지 넘었습니다.':mine[L]>=M?'단독 과반으로 법안을 혼자 처리할 수 있습니다.':'어느 정당도 과반('+M+'석)을 넘지 못해 연대가 필요합니다.')+
+    (gov.length?' 당시 여당은 '+gov.map(f=>esc(a.P[f].n)).join('·')+'이었습니다.':'');
+  $('#yeoya').textContent=gov.length?(govSeats>=M?'여대야소':'여소야대'):'여당 없음';
+  // 분야별 의석
+  const N=Math.max(1,a.N), segs=R.act.map(k=>[R.C[k].t,fld(k).c,fld(k).n]); if(fixSum(a)) segs.push([fixSum(a),'var(--gold)','간선·고정']); if(a.bonus) segs.push([a.bonus,'var(--ink3)','제1당 프리미엄']);
+  $('#fsum').innerHTML=segs.map(s=>'<span style="width:'+(s[0]/N*100)+'%;background:'+s[1]+'"></span>').join('');
+  $('#fslg').innerHTML=segs.map(s=>'<span><i class="dot" style="background:'+s[1]+'"></i>'+esc(s[2])+' <b class="num">'+s[0]+'</b></span>').join('');
+  const lean=a.P.map((p,f)=>f).sort((x,y)=>a.P[x].l-a.P[y].l);
+  $('#fres').innerHTML=fs.map(k=>{ const on=R.act.includes(k), fr=R.fields[k], C2=R.C[k], nq=asked.filter(i=>a.Q[i].f===k).length;
+    const top=on?a.P.map((p,f)=>f).filter(f=>fr.tot[f]>0).sort((x,y)=>fr.tot[y]-fr.tot[x]).slice(0,4):[];
+    return '<div class="frow'+(on?'':' off')+'"><div class="fh"><div><span class="fchip"><i class="dot" style="background:'+fld(k).c+'"></i>'+esc(fld(k).n)+'</span><small>질문 '+nq+'개 답변'+(on&&fr.empty?' · 답이 없어 실제 지지율대로':'')+'</small></div><div class="fseats">'+(on?C2.t+'석<small>'+seatTxt(a,C2)+'</small>':'0석<small>관심 없음</small>')+'</div></div>'+
+      segHtml(k,S.fimp[k]||0,true)+
+      (on?'<div class="fbar">'+lean.map(f=>'<span style="width:'+(fr.tot[f]/Math.max(1,C2.t)*100)+'%;background:'+a.P[f].c+'" title="'+esc(a.P[f].n)+' '+fr.tot[f]+'"></span>').join('')+'</div><div class="syslg">'+top.map(f=>'<span><i class="dot" style="background:'+a.P[f].c+'"></i>'+esc(a.P[f].n)+' <b class="num">'+fr.tot[f]+'</b></span>').join('')+'</div>':'')+'</div>'; }).join('');
+  $('#fres').addEventListener('click',e=>{ const b=e.target.closest('button[data-f]'); if(!b) return; S.fimp[b.dataset.f]=+b.dataset.l; S.cab=null; viewResult(true); });
+  // 정족수
+  const thrRow=(lab,need,hint)=>{ const ok=mine[L]>=need; return '<div class="t"><b>'+lab+'</b><span class="num">'+need+'석</span><small>'+hint+' · 제1당 '+esc(a.P[L].n)+' '+(ok?'단독 확보':'단독으로는 '+(need-mine[L])+'석 부족')+'</small></div>'; };
+  const bl=Math.max(0,a.N-two3(a.N)+1);
+  let h='<div><div class="meter">'+lean.map(f=>'<span style="width:'+(mine[f]/N*100)+'%;background:'+a.P[f].c+'"></span>').join('')+'<i class="mk" style="left:'+(M/N*100)+'%"></i><i class="mk l2" style="left:'+(two3(a.N)/N*100)+'%"></i></div>'+
+    '<div class="mlab"><span style="left:'+(M/N*100)+'%">'+M+'</span><span style="left:'+(two3(a.N)/N*100)+'%">'+two3(a.N)+'</span></div></div>';
+  h+=thrRow('과반',M,'일반 법안 의결');
+  if(a.n>=19) h+=thrRow('5분의 3',three5(a.N),'국회선진화법: 신속처리안건 지정·필리버스터 종결');
+  h+=thrRow('3분의 2',two3(a.N),'헌법 개정안·대통령 탄핵 소추 의결');
+  if(gov.length) h+='<div class="t"><b>여당 의석</b><span class="num">'+govSeats+'석</span><small>'+(govSeats>=M?'여대야소: 정부 법안이 무난히 통과됩니다.':'여소야대: 야당이 국회를 주도합니다.')+(govSeats<bl?' 개헌저지선('+bl+'석)도 지키지 못합니다.':'')+'</small></div>';
+  $('#thr').innerHTML=h;
+  // 연립 정부
+  const coBar=m=>'<div class="vbar" style="height:12px">'+m.map(f=>'<span style="width:'+(mine[f]/N*100)+'%;background:'+a.P[f].c+'"></span>').join('')+'<em style="left:'+(M/N*100)+'%"></em></div>';
+  const coRow=(m,label)=>{ const t=sum(m.map(f=>mine[f])), nm=label||coName(a,m);
+    return '<div class="co"><div class="t"><span>'+(nm?'<b>'+esc(nm)+'</b> ':'')+m.map(f=>esc(a.P[f].n)).join(' + ')+'</span><em class="num">'+t+'석</em></div>'+coBar(m)+'<button type="button" class="chip" data-co="'+m.join(',')+'" style="margin-top:8px">정부 구성</button></div>'; };
+  const co=mine[L]>=M?[]:coalitions(a,mine);
+  $('#coal').innerHTML=(mine[L]>=M?coRow([L],'단독 정부'):'')+(co.length?co.map(c=>coRow(c.m)).join(''):(mine[L]>=M?'':'<p class="hint">이 결과로는 조건을 지키며 과반을 만드는 연합이 없습니다. 아래에서 직접 소수 정부를 꾸려 볼 수 있습니다.</p>'));
+  const drawPick=()=>{ S.pick=S.pick.filter(f=>mine[f]>0); const t=sum(S.pick.map(f=>mine[f])), bp=badPair(a,S.pick), nm=coName(a,S.pick);
+    $('#copick').innerHTML=a.P.map((p,f)=>mine[f]?'<button type="button" class="chip" data-pk="'+f+'" aria-pressed="'+S.pick.includes(f)+'"><i class="dot" style="background:'+p.c+';width:8px;height:8px"></i> '+esc(p.n)+' · '+mine[f]+'</button>':'').join('');
+    $('#cogo').innerHTML='<button type="button" class="chip" data-co="'+S.pick.join(',')+'"'+(S.pick.length&&!bp?'':' disabled')+'>이 연합으로 정부 구성</button> <span class="hint">'+(bp?esc(a.P[bp[0]].n)+'과(와) '+esc(a.P[bp[1]].n)+'은(는) 연정을 거부합니다':S.pick.length?(nm?'“'+esc(nm)+'” · ':'')+t+'석 · '+(t>=M?'과반 정부':'소수 정부 (과반까지 '+(M-t)+'석 부족)'):'정부에 참여할 정당을 고르세요')+'</span>'; };
+  const drawCab=()=>{ if(!S.cab){ $('#cab').innerHTML=''; return; } const m=S.cab.filter(f=>mine[f]>0); if(!m.length){ $('#cab').innerHTML=''; return; }
+    const cb=cabinet(a,m.slice().sort((x,y)=>mine[y]-mine[x]),mine,R), t=sum(m.map(f=>mine[f])), cnt={}; cb.forEach(x=>{ cnt[x.f]=(cnt[x.f]||0)+1; });
+    $('#cab').innerHTML='<div class="cabbox"><h4>'+(coName(a,m)?esc(coName(a,m))+' ':'')+(m.length>1?'연립 정부':'단독 정부')+' · '+t+'석 '+(t>=M?'(과반)':'(소수 정부)')+'</h4>'+
+      '<div class="syslg" style="margin:6px 0 10px">'+m.map(f=>'<span><i class="dot" style="background:'+a.P[f].c+'"></i>'+esc(a.P[f].n)+' 국무위원 <b class="num">'+(cnt[f]||0)+'</b> · 연합 의석의 '+Math.round(mine[f]/t*100)+'%</span>').join('')+'</div>'+
+      '<div class="cabg">'+cb.map(x=>'<div class="cabr" style="--c:'+a.P[x.f].c+'"><span class="num">'+x.n+'</span><b>'+x.min+'</b><span><i class="dot" style="background:'+a.P[x.f].c+'"></i> '+esc(a.P[x.f].n)+'</span></div>').join('')+'</div></div>'; };
+  $('#cobox').addEventListener('click',e=>{ const pk=e.target.closest('[data-pk]');
+    if(pk){ const f=+pk.dataset.pk, i=S.pick.indexOf(f); if(i>=0) S.pick.splice(i,1); else S.pick.push(f); drawPick(); return; }
+    const b=e.target.closest('[data-co]'); if(b&&b.dataset.co&&!b.disabled){ S.cab=b.dataset.co.split(',').map(Number); drawCab(); $('#cab').scrollIntoView({behavior:'smooth',block:'nearest'}); } });
+  drawPick(); drawCab();
+  // 일치도
+  const done=asked.filter(i=>S.ans[i]!=null);
+  if(!done.length) $('#match').innerHTML='<p class="hint">답변한 질문이 없어 일치도를 계산할 수 없습니다.</p>';
+  else { const m=a.P.map((p,f)=>{ let s=0,w=0; done.forEach(i=>{ const k=Math.max(.5,fw(a.Q[i].f)); s+=k*(1-Math.abs(S.ans[i]-pos(a.Q[i],p))/2); w+=k; }); return {f,v:s/w}; }).sort((x,y)=>y.v-x.v);
+    $('#match').innerHTML=m.map(x=>'<div class="m"><i class="dot" style="background:'+a.P[x.f].c+'"></i><div><div style="font-size:14px;font-weight:600">'+esc(a.P[x.f].n)+'</div><div class="bar"><span style="width:'+(x.v*100)+'%;background:'+a.P[x.f].c+'"></span></div></div><span class="num" style="text-align:right">'+Math.round(x.v*100)+'%</span></div>').join(''); }
+  // 질문별
+  const seqAll=FK.flatMap(k=>asked.filter(i=>a.Q[i].f===k));
+  $('#bills').innerHTML=seqAll.map(i=>{ const q=a.Q[i], [Lp,Rp]=sides(a,q), named=Lp!==PA, v=S.ans[i], fr=R.fields[q.f], pr=fr&&!fr.empty?fr.per[i]:null;
+    const you=v==null?'잘 모르겠음':Math.abs(v)<.08?'가운데':(v<0?'A안':'B안')+' 쪽 '+Math.round(Math.abs(v)*100);
+    const ab='<p class="hint" style="margin:0 0 6px">A안'+(named?' ('+esc(Lp.n)+')':'')+': '+esc(q.A)+'<br>B안'+(named?' ('+esc(Rp.n)+')':'')+': '+esc(q.B)+'</p>';
+    let st='';
+    if(!R.act.includes(q.f)) st='<span>관심 없음 분야: 의석이 걸리지 않았습니다</span>';
+    else if(v==null) st='<span>답하지 않아 이 질문의 지역구는 분야 비례 몫으로 넘어갔습니다</span>';
+    else if(pr){ const win=pr.d.map((x,f)=>f).filter(f=>pr.d[f]>0).sort((x,y)=>pr.d[y]-pr.d[x]).slice(0,3);
+      st='<span>지역구 <b class="num">'+pr.seats+'</b>석</span>'+(win.length?'<span>'+win.map(f=>'<i class="dot" style="background:'+a.P[f].c+';vertical-align:-1px"></i> '+esc(a.P[f].n)+' '+pr.d[f]).join(' · ')+'</span>':''); }
+    const row=(lab,s)=>{ const b=bills(a,q,s), vd=b.l>=M?esc(Lp.n)+(named?' 안':'')+' 가결 ('+b.l+'표)':b.r>=M?esc(Rp.n)+(named?' 안':'')+' 가결 ('+b.r+'표)':'어느 쪽도 과반 실패';
+      return '<div class="vrow"><span>'+lab+'</span><div class="vbar"><span style="width:'+(b.l/N*100)+'%;background:'+Lp.c+'"></span><span style="width:'+(b.ab/N*100)+'%;background:var(--line2)"></span><span style="width:'+(b.r/N*100)+'%;background:'+Rp.c+'"></span><em style="left:'+(M/N*100)+'%"></em></div><div class="vnum"><span>'+esc(Lp.n)+' '+b.l+'</span><span>기권 '+b.ab+'</span><span>'+esc(Rp.n)+' '+b.r+'</span></div><div class="vnum verdict">'+vd+'</div></div>'; };
+    return '<div class="bill"><h4>'+esc(q.t)+' <span class="tag"><i class="dot" style="background:'+fld(q.f).c+';width:7px;height:7px"></i> '+esc(fld(q.f).n)+'</span> <span class="tag">'+(q.g?'나의 정치 의견':'역사 속 쟁점')+'</span></h4>'+ab+'<p class="you">나의 입장: <b>'+esc(you)+'</b></p><div class="stake">'+st+'</div>'+row('나의 국회',mine)+row('실제 국회',real)+'</div>'; }).join('');
+  $('#again').addEventListener('click',viewPrio);
+  $('#edit2').addEventListener('click',viewEdit);
+  $('#other').addEventListener('click',viewHome);
+  show(keep?S.view:'mine');
+  window.scrollTo(0,keep?sy:0); }
+
+// ══════ 6. 시험 편집 ══════
+const OPEN={asm:true};
+const op=k=>OPEN[k]?' open':'';
+const fmtL=v=>(v<-.05?'왼쪽 ':v>.05?'오른쪽 ':'중도 ')+Math.round(Math.abs(v)*100);
+const fmtP=v=>(v<-.05?'A ':v>.05?'B ':'')+Math.round(Math.abs(v)*100);
+const AXE=[[-1,'분배'],[-.5,'약간 분배'],[0,'영향 없음'],[.5,'약간 시장'],[1,'시장']], AXS=[[-1,'자유·개혁'],[-.5,'약간 자유'],[0,'영향 없음'],[.5,'약간 질서'],[1,'질서·안보']];
+const optNear=(v,list)=>{ let b=list[0][0]; list.forEach(([x])=>{ if(Math.abs(x-v)<Math.abs(b-v)) b=x; }); return list.map(([x,n])=>'<option value="'+x+'"'+(x===b?' selected':'')+'>'+n+'</option>').join(''); };
+const ASMK=['sys','D','ln','Lst','semi','bonus','thr'];
+function fnum(label,key,max,step){ return '<label class="fl"><span>'+label+'</span><input class="in" type="number" inputmode="numeric" id="e-'+key+'" data-k="'+key+'" data-num="1" min="0" max="'+max+'" step="'+(step||1)+'" value="'+C[key]+'"></label>'; }
+function fsel(label,key,opts){ return '<label class="fl"><span>'+label+'</span><select class="in" id="e-'+key+'" data-k="'+key+'">'+opts.map(([v,n])=>'<option value="'+v+'"'+(String(C[key])===String(v)?' selected':'')+'>'+n+'</option>').join('')+'</select></label>'; }
+function asmSum(){ const sp=sum(C.P.map(p=>p.s));
+  return '<p class="tot">총 <b class="num">'+C.N+'</b>석 · 과반 <b class="num">'+maj(C.N)+'</b> · 개헌선 <b class="num">'+two3(C.N)+'</b></p>'+sysBar(C)+
+    '<p class="hint" style="margin-top:6px">간선·고정 의석은 정당 카드에서 정합니다 (지금 '+fixSum(C)+'석). 준연동형과 제1당 프리미엄은 비례 의석 안에서 나뉩니다.'+(sp!==C.N?' <b class="warn">정당들의 실제 의석 합계('+sp+'석)가 총 의석과 다릅니다.</b>':'')+'</p>'; }
+function partyCard(i){ const p=C.P[i];
+  return '<details class="card" data-o="p'+p.k+'"'+op('p'+p.k)+'><summary><i class="dot" style="background:'+p.c+'" data-pd="'+i+'"></i><b data-pn="'+i+'">'+esc(p.n)+'</b><span class="hint num" data-ps="'+i+'">'+p.s+'석'+(C.gov.includes(p.k)?' · 여당':'')+'</span></summary><div class="secb">'+
+   '<div class="prow2"><input type="color" class="clr" id="pc-'+p.k+'" data-k="P.'+i+'.c" value="'+p.c+'" aria-label="정당 색"><input class="in" id="pn-'+p.k+'" data-k="P.'+i+'.n" value="'+esc(p.n)+'" aria-label="정당 이름" maxlength="40"></div>'+
+   '<input class="in" id="pdsc-'+p.k+'" data-k="P.'+i+'.d" value="'+esc(p.d)+'" placeholder="짧은 설명" maxlength="120" aria-label="정당 설명">'+
+   '<input class="in" id="pld-'+p.k+'" data-k="P.'+i+'.ld" value="'+esc(p.ld||'')+'" placeholder="선거 당시 대표 (선거 결과표에 표시)" maxlength="30" aria-label="정당 대표">'+
+   '<div class="fgrid"><label class="fl"><span>실제 의석</span><input class="in" type="number" min="0" max="1000" id="ps-'+p.k+'" data-k="P.'+i+'.s" data-num="1" value="'+p.s+'"></label>'+
+    '<label class="fl"><span>간선·고정 의석</span><input class="in" type="number" min="0" max="1000" id="pf-'+p.k+'" data-fix="'+p.k+'" value="'+(C.fixed[p.k]||0)+'"></label>'+
+    '<label class="chk" style="align-self:end"><input type="checkbox" id="pg-'+p.k+'" data-gov="'+p.k+'"'+(C.gov.includes(p.k)?' checked':'')+'><span>여당 (대통령 소속)</span></label></div>'+
+   '<label class="fl"><span>전체 성향 · 본회의장 자리 순서 <b data-lv="'+i+'">'+fmtL(p.l)+'</b></span><input type="range" min="-1" max="1" step="0.05" id="pl-'+p.k+'" data-k="P.'+i+'.l" data-num="1" value="'+p.l+'"></label>'+
+   '<div class="tg"><span class="lbl">이념적 특성 <span class="hint">(누를 때마다 약 → 중 → 강 → 없음)</span></span><div class="chips">'+C.T.map(t=>{ const l=p.tr[t.id]||0; return '<button type="button" class="tchip" data-act="tr" data-i="'+i+'" data-id="'+esc(t.id)+'" data-l="'+l+'" aria-pressed="'+(l>0)+'">'+esc(t.n)+'<small>'+SL[l]+'</small></button>'; }).join('')+'</div></div>'+
+   '<div class="tg"><span class="lbl">연정을 거부하는 상대</span><div class="chips">'+C.P.map((q,j)=>j===i?'':'<button type="button" class="chip" data-act="veto" data-a="'+p.k+'" data-b="'+q.k+'" aria-pressed="'+vetoed(C,p.k,q.k)+'">'+esc(q.n)+'</button>').join('')+'</div></div>'+
+   '<button type="button" class="link danger" data-act="delP" data-i="'+i+'"'+(C.P.length<=2?' disabled':'')+'>이 정당 삭제</button></div></details>'; }
+const usedBy=id=>C.P.filter(p=>p.tr[id]).length;
+function vetoText(){ return C.co.veto.length?'연정 거부: '+C.co.veto.map(v=>(party(C,v[0])||{}).n+'↔'+(party(C,v[1])||{}).n).join(', '):'연정을 거부하는 정당 쌍이 없습니다. 정당 카드에서 정할 수 있습니다.'; }
+function qCard(i){ const q=C.Q[i];
+  return '<div class="qed'+(q.on?'':' off')+'" data-qi="'+i+'"><div class="qh"><input type="checkbox" id="qon-'+i+'" data-k="Q.'+i+'.on" title="시험에 포함" aria-label="시험에 포함"'+(q.on?' checked':'')+'><input class="in" id="qt-'+i+'" data-k="Q.'+i+'.t" value="'+esc(q.t)+'" maxlength="80" aria-label="질문 제목"><button type="button" class="x" data-act="delQ" data-i="'+i+'" aria-label="질문 삭제">×</button></div>'+
+   '<div class="ab2"><label class="fl"><span>A안 (왼쪽)</span><textarea class="in" rows="2" id="qa-'+i+'" data-k="Q.'+i+'.A" maxlength="200">'+esc(q.A)+'</textarea></label><label class="fl"><span>B안 (오른쪽)</span><textarea class="in" rows="2" id="qb-'+i+'" data-k="Q.'+i+'.B" maxlength="200">'+esc(q.B)+'</textarea></label></div>'+
+   '<div class="fgrid"><label class="fl"><span>분야</span><select class="in" id="qf-'+i+'" data-k="Q.'+i+'.f" data-re="1">'+C.F.map(F=>'<option value="'+esc(F.k)+'"'+(F.k===q.f?' selected':'')+'>'+esc(F.n)+'</option>').join('')+'</select></label>'+
+    '<label class="fl"><span>스펙트럼 축</span><select class="in" id="qx-'+i+'" data-k="Q.'+i+'.ax">'+[['e','경제 (분배↔시장)'],['s','정치·안보 (자유↔질서)'],['','반영 안 함']].map(([v,n])=>'<option value="'+v+'"'+(q.ax===v?' selected':'')+'>'+n+'</option>').join('')+'</select></label>'+
+    '<label class="fl"><span>종류</span><select class="in" id="qg-'+i+'" data-k="Q.'+i+'.g" data-bool="1" data-re="1"><option value=""'+(q.g?'':' selected')+'>역사 속 쟁점</option><option value="1"'+(q.g?' selected':'')+'>나의 정치 의견</option></select></label>'+
+    (q.g?'':['L','R'].map(s=>'<label class="fl"><span>'+(s==='L'?'A안':'B안')+' 정당 (결과에 공개)</span><select class="in" id="q'+s+'-'+i+'" data-k="Q.'+i+'.'+s+'"><option value="">없음</option>'+C.P.map(p=>'<option value="'+p.k+'"'+(q[s]===p.k?' selected':'')+'>'+esc(p.n)+'</option>').join('')+'</select></label>').join(''))+'</div>'+
+   '<div class="poss"><span class="lbl">정당 위치 (A안 −100 … +100 B안)'+(q.g?' · 손대지 않은 정당은 성향에서 자동 계산':'')+'</span>'+C.P.map(p=>{ const v=pos(q,p), auto=q.g&&q.p[p.k]==null;
+     return '<label class="posrow"><span><i class="dot" style="background:'+p.c+'"></i>'+esc(p.n)+'</span><input type="range" min="-1" max="1" step="0.05" id="qp-'+i+'-'+p.k+'" data-qp="'+i+'" data-pk="'+p.k+'" value="'+v.toFixed(2)+'" aria-label="'+esc(p.n)+' 위치"><b class="num" data-qv="'+i+'-'+p.k+'">'+fmtP(v)+(auto?' 자동':'')+'</b></label>'; }).join('')+
+   (q.g?'<button type="button" class="link" data-act="qAuto" data-i="'+i+'">모두 자동으로 되돌리기</button>':'')+'</div></div>'; }
+function qGroup(k){ const ids=C.Q.map((q,i)=>i).filter(i=>C.Q[i].f===k);
+  return (ids.length?ids.map(qCard).join(''):'<p class="hint">이 분야에는 아직 질문이 없습니다.</p>')+'<button type="button" class="add" data-act="addQ" data-f2="'+esc(k)+'">+ 질문 추가</button>'; }
+function viewEdit(){
+  toHome.hidden=false; const sy=window.scrollY;
+  const nq=k=>C.Q.filter(q=>q.f===k).length, non=k=>C.Q.filter(q=>q.f===k&&q.on).length;
+  app.innerHTML='<section class="stack" id="ed">'+
+   '<div><span class="eyebrow">'+asmName(C)+' · '+C.y+'</span><h2 style="font-size:clamp(24px,6vw,30px);margin-top:4px">시험 편집</h2><p class="lead">고친 내용은 이 브라우저에 바로 저장됩니다. 맨 아래 “다른 기기로 이동”으로 다른 기기에 옮길 수 있습니다.</p></div>'+
+   // 1 국회
+   '<details class="box sec" data-o="asm"'+op('asm')+'><summary><span class="sn">1</span><h3>국회</h3><span class="hint">의석수 조정·수정</span></summary><div class="secb">'+
+    '<div class="fgrid">'+fsel('선거구제','sys',[['smd','소선거구 (1인)'],['mmd','중대선거구 (2인)']])+fnum('지역구 의석','D',1000)+fsel('비례 명칭','ln',[['전국구','전국구'],['비례대표','비례대표']])+fnum('비례·전국구 의석','Lst',1000)+fnum('그중 준연동형','semi',1000)+fnum('그중 제1당 프리미엄','bonus',1000)+fnum('비례 봉쇄조항 (%)','thr',20,.5)+'</div>'+
+    '<div id="asmsum">'+asmSum()+'</div></div></details>'+
+   // 2 정당
+   '<details class="box sec" data-o="party"'+op('party')+'><summary><span class="sn">2</span><h3>정당</h3><span class="hint">추가·제거·수정 · '+C.P.length+'개</span></summary><div class="secb"><p class="hint">위에서 아래 순서와 상관없이, “전체 성향”이 본회의장 자리(왼쪽→오른쪽)를 정합니다. 실제 의석은 “실제 결과” 비교와 “당시 지지 기반 반영”에 쓰입니다.</p>'+
+    '<div class="rows">'+C.P.map((p,i)=>partyCard(i)).join('')+'</div>'+(C.P.length<12?'<button type="button" class="add" data-act="addP">+ 정당 추가</button>':'<p class="hint">정당은 최대 12개까지입니다.</p>')+'</div></details>'+
+   // 3 특성
+   '<details class="box sec" data-o="trait"'+op('trait')+'><summary><span class="sn">3</span><h3>이념적 특성</h3><span class="hint">'+C.T.length+'개</span></summary><div class="secb"><p class="hint">정당 카드에서 특성을 고르면 그 정당의 성향(스펙트럼 맵 위치와 “나의 정치 의견” 질문의 입장)이 특성으로 계산됩니다. 특성이 하나도 없는 정당은 역사 쟁점 입장으로 계산합니다.</p>'+
+    '<div class="rows">'+C.T.map((t,j)=>'<div class="trow"><input class="in" id="tn-'+j+'" data-k="T.'+j+'.n" value="'+esc(t.n)+'" maxlength="30" aria-label="특성 이름"><select class="in" id="te-'+j+'" data-k="T.'+j+'.e" data-num="1" aria-label="경제축">'+optNear(t.e,AXE)+'</select><select class="in" id="ts-'+j+'" data-k="T.'+j+'.s" data-num="1" aria-label="정치축">'+optNear(t.s,AXS)+'</select><span class="hint num">'+usedBy(t.id)+'개 정당</span><button type="button" class="x" data-act="delT" data-j="'+j+'" aria-label="특성 삭제">×</button></div>').join('')+'</div>'+
+    '<div class="trow add2"><input class="in" id="ntn" maxlength="30" placeholder="새 특성, 예: 균형 외교" aria-label="새 특성 이름"><select class="in" id="nte" aria-label="새 특성 경제축">'+optNear(0,AXE)+'</select><select class="in" id="nts" aria-label="새 특성 정치축">'+optNear(0,AXS)+'</select><button type="button" class="chip" data-act="addT">+ 추가</button></div></div></details>'+
+   // 4 연정
+   '<details class="box sec" data-o="coal"'+op('coal')+'><summary><span class="sn">4</span><h3>연립 정부</h3><span class="hint">연합 이름 '+C.co.named.length+'개</span></summary><div class="secb">'+
+    '<label class="chk"><input type="checkbox" id="cospan" data-k="co.span"'+(C.co.span?' checked':'')+'><span>성향이 가까운 정당끼리만 연합<small>왼쪽→오른쪽 자리 순서에서 3칸 이내인 정당끼리만 묶습니다.</small></span></label>'+
+    '<p class="hint" id="vetosum">'+esc(vetoText())+'</p>'+
+    '<div class="rows">'+C.co.named.map((c,i)=>'<div class="coed"><div class="prow2"><input class="in" id="con-'+i+'" data-k="co.named.'+i+'.n" value="'+esc(c.n)+'" maxlength="40" aria-label="연합 이름"><button type="button" class="x" data-act="delCo" data-i="'+i+'" aria-label="연합 삭제">×</button></div><div class="chips">'+C.P.map(p=>'<button type="button" class="chip" data-act="coM" data-i="'+i+'" data-pk2="'+p.k+'" aria-pressed="'+c.m.includes(p.k)+'">'+esc(p.n)+'</button>').join('')+'</div></div>').join('')+'</div>'+
+    '<button type="button" class="add" data-act="addCo">+ 연합 이름 추가</button><p class="hint">결과에서 이 구성과 똑같은 연합이 나오면 이름이 붙고, 목록 맨 앞에 보입니다.</p></div></details>'+
+   // 5 주제·질문
+   '<details class="box sec" data-o="qs"'+op('qs')+'><summary><span class="sn">5</span><h3>주제 및 질문</h3><span class="hint">분야 '+C.F.length+'개 · 질문 '+C.Q.filter(q=>q.on).length+' / '+C.Q.length+'</span></summary><div class="secb">'+
+    '<span class="lbl">분야</span><div class="rows">'+C.F.map((F,i)=>'<div class="frow2"><input type="color" class="clr" id="fc-'+i+'" data-k="F.'+i+'.c" value="'+F.c+'" aria-label="분야 색"><input class="in" id="fn-'+i+'" data-k="F.'+i+'.n" value="'+esc(F.n)+'" maxlength="30" aria-label="분야 이름"><input class="in" id="fd-'+i+'" data-k="F.'+i+'.d" value="'+esc(F.d)+'" maxlength="80" placeholder="설명" aria-label="분야 설명"><span class="hint num">'+non(F.k)+'/'+nq(F.k)+'</span><button type="button" class="x" data-act="delF" data-i="'+i+'" aria-label="분야 삭제"'+(C.F.length<=1?' disabled':'')+'>×</button></div>').join('')+'</div>'+
+    (C.F.length<12?'<button type="button" class="add" data-act="addF">+ 분야 추가</button>':'')+
+    '<span class="lbl" style="margin-top:14px;display:block">질문 <span class="hint">(체크를 끄면 시험에서 빠집니다)</span></span><div class="rows">'+C.F.map(F=>'<details class="card" data-o="q'+esc(F.k)+'"'+op('q'+F.k)+'><summary><i class="dot" style="background:'+F.c+'"></i><b>'+esc(F.n)+'</b><span class="hint num">'+non(F.k)+' / '+nq(F.k)+'</span></summary><div class="secb" data-qb="'+esc(F.k)+'">'+(OPEN['q'+F.k]?qGroup(F.k):'')+'</div></details>').join('')+'</div></div></details>'+
+   // 6 이동
+   '<details class="box sec" data-o="io"'+op('io')+'><summary><span class="sn">6</span><h3>시험을 다른 기기로 이동</h3></summary><div class="secb"><p class="hint">“현재 시험 보기”로 나온 글을 복사해 다른 기기의 같은 칸에 붙여 넣고 “글에서 불러오기”를 누르세요. 몇 대 국회인지도 함께 옮겨집니다.</p>'+
+    '<textarea class="in mono" id="io" rows="5" spellcheck="false" aria-label="시험 데이터"></textarea><div class="acts" style="margin-top:8px"><button type="button" class="chip" data-act="exp">현재 시험 보기</button><button type="button" class="chip" data-act="copy">복사</button><button type="button" class="chip" data-act="imp">글에서 불러오기</button><span class="hint" id="iomsg"></span></div>'+
+    '<div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px"><button type="button" class="link danger" data-act="reset">원래대로 되돌리기</button> <span class="hint" id="rsmsg">이 국회의 편집 내용을 모두 지우고 처음 데이터로 돌아갑니다.</span></div></div></details>'+
+   '<div class="launch"><button type="button" class="cta" id="estart"'+(C.N&&C.Q.some(q=>q.on)?'':' disabled')+'>분야 정하고 시작하기</button><button type="button" class="cta ghost" id="eback">국회 소개로</button></div>'+
+  '</section>';
+  const root=$('#ed');
+  root.addEventListener('input',onEdInput); root.addEventListener('click',onEdClick);
+  root.addEventListener('toggle',e=>{ const d=e.target, o=d.dataset&&d.dataset.o; if(!o) return; OPEN[o]=d.open; const b=d.querySelector('[data-qb]'); if(d.open&&b&&!b.innerHTML) b.innerHTML=qGroup(b.dataset.qb); },true);
+  $('#estart').addEventListener('click',()=>{ FK.forEach(k=>{ S.fimp[k]=2; }); viewPrio(); });
+  $('#eback').addEventListener('click',viewHome);
+  window.scrollTo(0,sy); }
+function rerender(){ viewEdit(); }
+function setPath(path,v){ const ps=path.split('.'); let o=C; for(let i=0;i<ps.length-1;i++) o=o[ps[i]]; o[ps[ps.length-1]]=v; }
+function fixAsm(){ C.D=ci(C.D,0,1000); C.Lst=ci(C.Lst,0,1000); C.semi=ci(C.semi,0,C.Lst); C.bonus=ci(C.bonus,0,C.Lst-C.semi); C.thr=clamp(+C.thr||0,0,20);
+  ['semi','bonus'].forEach(k=>{ const el=$('#e-'+k); if(el&&document.activeElement!==el&&+el.value!==C[k]) el.value=C[k]; }); }
+function onEdInput(e){
+  const el=e.target;
+  if(el.dataset.qp!=null){ const i=+el.dataset.qp, k=el.dataset.pk; C.Q[i].p[k]=+el.value; save(); const b=$('[data-qv="'+i+'-'+k+'"]'); if(b) b.textContent=fmtP(+el.value); return; }
+  if(el.dataset.fix!=null){ const n=ci(el.value,0,1000); if(n) C.fixed[el.dataset.fix]=n; else delete C.fixed[el.dataset.fix]; save(); $('#asmsum').innerHTML=asmSum(); return; }
+  if(el.dataset.gov!=null){ const k=el.dataset.gov; C.gov=C.gov.filter(x=>x!==k); if(el.checked) C.gov.push(k); save(); const i=C.P.findIndex(p=>p.k===k); const s=$('[data-ps="'+i+'"]'); if(s) s.textContent=C.P[i].s+'석'+(el.checked?' · 여당':''); return; }
+  const k=el.dataset.k; if(!k) return;
+  let v=el.type==='checkbox'?el.checked:el.dataset.num?+el.value:el.dataset.bool?el.value==='1':el.value;
+  if(el.dataset.num&&!Number.isFinite(v)) return;
+  if(/^Q\.\d+\.(L|R)$/.test(k)) v=v||null;
+  setPath(k,v);
+  if(ASMK.includes(k)) fixAsm();
+  save();
+  let m;
+  if(ASMK.includes(k)) $('#asmsum').innerHTML=asmSum();
+  else if((m=/^P\.(\d+)\.(n|c|l|s)$/.exec(k))){ const i=+m[1], p=C.P[i];
+    if(m[2]==='n'){ const b=$('[data-pn="'+i+'"]'); if(b) b.textContent=p.n; }
+    if(m[2]==='c'){ const d=$('[data-pd="'+i+'"]'); if(d) d.style.background=p.c; }
+    if(m[2]==='l'){ const d=$('[data-lv="'+i+'"]'); if(d) d.textContent=fmtL(p.l); }
+    if(m[2]==='s'){ const d=$('[data-ps="'+i+'"]'); if(d) d.textContent=p.s+'석'+(C.gov.includes(p.k)?' · 여당':''); $('#asmsum').innerHTML=asmSum(); } }
+  else if((m=/^Q\.(\d+)\.on$/.exec(k))){ const d=$('.qed[data-qi="'+m[1]+'"]'); if(d) d.classList.toggle('off',!v); }
+  if(el.dataset.re) rerender(); }
+function onEdClick(e){
+  const b=e.target.closest('[data-act]'); if(!b||b.disabled) return; const a=b.dataset.act, i=+b.dataset.i;
+  if(a==='tr'){ const p=C.P[i], id=b.dataset.id, l=((p.tr[id]||0)+1)%4; if(l) p.tr[id]=l; else delete p.tr[id]; b.dataset.l=l; b.setAttribute('aria-pressed',l>0); b.querySelector('small').textContent=SL[l]; save(); return; }
+  if(a==='veto'){ const x=b.dataset.a, y=b.dataset.b, j=C.co.veto.findIndex(v=>(v[0]===x&&v[1]===y)||(v[0]===y&&v[1]===x)); if(j>=0) C.co.veto.splice(j,1); else C.co.veto.push([x,y]); save();
+    $$('[data-act="veto"]').forEach(c=>{ const cx=c.dataset.a, cy=c.dataset.b; if((cx===x&&cy===y)||(cx===y&&cy===x)) c.setAttribute('aria-pressed',j<0); }); const vs=$('#vetosum'); if(vs) vs.textContent=vetoText(); return; }
+  if(a==='coM'){ const c=C.co.named[i], k=b.dataset.pk2, j=c.m.indexOf(k); if(j>=0) c.m.splice(j,1); else c.m.push(k); b.setAttribute('aria-pressed',j<0); save(); return; }
+  if(a==='qAuto'){ C.Q[i].p={}; save(); const d=$('.qed[data-qi="'+i+'"]'); if(d) d.outerHTML=qCard(i); return; }
+  if(a==='addP'){ const k='p'+Date.now().toString(36); C.P.push({k,n:'새 정당',c:'#8a8f9c',l:0,s:0,d:'',tr:{}}); OPEN.party=true; OPEN['p'+k]=true; }
+  else if(a==='delP'){ const k=C.P[i].k; C.P.splice(i,1); C.Q.forEach(q=>{ delete q.p[k]; if(q.L===k) q.L=null; if(q.R===k) q.R=null; }); delete C.fixed[k]; C.gov=C.gov.filter(x=>x!==k);
+    C.co.veto=C.co.veto.filter(v=>v[0]!==k&&v[1]!==k); C.co.named.forEach(c=>{ c.m=c.m.filter(x=>x!==k); }); }
+  else if(a==='addT'){ const n=$('#ntn').value.trim(); if(!n){ $('#ntn').focus(); return; } C.T.push({id:'t'+Date.now().toString(36),n:n.slice(0,30),e:+$('#nte').value,s:+$('#nts').value}); OPEN.trait=true; }
+  else if(a==='delT'){ const id=C.T[+b.dataset.j].id; C.T.splice(+b.dataset.j,1); C.P.forEach(p=>{ delete p.tr[id]; }); }
+  else if(a==='addCo'){ C.co.named.push({n:'새 연합',m:[]}); OPEN.coal=true; }
+  else if(a==='delCo'){ C.co.named.splice(i,1); }
+  else if(a==='addF'){ const k='f'+Date.now().toString(36); C.F.push({k,n:'새 분야',c:'#8a7f9c',d:''}); }
+  else if(a==='delF'){ const k=C.F[i].k; C.F.splice(i,1); const to=C.F[0].k; C.Q.forEach(q=>{ if(q.f===k) q.f=to; }); }
+  else if(a==='addQ'){ const f=b.dataset.f2; C.Q.push({t:'새 질문',A:'',B:'',L:null,R:null,p:{},ax:'s',g:false,f,on:true}); OPEN.qs=true; OPEN['q'+f]=true; }
+  else if(a==='delQ'){ C.Q.splice(i,1); }
+  else if(a==='exp'){ $('#io').value=strip(C); $('#iomsg').textContent='현재 시험을 글로 표시했습니다.'; return; }
+  else if(a==='copy'){ const ta=$('#io'); if(!ta.value) ta.value=strip(C); const sel=()=>{ ta.focus(); ta.select(); $('#iomsg').textContent='글을 선택했습니다. 직접 복사해 주세요.'; };
+    try{ navigator.clipboard.writeText(ta.value).then(()=>{ $('#iomsg').textContent='복사했습니다.'; },sel); }catch(_){ sel(); } return; }
+  else if(a==='imp'){ let c=null; try{ c=norm(JSON.parse($('#io').value)); }catch(_){}
+    if(!c){ $('#iomsg').textContent='글을 읽지 못했습니다. 처음 중괄호부터 마지막 중괄호까지 빠짐없이 붙여 넣어 주세요.'; return; }
+    S.ai=DATA.findIndex(d=>d.n===c.n); try{ localStorage.setItem('kr-asm-sel',S.ai); }catch(_){} C=c; setFields(); save(); OPEN.io=true; rerender(); $('#iomsg').textContent=asmName(C)+' 시험을 불러왔습니다.'; return; }
+  else if(a==='reset'){ if(!b.dataset.arm){ b.dataset.arm='1'; b.textContent='정말 되돌리기'; $('#rsmsg').textContent='한 번 더 누르면 편집 내용이 모두 지워집니다.'; return; }
+    try{ localStorage.removeItem(SKEY(C.n)); }catch(_){} C=baseScenario(S.ai); C._edited=false; setFields(); }
+  save(); if(a==='reset'){ try{ localStorage.removeItem(SKEY(C.n)); }catch(_){} C._edited=false; }
+  setFields(); rerender(); }
+
+toHome.addEventListener('click',viewHome);
+loadScenario();
+viewHome();
+})();
+
+</script>
+
+</body></html>
