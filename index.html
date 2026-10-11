@@ -294,6 +294,9 @@ details.how p{color:var(--ink2);font-size:14px;margin:10px 0 0}
 .csel .in{padding:4px 6px;font-size:12px}
 .cabg{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
 .lgrow{display:flex;gap:12px;align-items:flex-start}
+.urlrow{display:flex;gap:6px;width:100%;max-width:420px}.urlrow .in{flex:1;min-width:0}
+.picmsg:empty{display:none}
+.dropon{outline:2px dashed var(--c,#888);outline-offset:3px}
 .lgbox{width:64px;height:64px;border:2px solid var(--c);border-radius:10px;overflow:hidden;flex:none;display:grid;place-items:center;background:#ffffff}
 .lgbox img{width:88%;height:88%;object-fit:contain}
 .lgbox span{font-weight:800;color:var(--c);font-size:18px}
@@ -1319,7 +1322,7 @@ function baseScenario(i){ const a=JSON.parse(JSON.stringify(DATA[i]));
   const keys=a.P.map(p=>p.k);
   a.co={span:true,veto:[],named:(NAMED[a.n]||[]).map(([n,m])=>({n,m:m.filter(k=>keys.includes(k))}))};
   a.N=a.D+a.Lst+sum(Object.values(a.fixed)); a.v=QV; return a; }
-const okImg=v=>typeof v==='string'&&/^data:image\/(jpeg|png|webp);base64,/.test(v)&&v.length<200000?v:'';
+const okImg=v=>typeof v!=='string'?'':(/^data:image\/(jpeg|png|webp|gif|svg\+xml);base64,[A-Za-z0-9+/=]+$/.test(v)&&v.length<300000)||(/^https:\/\/[^\s"'<>()]+$/.test(v)&&v.length<1500)?v:'';
 function norm(c){
   if(!c||!Array.isArray(c.P)||!Array.isArray(c.Q)||!Array.isArray(c.F)||c.P.length<2||!c.F.length) return null;
   const base=DATA.find(d=>d.n===Math.round(+c.n)); if(!base) return null;
@@ -1329,7 +1332,7 @@ function norm(c){
   const seen=new Set();
   c.P=c.P.slice(0,12).map(p=>{ let k=String(p&&p.k||'p'+Math.random().toString(36).slice(2,7)); while(seen.has(k)) k+='x'; seen.add(k);
     const tr={}; Object.keys(p.tr||{}).forEach(id=>{ const l=ci(p.tr[id],0,3); if(l) tr[id]=l; });
-    return {k,n:String(p.n||'정당').slice(0,40),c:HEX.test(p.c)?p.c:'#888888',l:clamp(+p.l||0,-1,1),s:ci(p.s,0,1000),d:String(p.d||'').slice(0,120),ld:String(p.ld||'').slice(0,30),logo:typeof p.logo==='string'&&/^data:image\/(jpeg|png|webp);base64,/.test(p.logo)&&p.logo.length<200000?p.logo:'',ldph:okImg(p.ldph),pp:(Array.isArray(p.pp)?p.pp:[]).slice(0,12).filter(x=>x&&typeof x.n==='string').map(x=>({n:x.n.slice(0,30),r:String(x.r||'').slice(0,20),s:MIN.some(m=>m[0]===x.s)?x.s:'',img:okImg(x.img)})),tr}; });
+    return {k,n:String(p.n||'정당').slice(0,40),c:HEX.test(p.c)?p.c:'#888888',l:clamp(+p.l||0,-1,1),s:ci(p.s,0,1000),d:String(p.d||'').slice(0,120),ld:String(p.ld||'').slice(0,30),logo:okImg(p.logo),ldph:okImg(p.ldph),pp:(Array.isArray(p.pp)?p.pp:[]).slice(0,12).filter(x=>x&&typeof x.n==='string').map(x=>({n:x.n.slice(0,30),r:String(x.r||'').slice(0,20),s:MINF[x.s]!=null?x.s:'',img:okImg(x.img)})),tr}; });
   const keys=new Set(c.P.map(p=>p.k));
   const fseen=new Set(); c.F=c.F.slice(0,12).map(F=>{ let k=String(F.k||'f'); while(fseen.has(k)) k+='x'; fseen.add(k); return {k,n:String(F.n||'분야').slice(0,30),c:HEX.test(F.c)?F.c:'#888888',d:String(F.d||'').slice(0,80)}; });
   c.T=(Array.isArray(c.T)?c.T:DEF_TRAITS).slice(0,60).filter(t=>t&&t.id).map(t=>({id:String(t.id),n:String(t.n||t.id).slice(0,30),e:clamp(+t.e||0,-1,1),s:clamp(+t.s||0,-1,1)}));
@@ -1442,7 +1445,7 @@ function flagSvg(){
   return '<svg class="wb-flag" viewBox="0 0 90 60" role="img" aria-label="태극기"><rect width="90" height="60" fill="#ffffff"/>'+
     '<g transform="rotate(33.69 45 30)"><circle cx="45" cy="30" r="15" fill="#0047a0"/><path d="M30 30a15 15 0 0 1 30 0a7.5 7.5 0 0 1-15 0a7.5 7.5 0 0 0-15 0z" fill="#cd2e3a"/></g>'+
     '<g fill="#000000">'+tri(213.69,'111')+tri(326.31,'010')+tri(146.31,'101')+tri(33.69,'000')+'</g></svg>'; }
-const mark=(p,sz)=>p.logo?'<img class="plogo" src="'+p.logo+'" alt="" style="width:'+(sz||16)+'px;height:'+(sz||16)+'px;border-color:'+p.c+'">':'<i class="dot" style="background:'+p.c+'"></i>';
+const mark=(p,sz)=>p.logo?'<img class="plogo" src="'+esc(p.logo)+'" alt="" style="width:'+(sz||16)+'px;height:'+(sz||16)+'px;border-color:'+p.c+'">':'<i class="dot" style="background:'+p.c+'"></i>';
 const abbr=n=>{ const w=n.replace(/[()·]/g,' ').split(/\s+/).filter(Boolean); return w.length>1?w.map(x=>x[0]).join('').slice(0,3):n.slice(0,2); };
 function wikibox(a,mode,R){
   const real=mode==='real', st=real?actual(a):R.tot, N=a.N, M=maj(N), sumSt=Math.max(1,sum(st));
@@ -1451,7 +1454,7 @@ function wikibox(a,mode,R){
   const pct=v=>(v*100).toFixed(1)+'%';
   let rows='';
   for(let k=0;k<top.length;k+=3){ const g=top.slice(k,k+3), pad='<td></td>'.repeat(3-g.length), row=(th,fn,cls)=>'<tr'+(cls?' class="'+cls+'"':'')+'><th scope="row">'+th+'</th>'+g.map(f=>'<td>'+fn(f,a.P[f])+'</td>').join('')+pad+'</tr>';
-    rows+=row('',(f,p)=>'<div class="wb-ph'+(p.ldph?' pic':p.logo?' lg':'')+'" style="--c:'+p.c+'">'+(p.ldph?'<img src="'+p.ldph+'" alt="'+esc(p.ld||p.n)+'">':p.logo?'<img src="'+p.logo+'" alt="'+esc(p.n)+' 로고">':'<span>'+esc(abbr(p.n))+'</span>')+'</div><div class="wb-cb" style="background:'+p.c+'"></div>','wb-pics')+
+    rows+=row('',(f,p)=>'<div class="wb-ph'+(p.ldph?' pic':p.logo?' lg':'')+'" style="--c:'+p.c+'">'+(p.ldph?'<img src="'+esc(p.ldph)+'" alt="'+esc(p.ld||p.n)+'">':p.logo?'<img src="'+esc(p.logo)+'" alt="'+esc(p.n)+' 로고">':'<span>'+esc(abbr(p.n))+'</span>')+'</div><div class="wb-cb" style="background:'+p.c+'"></div>','wb-pics')+
       (anyLd?row('대표',(f,p)=>p.ld?(f===ord[0]?'<b>'+esc(p.ld)+'</b>':esc(p.ld)):'—'):'')+
       row('정당',(f,p)=>'<span class="wb-link">'+esc(p.n)+'</span>')+
       (!real?row('득표율',f=>pct(R.vs[f])):'')+
@@ -1855,23 +1858,28 @@ function fsel(label,key,opts){ return '<label class="fl"><span>'+label+'</span><
 function asmSum(){ const sp=sum(C.P.map(p=>p.s));
   return '<p class="tot">총 <b class="num">'+C.N+'</b>석 · 과반 <b class="num">'+maj(C.N)+'</b> · 개헌선 <b class="num">'+two3(C.N)+'</b></p>'+sysBar(C)+
     '<p class="hint" style="margin-top:6px">간선·고정 의석은 정당 카드에서 정합니다 (지금 '+fixSum(C)+'석). 준연동형과 제1당 프리미엄은 비례 의석 안에서 나뉩니다.'+(sp!==C.N?' <b class="warn">정당들의 실제 의석 합계('+sp+'석)가 총 의석과 다릅니다.</b>':'')+'</p>'; }
-function phBox(img,c,txt,w,id,small){ return '<div class="phbox'+(small?' sm':'')+'" style="--c:'+c+'">'+(img?'<img src="'+img+'" alt="">':'<span>'+esc(txt)+'</span>')+'</div>'; }
+function phBox(img,c,txt,w,id,small){ return '<div class="phbox'+(small?' sm':'')+'" data-drop="'+w+'" title="사진 파일이나 이미지를 여기로 끌어다 놓기" style="--c:'+c+'">'+(img?'<img src="'+esc(img)+'" alt="">':'<span>'+esc(txt)+'</span>')+'</div>'; }
+// 사진 넣기 도구: 파일 · 링크 · 붙여넣기 · 끌어다 놓기
+function picCtl(t,has,lbl){ return '<div class="chips"><label class="chip phup">'+(lbl||'사진')+' 파일<input type="file" accept="image/*,.svg" data-pic="'+t+'" hidden></label>'+
+  '<button type="button" class="chip" data-act="picUrl" data-t="'+t+'" aria-expanded="false">링크·붙여넣기</button>'+(has?'<button type="button" class="link danger" data-act="picDel" data-t="'+t+'">지우기</button>':'')+'</div>'+
+  '<div class="urlrow" data-urlrow="'+t+'" hidden><input class="in" data-picurl="'+t+'" placeholder="이미지 주소나 위키백과 파일 링크, 또는 이미지를 여기 붙여넣기" aria-label="이미지 링크"><button type="button" class="chip" data-act="picGo" data-t="'+t+'">넣기</button></div>'+
+  '<small class="hint picmsg" data-picmsg="'+t+'" aria-live="polite"></small>'; }
 function partyCard(i){ const p=C.P[i];
   return '<details class="card" data-o="p'+p.k+'"'+op('p'+p.k)+'><summary><span data-pd="'+i+'">'+mark(p,18)+'</span><b data-pn="'+i+'">'+esc(p.n)+'</b><span class="hint num" data-ps="'+i+'">'+p.s+'석'+(C.gov.includes(p.k)?' · 여당':'')+'</span></summary><div class="secb">'+
    '<label class="fl"><span>정당 이름</span><input class="in" id="pn-'+p.k+'" data-k="P.'+i+'.n" value="'+esc(p.n)+'" aria-label="정당 이름" maxlength="40"></label>'+
-   '<div class="tg"><span class="lbl">정당 로고</span><div class="lgrow"><div class="lgbox" style="--c:'+p.c+'">'+(p.logo?'<img src="'+p.logo+'" alt="">':'<span>'+esc(abbr(p.n))+'</span>')+'</div><div class="phact"><label class="chip phup">로고 이미지 올리기<input type="file" accept="image/*" id="plg-'+p.k+'" data-logo="'+i+'" hidden></label>'+(p.logo?'<button type="button" class="link danger" data-act="delLogo" data-i="'+i+'">로고 지우기</button>':'')+'<small class="hint">정사각형으로 맞춰 저장되고, 결과표의 정당 카드와 정당 목록에 나옵니다. 이 브라우저에만 저장됩니다.</small></div></div></div>'+
+   '<div class="tg"><span class="lbl">정당 로고</span><div class="lgrow"><div class="lgbox" data-drop="logo:'+i+'" title="로고 파일(SVG 포함)이나 이미지를 여기로 끌어다 놓기" style="--c:'+p.c+'">'+(p.logo?'<img src="'+esc(p.logo)+'" alt="">':'<span>'+esc(abbr(p.n))+'</span>')+'</div><div class="phact">'+picCtl('logo:'+i,!!p.logo,'로고')+'<small class="hint">PNG·JPG·WEBP·SVG 파일, 이미지 링크, 붙여넣기, 끌어다 놓기 모두 됩니다. SVG는 그대로 선명하게 저장됩니다.</small></div></div></div>'+
    '<div class="tg"><span class="lbl">정당 색</span><div class="crow"><input type="color" class="clr" id="pc-'+p.k+'" data-k="P.'+i+'.c" value="'+p.c+'" aria-label="정당 색 고르기"><input class="in mono hexin" id="phx-'+p.k+'" data-hex="'+i+'" value="'+p.c.toUpperCase()+'" maxlength="7" aria-label="정당 색 코드" spellcheck="false">'+
     ((NAMU[C.n]||{})[p.k]?'<button type="button" class="chip" data-act="cNamu" data-i="'+i+'">나무위키 색 <i class="sw" style="background:'+NAMU[C.n][p.k]+'"></i></button>':'')+'</div>'+
     '<div class="swrow">'+SWATCH.map(c=>'<button type="button" class="sw'+(c.toLowerCase()===p.c.toLowerCase()?' on':'')+'" data-act="sw" data-i="'+i+'" data-c="'+c+'" style="background:'+c+'" aria-label="'+c+'"></button>').join('')+'</div></div>'+
    '<div class="tg"><span class="lbl">총재·대표 <span class="hint">(위키백과식 결과표 사진 자리에 나옵니다)</span></span><div class="ldrow">'+phBox(p.ldph,p.c,abbr(p.ld||p.n),'lead:'+i,'pldph-'+p.k)+
     '<div class="phact"><input class="in" id="pld-'+p.k+'" data-k="P.'+i+'.ld" value="'+esc(p.ld||'')+'" placeholder="선거 당시 총재·대표 이름" maxlength="30" aria-label="총재·대표 이름">'+
-    '<div class="chips"><label class="chip phup">사진 올리기<input type="file" accept="image/*" id="pldf-'+p.k+'" data-img="lead:'+i+'" hidden></label>'+(p.ldph?'<button type="button" class="link danger" data-act="delImg" data-w="lead:'+i+'">사진 지우기</button>':'')+
-    (p.ld?'<a class="link" href="https://ko.wikipedia.org/wiki/'+encodeURIComponent(p.ld.split('·')[0])+'" target="_blank" rel="noopener">위키백과 열기 ↗</a>':'')+'</div>'+
-    '<small class="hint">이 페이지는 보안상 다른 사이트의 그림을 주소로 불러올 수 없어서, 위키백과 등에서 받은 사진 파일을 올려야 합니다. 정부 구성 때 국무총리나 장관으로도 나옵니다.</small></div></div></div>'+
+    picCtl('lead:'+i,!!p.ldph)+
+    (p.ld?'<a class="link" href="https://ko.wikipedia.org/wiki/'+encodeURIComponent(p.ld.split('·')[0])+'" target="_blank" rel="noopener">위키백과에서 사진 찾기 ↗</a>':'')+
+    '<small class="hint">위키백과 사진은 그림을 눌러 나온 파일 링크(…/wiki/파일:…)를 붙여넣거나, 이미지를 길게 눌러/우클릭해 “이미지 복사” 후 링크 칸에 붙여넣으세요.</small></div></div></div>'+
    '<div class="tg"><span class="lbl">정당 인물 <span class="hint">(연립 정부의 장관 후보 · 전문 부처를 고르면 그 부처를 먼저 맡습니다)</span></span><div class="rows">'+(p.pp||[]).map((x,j)=>'<div class="pprow2">'+phBox(x.img,p.c,(x.n||'?').slice(0,1),'pp:'+i+':'+j,'ppi-'+p.k+'-'+j,true)+
      '<div class="ppf"><div class="pprow"><input class="in" id="ppn-'+p.k+'-'+j+'" data-k="P.'+i+'.pp.'+j+'.n" value="'+esc(x.n)+'" placeholder="이름" maxlength="30" aria-label="인물 이름"><input class="in" id="ppr-'+p.k+'-'+j+'" data-k="P.'+i+'.pp.'+j+'.r" value="'+esc(x.r)+'" placeholder="직책, 예: 원내대표" maxlength="20" aria-label="직책"><button type="button" class="x" data-act="ppDel" data-i="'+i+'" data-j="'+j+'" aria-label="인물 삭제">×</button></div>'+
      '<div class="pprow"><select class="in" id="pps-'+p.k+'-'+j+'" data-k="P.'+i+'.pp.'+j+'.s" aria-label="전문 부처"><option value="">전문 부처 없음</option>'+minsOf(C).filter(m=>m[0]!=='국무총리').map(m=>'<option value="'+m[0]+'"'+(x.s===m[0]?' selected':'')+'>'+m[0]+'</option>').join('')+'</select>'+
-     '<label class="chip phup">사진<input type="file" accept="image/*" id="ppf-'+p.k+'-'+j+'" data-img="pp:'+i+':'+j+'" hidden></label>'+(x.img?'<button type="button" class="link danger" data-act="delImg" data-w="pp:'+i+':'+j+'">지우기</button>':'')+'</div></div></div>').join('')+'</div>'+
+     '</div>'+picCtl('pp:'+i+':'+j,!!x.img)+'</div></div>').join('')+'</div>'+
     ((p.pp||[]).length<12?'<button type="button" class="add" data-act="ppAdd" data-i="'+i+'">+ 인물 추가</button>':'')+'</div>'+
    '<input class="in" id="pdsc-'+p.k+'" data-k="P.'+i+'.d" value="'+esc(p.d)+'" placeholder="짧은 설명" maxlength="120" aria-label="정당 설명">'+
    '<div class="fgrid"><label class="fl"><span>실제 의석</span><input class="in" type="number" min="0" max="1000" id="ps-'+p.k+'" data-k="P.'+i+'.s" data-num="1" value="'+p.s+'"></label>'+
@@ -1931,6 +1939,15 @@ function viewEdit(){
   '</section>';
   const root=$('#ed');
   root.addEventListener('input',onEdInput); root.addEventListener('click',onEdClick); root.addEventListener('change',onLogo);
+  root.addEventListener('paste',e=>{ const t=e.target.dataset&&e.target.dataset.picurl; if(!t) return; const it=[...(e.clipboardData&&e.clipboardData.items||[])].find(x=>x.kind==='file'&&/^image\//.test(x.type));
+    if(it){ e.preventDefault(); setPic(t,it.getAsFile()); } });
+  root.addEventListener('keydown',e=>{ const t=e.target.dataset&&e.target.dataset.picurl; if(t&&e.key==='Enter'){ e.preventDefault(); setPic(t,e.target.value); } });
+  root.addEventListener('dragover',e=>{ const d=e.target.closest&&e.target.closest('[data-drop]'); if(!d) return; e.preventDefault(); d.classList.add('dropon'); });
+  root.addEventListener('dragleave',e=>{ const d=e.target.closest&&e.target.closest('[data-drop]'); if(d) d.classList.remove('dropon'); });
+  root.addEventListener('drop',e=>{ const d=e.target.closest&&e.target.closest('[data-drop]'); if(!d) return; e.preventDefault(); d.classList.remove('dropon'); const dt=e.dataTransfer, t=d.dataset.drop;
+    const f=[...(dt.files||[])].find(x=>/^image\//.test(x.type)||/\.svg$/i.test(x.name)); if(f) return setPic(t,f);
+    let u=(dt.getData('text/uri-list')||'').split('\n').find(x=>x&&x[0]!=='#'); if(!u){ const h=dt.getData('text/html'), m=h&&h.match(/<img[^>]+src="([^"]+)"/i); u=m?m[1].replace(/&amp;/g,'&'):dt.getData('text/plain'); }
+    if(u) setPic(t,u.trim()); else picMsg(t,'이미지를 찾지 못했어요. 파일이나 이미지를 끌어다 놓아 주세요.'); });
   root.addEventListener('toggle',e=>{ const d=e.target, o=d.dataset&&d.dataset.o; if(!o) return; OPEN[o]=d.open; const b=d.querySelector('[data-qb]'); if(d.open&&b&&!b.innerHTML) b.innerHTML=qGroup(b.dataset.qb); },true);
   $('#estart').addEventListener('click',()=>{ FK.forEach(k=>{ S.fimp[k]=2; }); viewPrio(); });
   $('#eback').addEventListener('click',viewHome);
@@ -1938,9 +1955,43 @@ function viewEdit(){
   window.scrollTo(0,sy); }
 function rerender(){ viewEdit(); }
 // 정당 로고: 올린 파일을 정사각형 안에 맞춰 작게 저장
-function onLogo(e){ const el=e.target; if(el.dataset.txt&&el.files&&el.files[0]) return loadTxt(el); if(el.dataset.img!=null&&el.files&&el.files[0]) return onImg(el); if(el.dataset.logo==null||!el.files||!el.files[0]) return; const i=+el.dataset.logo, f=el.files[0]; if(!/^image\//.test(f.type)) return;
+function onLogo(e){ const el=e.target; if(el.dataset.txt&&el.files&&el.files[0]) return loadTxt(el); if(el.dataset.pic&&el.files&&el.files[0]) return setPic(el.dataset.pic,el.files[0]); if(el.dataset.img!=null&&el.files&&el.files[0]) return onImg(el); if(el.dataset.logo==null||!el.files||!el.files[0]) return; const i=+el.dataset.logo, f=el.files[0]; if(!/^image\//.test(f.type)) return;
   const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{ const S2=128,cv=document.createElement('canvas'); cv.width=cv.height=S2; const k=Math.min(S2/im.width,S2/im.height), w=im.width*k, h=im.height*k;
     cv.getContext('2d').drawImage(im,(S2-w)/2,(S2-h)/2,w,h); try{ C.P[i].logo=cv.toDataURL('image/png'); }catch(_){ return; } if(C.P[i].logo.length>200000) C.P[i].logo=cv.toDataURL('image/webp',.9); save(); rerender(); }; im.src=rd.result; }; rd.readAsDataURL(f); }
+// ── 사진·로고 넣기: 파일, 링크, 붙여넣기, 끌어다 놓기를 한곳에서 처리
+// 로고는 정사각형 PNG(SVG는 그대로), 인물 사진은 세로 3:4 JPG로 작게 줄여 이 브라우저에 저장
+function picMsg(t,m){ const el=$('[data-picmsg="'+t+'"]'); if(el) el.textContent=m; }
+function putPic(t,url){ const w=t.split(':'), p=C.P[+w[1]]; if(!p) return; if(w[0]==='logo') p.logo=url; else if(w[0]==='lead') p.ldph=url; else if(p.pp[+w[2]]) p.pp[+w[2]].img=url; save(); rerender(); }
+const loadIm=(src,cors)=>new Promise((ok,no)=>{ const im=new Image(); if(cors) im.crossOrigin='anonymous'; const to=setTimeout(()=>no(new Error('timeout')),9000);
+  im.onload=()=>{ clearTimeout(to); ok(im); }; im.onerror=()=>{ clearTimeout(to); no(new Error('load')); }; im.src=src; });
+const fileUrl=f=>new Promise((ok,no)=>{ const rd=new FileReader(); rd.onload=()=>ok(rd.result); rd.onerror=no; rd.readAsDataURL(f); });
+const b64u=t=>btoa(unescape(encodeURIComponent(t)));
+function raster(t,im){ const logo=t.startsWith('logo'), cv=document.createElement('canvas'), g=cv.getContext('2d'), iw=im.naturalWidth||im.width||300, ih=im.naturalHeight||im.height||300;
+  if(logo){ const S2=160; cv.width=cv.height=S2; const k=Math.min(S2/iw,S2/ih); g.drawImage(im,(S2-iw*k)/2,(S2-ih*k)/2,iw*k,ih*k); let u=cv.toDataURL('image/png'); if(u.length>200000) u=cv.toDataURL('image/webp',.9); return u; }
+  const W=150,H=200,k=Math.max(W/iw,H/ih); cv.width=W; cv.height=H; g.fillStyle='#fff'; g.fillRect(0,0,W,H); g.drawImage(im,(W-iw*k)/2,(H-ih*k)/3,iw*k,ih*k); return cv.toDataURL('image/jpeg',.82); }
+// 위키백과·위키미디어 공용의 "파일:" 문서 링크를 실제 그림 주소로 바꿈
+function wikiFile(u){ const m=u.match(/^https?:\/\/([a-z\-]+\.(?:m\.)?(?:wikipedia|wikimedia)\.org)\/wiki\/(?:파일|File|Image|그림|ファイル):([^?#]+)/i);
+  if(m) return 'https://'+m[1].replace('.m.','.')+'/wiki/Special:FilePath/'+m[2]+'?width=400';
+  const h=u.match(/#\/media\/(?:파일|File):([^?#]+)/); if(h) return 'https://commons.wikimedia.org/wiki/Special:FilePath/'+h[1]+'?width=400';
+  return u; }
+async function setPic(t,src){
+  if(!src||(typeof src==='string'&&!src.trim())) return picMsg(t,'파일을 고르거나 링크를 넣어 주세요.');
+  const logo=t.startsWith('logo'); picMsg(t,'불러오는 중…');
+  try{
+    if(typeof src!=='string'){ const f=src, svg=/svg/.test(f.type)||/\.svg$/i.test(f.name||'');
+      if(!svg&&!/^image\//.test(f.type)) return picMsg(t,'그림 파일이 아니에요.');
+      if(svg){ const txt=await f.text(); if(!/<svg[\s>]/i.test(txt)) return picMsg(t,'SVG 내용을 읽지 못했어요.'); const url='data:image/svg+xml;base64,'+b64u(txt);
+        if(logo&&url.length<300000) return putPic(t,url); return putPic(t,raster(t,await loadIm(url))); }
+      return putPic(t,raster(t,await loadIm(await fileUrl(f)))); }
+    let u=src.trim(); if(/^data:image\//.test(u)){ if(logo&&/^data:image\/svg/.test(u)&&okImg(u)) return putPic(t,u); return putPic(t,raster(t,await loadIm(u))); }
+    if(/^\/\//.test(u)) u='https:'+u; if(!/^https?:\/\//i.test(u)) return picMsg(t,'https:// 로 시작하는 이미지 주소를 넣어 주세요.');
+    u=wikiFile(u.replace(/^http:/i,'https:'));
+    // ① 내려받아 저장 ② 교차 출처 그림으로 줄여 저장 ③ 링크 그대로 저장
+    try{ const r=await fetch(u,{mode:'cors'}); if(r.ok){ const b=await r.blob(); if(/^image\//.test(b.type)) return setPic(t,new File([b],u.split('?')[0].split('/').pop()||'img',{type:b.type})); } }catch(_){}
+    try{ const im=await loadIm(u,true); return putPic(t,raster(t,im)); }catch(_){}
+    try{ await loadIm(u,false); if(okImg(u)){ putPic(t,u); return; } }catch(_){}
+    picMsg(t,'이 링크는 열 수 없어요(사이트나 이 페이지의 보안 설정이 막음). 이미지를 길게 눌러/우클릭해 “이미지 복사” 후 링크 칸에 붙여넣거나, 파일로 저장해 올려 주세요.');
+  }catch(err){ picMsg(t,'이미지를 읽지 못했어요. 다른 파일로 해 보세요.'); } }
 // 인물 사진: 세로 3:4로 잘라 작게 저장
 function onImg(el){ const w=el.dataset.img.split(':'), f=el.files[0]; if(!/^image\//.test(f.type)) return;
   const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{ const W=150,H=200,cv=document.createElement('canvas'); cv.width=W; cv.height=H; const k=Math.max(W/im.width,H/im.height);
@@ -2031,6 +2082,9 @@ function onEdClick(e){
   if(a==='coM'){ const c=C.co.named[i], k=b.dataset.pk2, j=c.m.indexOf(k); if(j>=0) c.m.splice(j,1); else c.m.push(k); b.setAttribute('aria-pressed',j<0); save(); return; }
   if(a==='delImg'){ const w=b.dataset.w.split(':'), p=C.P[+w[1]]; if(w[0]==='lead') p.ldph=''; else if(p.pp[+w[2]]) p.pp[+w[2]].img=''; save(); rerender(); return; }
   if(a==='delLogo'){ C.P[i].logo=''; save(); rerender(); return; }
+  if(a==='picDel'){ putPic(b.dataset.t,''); return; }
+  if(a==='picUrl'){ const r=$('[data-urlrow="'+b.dataset.t+'"]'); r.hidden=!r.hidden; b.setAttribute('aria-expanded',!r.hidden); if(!r.hidden) $('input',r).focus(); return; }
+  if(a==='picGo'){ setPic(b.dataset.t,$('[data-picurl="'+b.dataset.t+'"]').value); return; }
   if(a==='sw'){ C.P[i].c=b.dataset.c.toLowerCase(); save(); syncColor(i); return; }
   if(a==='cNamu'){ C.P[i].c=NAMU[C.n][C.P[i].k].toLowerCase(); save(); syncColor(i); return; }
   if(a==='ppAdd'){ (C.P[i].pp=C.P[i].pp||[]).push({n:'',r:'',s:'',img:''}); OPEN['p'+C.P[i].k]=true; save(); rerender(); const els=$$('[id^="ppn-'+C.P[i].k+'-"]'); if(els.length) els[els.length-1].focus(); return; }
