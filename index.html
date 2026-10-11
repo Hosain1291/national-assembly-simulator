@@ -1221,6 +1221,31 @@ const DEF_TRAITS=[['welfare','복지 확대',-1,0],['redist','분배·증세',-1
   ['democ','민주화·개혁',0,-1],['rights','인권·자유',0,-1],['engage','대북 포용',0,-1],['parl','의회 중심',0,-.5],['prog','진보적 가치',-.5,-.5],
   ['anticom','반공',0,1],['security','안보 강경',0,1],['alliance','한미동맹',0,.5],['order','법질서',0,1],['strongpres','강한 대통령',0,1],['trad','전통 가치',0,.5],['region','지역 기반',0,0]]
   .map(([id,n,e,s])=>({id,n,e,s}));
+// 기본 정당 이념적 특성(1 약 · 2 중 · 3 강) — 편집 화면에서 바꿀 수 있음
+const DEF_TR=(o=>{ const r={}; for(const n in o){ r[n]={}; for(const k in o[n]){ r[n][k]={}; o[n][k].split(' ').forEach(x=>{ const [id,l]=x.split(':'); r[n][k][id]=+l; }); } } return r; })({
+1:{dc:'anticom:3 strongpres:2 order:2 alliance:1',hm:'market:3 anticom:3 parl:3 trad:2',jm:'anticom:3 order:2 security:2',dd:'anticom:3 security:2 order:1',mu:'farm:1 balance:1'},
+2:{mg:'parl:3 market:2 anticom:2 democ:1',mu:'farm:1 balance:1',no:'labor:2 anticom:2 welfare:1',gm:'anticom:3 strongpres:2 order:2',dh:'anticom:3 security:3 order:2',dk:'strongpres:2 anticom:2 market:1'},
+3:{mg:'parl:3 democ:2 market:2 anticom:2',jy:'strongpres:3 anticom:3 order:2 alliance:2 growth:1'},
+4:{mj:'democ:3 parl:2 market:2 rights:2 anticom:1',tu:'engage:2 democ:1 welfare:1',jy:'strongpres:3 anticom:3 order:3 alliance:2 growth:1'},
+5:{sd:'redist:3 welfare:3 labor:2 engage:3 prog:2',hs:'redist:2 welfare:2 engage:2 labor:2',mj:'parl:3 democ:3 market:2 rights:2 alliance:1',jy:'anticom:3 order:2 strongpres:2'},
+6:{gh:'growth:3 strongpres:3 anticom:3 order:2 chaebol:1',mj:'democ:3 rights:2 market:1 parl:1',md:'democ:2 parl:2 market:2 rights:1',ku:'democ:2 market:1 rights:1',ja:'market:2 democ:1 anticom:2'},
+7:{gh:'growth:3 strongpres:3 anticom:3 order:2 chaebol:1',sm:'democ:3 rights:2 welfare:1 market:1',dj:'welfare:2 democ:2 farm:1'},
+8:{gh:'growth:3 strongpres:3 anticom:3 order:2 chaebol:2',sm:'democ:3 rights:3 welfare:2 farm:1 engage:1',mz:'welfare:2 democ:2 labor:1',kd:'market:2 democ:1 anticom:1'},
+9:{gh:'growth:3 strongpres:3 anticom:3 order:3 chaebol:2',yj:'strongpres:3 order:3 anticom:3 security:2 growth:2',sm:'democ:3 rights:3 welfare:2 labor:1',tt:'democ:3 rights:2 engage:2 welfare:1'},
+10:{gh:'growth:3 strongpres:3 anticom:3 order:3 chaebol:2',yj:'strongpres:3 order:3 anticom:3 security:2 growth:2',sm:'democ:3 rights:3 welfare:2 labor:2',tt:'democ:3 rights:2 engage:2 welfare:1'},
+11:{mjj:'strongpres:3 order:3 anticom:3 growth:2 alliance:2',kn:'anticom:2 growth:2 trad:1 market:1',mh:'democ:1 welfare:1 market:1 anticom:1',ms:'welfare:2 redist:2 labor:2 democ:1',mk:'democ:2 rights:1 welfare:1',sj:'democ:1 market:1'},
+12:{mjj:'strongpres:3 order:3 anticom:3 growth:2 alliance:2',kn:'anticom:2 growth:2 trad:1 market:1',mh:'democ:1 market:1 welfare:1',shm:'democ:3 rights:3 welfare:2 labor:1 parl:1',sjs:'redist:2 welfare:2 labor:2 democ:2',smj:'democ:2 welfare:1 rights:1'},
+13:{mjj:'order:2 anticom:2 growth:2 alliance:2 strongpres:2',tm:'democ:2 market:2 rights:1 region:2',pm:'democ:3 welfare:2 engage:2 rights:2 balance:2 region:3',gj:'parl:3 anticom:3 growth:2 trad:2 region:2',hg:'democ:3 engage:3 labor:2 prog:2 redist:2'},
+14:{mja:'market:2 growth:2 order:2 anticom:2 alliance:2 parl:1',md:'democ:3 welfare:2 engage:2 rights:2 balance:1',tk:'market:3 chaebol:3 growth:2 openness:1',sj:'market:1 balance:1'},
+15:{sh:'market:2 openness:2 growth:2 order:2 alliance:2 security:2',kh:'democ:2 welfare:2 engage:3 balance:2 region:2',jm:'parl:3 anticom:3 trad:2 security:2 region:3 market:1',tm:'democ:2 rights:2 market:1 prog:1'},
+16:{hn:'market:2 security:3 alliance:3 order:2 growth:2',mj:'engage:3 welfare:2 democ:2 openness:2 balance:1',jm:'parl:2 anticom:3 trad:2 security:2 region:3',mk:'market:1 alliance:1 anticom:1',hs:'market:1 balance:1 region:1'},
+17:{hn:'market:3 security:3 alliance:3 order:2 growth:2 trad:1',ur:'democ:3 engage:3 balance:3 welfare:2 rights:2 prog:1',mj:'democ:1 engage:1 welfare:1 market:1 region:2',dn:'labor:3 redist:3 welfare:3 engage:3 prog:3 green:2',jm:'anticom:3 security:2 trad:2 region:3 parl:1',tg:'welfare:1 market:1 engage:1'},
+18:{hn:'market:3 growth:3 chaebol:2 openness:2 alliance:3 security:2',tm:'welfare:2 engage:2 democ:2 rights:2 balance:1',sj:'security:3 trad:2 anticom:2 market:1 region:2',cp:'security:2 alliance:2 order:2 market:1 trad:1',dn:'labor:3 redist:3 welfare:3 engage:3 prog:3 green:2',ch:'green:2 democ:2 welfare:1 market:1'},
+19:{sn:'market:2 welfare:1 security:3 alliance:3 order:2 growth:2',mt:'welfare:3 redist:2 engage:2 democ:2 rights:2 balance:2',tj:'labor:3 redist:3 welfare:3 engage:3 prog:3',sj:'security:2 trad:2 balance:2 region:3 market:1'},
+20:{sn:'market:2 growth:2 security:3 alliance:3 order:2 trad:1',dm:'welfare:3 engage:2 democ:2 rights:2 balance:2',kp:'market:2 democ:2 balance:2 region:2 rights:1',jd:'labor:3 redist:3 welfare:3 prog:3 green:2 engage:2'},
+21:{tt:'market:3 growth:2 security:3 alliance:3 order:2 trad:2',dm:'welfare:3 redist:2 engage:2 democ:3 balance:2 green:1',ym:'democ:3 prog:2 engage:2 welfare:1',kp:'market:2 rights:1 openness:1 democ:1',jd:'labor:3 redist:3 welfare:3 prog:3 green:3'},
+22:{pp:'market:3 growth:2 chaebol:1 security:3 alliance:3 order:3',dm:'welfare:3 redist:2 engage:2 democ:2 balance:2 labor:1',jk:'democ:3 prog:2 welfare:2 redist:2 rights:1',jb:'labor:3 redist:3 welfare:3 engage:3 prog:3',sm:'democ:2 balance:1 welfare:1 market:1',gs:'market:3 openness:2 rights:1 security:1'}
+});
 const NAMED={13:[['3당 합당',['mjj','tm','gj']],['야3당 공조',['pm','tm','gj']]],15:[['DJP 연합',['kh','jm']]],16:[['DJP 공조',['mj','jm']]],18:[['보수 대연합',['hn','sj','cp']]],20:[['야3당 공조',['dm','kp','jd']]],22:[['범야권 연대',['dm','jk','jb','sm','gs']]]};
 // 선거 당시 정당 대표(편집 화면에서 고칠 수 있음)
 const LEADERS={1:{dc:'이승만',hm:'김성수',dd:'지청천',jm:'이범석'},2:{mg:'신익희'},3:{jy:'이승만',mg:'신익희'},4:{jy:'이승만',mj:'조병옥'},
@@ -1250,11 +1275,11 @@ try{ const v=+localStorage.getItem('kr-asm-sel'); if(v>=0&&v<DATA.length) S.ai=v
 let C=null, FIELDS=[], FK=[];
 const fld=k=>FIELDS.find(F=>F.k===k)||{k,n:k,c:'#888888',d:''};
 const SKEY=n=>'kr-asm-edit-'+n;
-const QV=3; // 질문 세트 버전: 올리면 예전에 저장한 시험에 새 질문이 더해짐
+const QV=4; // 질문 세트 버전: 올리면 예전에 저장한 시험에 새 질문이 더해짐
 function baseScenario(i){ const a=JSON.parse(JSON.stringify(DATA[i]));
   a.Q.forEach(q=>{ if(q.g) q.p={}; q.on=true; });
   a.F=JSON.parse(JSON.stringify(DEF_FIELDS)); a.T=JSON.parse(JSON.stringify(DEF_TRAITS));
-  a.P.forEach(p=>{ p.tr={}; p.ld=(LEADERS[a.n]||{})[p.k]||''; p.logo=''; p.ldph=''; p.pp=[]; });
+  a.P.forEach(p=>{ p.tr=Object.assign({},(DEF_TR[a.n]||{})[p.k]||{}); p.ld=(LEADERS[a.n]||{})[p.k]||''; p.logo=''; p.ldph=''; p.pp=[]; });
   const keys=a.P.map(p=>p.k);
   a.co={span:true,veto:[],named:(NAMED[a.n]||[]).map(([n,m])=>({n,m:m.filter(k=>keys.includes(k))}))};
   a.N=a.D+a.Lst+sum(Object.values(a.fixed)); a.v=QV; return a; }
@@ -1288,7 +1313,7 @@ function loadScenario(){ let c=null; try{ const raw=localStorage.getItem(SKEY(DA
   // 예전 버전의 공통 의견 질문이 남아 있으면 이 국회 전용 질문으로 교체
   if(c){ const gt=new Set(GENERAL.map(x=>x[0])); if(c.Q.some(q=>q.g&&gt.has(q.t))){ const base=baseScenario(S.ai), have=new Set(c.Q.map(q=>q.t));
     c.Q=c.Q.filter(q=>!(q.g&&gt.has(q.t))).concat(base.Q.filter(q=>!have.has(q.t))); c=norm(c)||c; try{ localStorage.setItem(SKEY(c.n),strip(c)); }catch(e){} } }
-  if(c&&c.v<QV){ const base=baseScenario(S.ai), have=new Set(c.Q.map(q=>q.t)); c.Q=c.Q.concat(base.Q.filter(q=>!have.has(q.t))); c.v=QV; c=norm(c)||c; try{ localStorage.setItem(SKEY(c.n),strip(c)); }catch(e){} }
+  if(c&&c.v<QV){ const base=baseScenario(S.ai), have=new Set(c.Q.map(q=>q.t)); c.Q=c.Q.concat(base.Q.filter(q=>!have.has(q.t))); c.P.forEach(p=>{ const b=base.P.find(x=>x.k===p.k); if(b&&(!p.tr||!Object.keys(p.tr).length)) p.tr=Object.assign({},b.tr); }); delete c._ax; c.v=QV; c=norm(c)||c; try{ localStorage.setItem(SKEY(c.n),strip(c)); }catch(e){} }
   C=c||baseScenario(S.ai); C._edited=!!c; setFields(); }
 function save(){ C._ax=null; C.N=C.D+C.Lst+sum(Object.values(C.fixed)); try{ localStorage.setItem(SKEY(C.n),strip(C)); C._edited=true; }catch(e){} if(typeof fillIO==='function'&&document.getElementById('io')) fillIO(false); }
 const A=()=>C;
@@ -1300,10 +1325,13 @@ const sides=(a,q)=>{ const L=!q.g&&party(a,q.L), R=!q.g&&party(a,q.R); return L&
 function partyAx(a){ if(a._ax) return a._ax;
   const ev=a.Q.filter(q=>!q.g&&q.on&&q.ax);
   a._ax=a.P.map(p=>{ const ks=Object.keys(p.tr||{}).filter(id=>a.T.some(t=>t.id===id));
-    if(ks.length){ let x=0,xw=0,y=0,yw=0; ks.forEach(id=>{ const t=a.T.find(t=>t.id===id), v=TS[p.tr[id]]; x+=v*t.e; xw+=v*Math.abs(t.e); y+=v*t.s; yw+=v*Math.abs(t.s); });
-      return {e:x/(xw+.3),s:y/(yw+.3),src:'tr'}; }
     const m=k=>{ const qs=ev.filter(q=>q.ax===k); return qs.length?sum(qs.map(q=>q.p[p.k]!=null?q.p[p.k]:p.l))/qs.length:p.l; };
-    return {e:m('e'),s:m('s'),src:'q'}; });
+    const qe=m('e'), qs=m('s');
+    if(ks.length){ let x=0,xw=0,y=0,yw=0; ks.forEach(id=>{ const t=a.T.find(t=>t.id===id), v=TS[p.tr[id]]; x+=v*t.e; xw+=v*Math.abs(t.e); y+=v*t.s; yw+=v*Math.abs(t.s); });
+      // 특성이 있으면 특성 쪽을 더 크게 보되, 질문에서 나온 위치와 섞어 끝으로 쏠리지 않게 함
+      const te=x/(xw+.6), tsv=y/(yw+.6), we=xw?.6:0, wsv=yw?.6:0;
+      return {e:clamp(we*te+(1-we)*qe,-1,1),s:clamp(wsv*tsv+(1-wsv)*qs,-1,1),src:'tr'}; }
+    return {e:qe,s:qs,src:'q'}; });
   return a._ax; }
 function pos(q,p){ if(q.p[p.k]!=null) return q.p[p.k];
   if(q.g&&q.ax){ const ax=partyAx(C)[C.P.indexOf(p)]; return ax?clamp(ax[q.ax]*1.15,-1,1):p.l; }
