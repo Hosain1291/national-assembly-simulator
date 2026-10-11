@@ -261,6 +261,55 @@ details.how p{color:var(--ink2);font-size:14px;margin:10px 0 0}
 .wb tr.wb-pics td{padding-bottom:0}
 .wb-ph{aspect-ratio:3/4;max-width:100px;margin:0 auto;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 70%,#ffffff),var(--c));display:grid;place-items:center;border:1px solid var(--line2)}
 .wb-ph span{font-family:var(--f-display);font-weight:800;font-size:22px;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.wb-ph.pic{padding:0;overflow:hidden;background:var(--sunk)}
+.wb-ph.pic img{width:100%;height:100%;object-fit:cover;display:block}
+.ava{width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid;align-self:center}
+.prow:has(.ava){grid-template-columns:28px 1fr auto}
+.plogo{object-fit:contain;background:#ffffff;border:1.5px solid;border-radius:4px;flex:none;align-self:center;display:inline-block;vertical-align:middle}
+.prow:has(.plogo){grid-template-columns:18px 1fr auto}
+.wb-ph.lg{background:#ffffff;border:2px solid var(--c)}
+.wb-ph.lg img{width:80%;height:80%;object-fit:contain}
+.pres{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.pres-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:999px;padding:4px 12px;font-size:13px;background:var(--bg)}
+.pres-chip em{font-style:normal;font-weight:700;font-size:12px}
+.pres-chip em.ok,.vote.ok b{color:var(--ok)}
+.pres-chip em.bad,.vote.bad b{color:var(--warn)}
+.vote{margin:6px 0 0;font-size:13.5px;color:var(--ink2)}
+.ldrow{display:flex;gap:12px;align-items:flex-start}
+.phbox.sm{width:44px;border-bottom-width:3px}
+.phbox.sm span{font-size:14px;font-weight:700;color:var(--c)}
+.pprow2{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:8px}
+.ppf{display:grid;gap:6px;min-width:0}
+.pprow .chip{white-space:nowrap}
+.cabr2{display:grid;grid-template-columns:48px 1fr;gap:10px;padding:8px 10px;border-radius:10px;background:var(--bg);border-left:3px solid var(--c);font-size:13px;min-width:0}
+.cav{width:48px;aspect-ratio:3/4;border-radius:6px;overflow:hidden;background:var(--sunk);display:grid;place-items:center;border-bottom:3px solid var(--c)}
+.cav img{width:100%;height:100%;object-fit:cover;display:block}
+.cav span{font-weight:800;color:var(--c);font-size:18px}
+.cbody{display:grid;gap:4px;min-width:0}
+.ct{display:flex;gap:8px;align-items:baseline}
+.ct .num{color:var(--ink3);font-size:12px}
+.cwho{font-weight:600}
+.cwho small{color:var(--ink3);font-weight:500}
+.csel{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.csel .in{padding:4px 6px;font-size:12px}
+.cabg{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.lgrow{display:flex;gap:12px;align-items:flex-start}
+.lgbox{width:64px;height:64px;border:2px solid var(--c);border-radius:10px;overflow:hidden;flex:none;display:grid;place-items:center;background:#ffffff}
+.lgbox img{width:88%;height:88%;object-fit:contain}
+.lgbox span{font-weight:800;color:var(--c);font-size:18px}
+.crow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hexin{width:8.5em;flex:none;text-transform:uppercase}
+.swrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.sw{width:22px;height:22px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line2);padding:0;display:inline-block;vertical-align:middle}
+i.sw{width:12px;height:12px;border-width:1px}
+.sw.on{box-shadow:0 0 0 2px var(--ink)}
+.pprow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:6px;align-items:center}
+
+.phbox{width:72px;aspect-ratio:3/4;border:1px solid var(--line2);border-radius:8px;overflow:hidden;flex:none;display:grid;place-items:center;background:var(--sunk);border-bottom:4px solid var(--c)}
+.phbox img{width:100%;height:100%;object-fit:cover;display:block}
+.phbox span{font-size:12px;color:var(--ink3)}
+.phact{display:grid;gap:6px;justify-items:start;min-width:0}
+.phup{cursor:pointer}
 .wb-cb{height:5px;max-width:100px;margin:0 auto}
 .wb .wb-hr{padding:0;border-top:1px solid var(--line2);height:0}
 .wb small{font-size:11px}
@@ -329,6 +378,7 @@ details.card>.secb{padding:0 12px 12px;margin-top:2px}
 .cabbox h4{margin:0;font-size:15px}
 .cabg{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
 .cabr{display:grid;grid-template-columns:24px 1fr;gap:2px 8px;padding:7px 10px;border-radius:8px;background:var(--bg);border-left:3px solid var(--c);font-size:13px}
+.cpsel{padding:3px 6px;font-size:12px;max-width:100%}
 .cabr .num{grid-row:span 2;color:var(--ink3);font-size:12px;align-self:center}
 .cabr span:last-child{color:var(--ink3);font-size:12px;display:flex;gap:5px;align-items:center}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
@@ -1204,10 +1254,11 @@ const QV=3; // 질문 세트 버전: 올리면 예전에 저장한 시험에 새
 function baseScenario(i){ const a=JSON.parse(JSON.stringify(DATA[i]));
   a.Q.forEach(q=>{ if(q.g) q.p={}; q.on=true; });
   a.F=JSON.parse(JSON.stringify(DEF_FIELDS)); a.T=JSON.parse(JSON.stringify(DEF_TRAITS));
-  a.P.forEach(p=>{ p.tr={}; p.ld=(LEADERS[a.n]||{})[p.k]||''; });
+  a.P.forEach(p=>{ p.tr={}; p.ld=(LEADERS[a.n]||{})[p.k]||''; p.logo=''; p.ldph=''; p.pp=[]; });
   const keys=a.P.map(p=>p.k);
   a.co={span:true,veto:[],named:(NAMED[a.n]||[]).map(([n,m])=>({n,m:m.filter(k=>keys.includes(k))}))};
   a.N=a.D+a.Lst+sum(Object.values(a.fixed)); a.v=QV; return a; }
+const okImg=v=>typeof v==='string'&&/^data:image\/(jpeg|png|webp);base64,/.test(v)&&v.length<200000?v:'';
 function norm(c){
   if(!c||!Array.isArray(c.P)||!Array.isArray(c.Q)||!Array.isArray(c.F)||c.P.length<2||!c.F.length) return null;
   const base=DATA.find(d=>d.n===Math.round(+c.n)); if(!base) return null;
@@ -1217,7 +1268,7 @@ function norm(c){
   const seen=new Set();
   c.P=c.P.slice(0,12).map(p=>{ let k=String(p&&p.k||'p'+Math.random().toString(36).slice(2,7)); while(seen.has(k)) k+='x'; seen.add(k);
     const tr={}; Object.keys(p.tr||{}).forEach(id=>{ const l=ci(p.tr[id],0,3); if(l) tr[id]=l; });
-    return {k,n:String(p.n||'정당').slice(0,40),c:HEX.test(p.c)?p.c:'#888888',l:clamp(+p.l||0,-1,1),s:ci(p.s,0,1000),d:String(p.d||'').slice(0,120),ld:String(p.ld||'').slice(0,30),tr}; });
+    return {k,n:String(p.n||'정당').slice(0,40),c:HEX.test(p.c)?p.c:'#888888',l:clamp(+p.l||0,-1,1),s:ci(p.s,0,1000),d:String(p.d||'').slice(0,120),ld:String(p.ld||'').slice(0,30),logo:typeof p.logo==='string'&&/^data:image\/(jpeg|png|webp);base64,/.test(p.logo)&&p.logo.length<200000?p.logo:'',ldph:okImg(p.ldph),pp:(Array.isArray(p.pp)?p.pp:[]).slice(0,12).filter(x=>x&&typeof x.n==='string').map(x=>({n:x.n.slice(0,30),r:String(x.r||'').slice(0,20),s:MIN.some(m=>m[0]===x.s)?x.s:'',img:okImg(x.img)})),tr}; });
   const keys=new Set(c.P.map(p=>p.k));
   const fseen=new Set(); c.F=c.F.slice(0,12).map(F=>{ let k=String(F.k||'f'); while(fseen.has(k)) k+='x'; fseen.add(k); return {k,n:String(F.n||'분야').slice(0,30),c:HEX.test(F.c)?F.c:'#888888',d:String(F.d||'').slice(0,80)}; });
   c.T=(Array.isArray(c.T)?c.T:DEF_TRAITS).slice(0,60).filter(t=>t&&t.id).map(t=>({id:String(t.id),n:String(t.n||t.id).slice(0,30),e:clamp(+t.e||0,-1,1),s:clamp(+t.s||0,-1,1)}));
@@ -1324,6 +1375,7 @@ function flagSvg(){
   return '<svg class="wb-flag" viewBox="0 0 90 60" role="img" aria-label="태극기"><rect width="90" height="60" fill="#ffffff"/>'+
     '<g transform="rotate(33.69 45 30)"><circle cx="45" cy="30" r="15" fill="#0047a0"/><path d="M30 30a15 15 0 0 1 30 0a7.5 7.5 0 0 1-15 0a7.5 7.5 0 0 0-15 0z" fill="#cd2e3a"/></g>'+
     '<g fill="#000000">'+tri(213.69,'111')+tri(326.31,'010')+tri(146.31,'101')+tri(33.69,'000')+'</g></svg>'; }
+const mark=(p,sz)=>p.logo?'<img class="plogo" src="'+p.logo+'" alt="" style="width:'+(sz||16)+'px;height:'+(sz||16)+'px;border-color:'+p.c+'">':'<i class="dot" style="background:'+p.c+'"></i>';
 const abbr=n=>{ const w=n.replace(/[()·]/g,' ').split(/\s+/).filter(Boolean); return w.length>1?w.map(x=>x[0]).join('').slice(0,3):n.slice(0,2); };
 function wikibox(a,mode,R){
   const real=mode==='real', st=real?actual(a):R.tot, N=a.N, M=maj(N), sumSt=Math.max(1,sum(st));
@@ -1332,7 +1384,7 @@ function wikibox(a,mode,R){
   const pct=v=>(v*100).toFixed(1)+'%';
   let rows='';
   for(let k=0;k<top.length;k+=3){ const g=top.slice(k,k+3), pad='<td></td>'.repeat(3-g.length), row=(th,fn,cls)=>'<tr'+(cls?' class="'+cls+'"':'')+'><th scope="row">'+th+'</th>'+g.map(f=>'<td>'+fn(f,a.P[f])+'</td>').join('')+pad+'</tr>';
-    rows+=row('',(f,p)=>'<div class="wb-ph" style="--c:'+p.c+'"><span>'+esc(abbr(p.n))+'</span></div><div class="wb-cb" style="background:'+p.c+'"></div>','wb-pics')+
+    rows+=row('',(f,p)=>'<div class="wb-ph'+(p.ldph?' pic':p.logo?' lg':'')+'" style="--c:'+p.c+'">'+(p.ldph?'<img src="'+p.ldph+'" alt="'+esc(p.ld||p.n)+'">':p.logo?'<img src="'+p.logo+'" alt="'+esc(p.n)+' 로고">':'<span>'+esc(abbr(p.n))+'</span>')+'</div><div class="wb-cb" style="background:'+p.c+'"></div>','wb-pics')+
       (anyLd?row('대표',(f,p)=>p.ld?(f===ord[0]?'<b>'+esc(p.ld)+'</b>':esc(p.ld)):'—'):'')+
       row('정당',(f,p)=>'<span class="wb-link">'+esc(p.n)+'</span>')+
       (!real?row('득표율',f=>pct(R.vs[f])):'')+
@@ -1372,8 +1424,17 @@ function coalitions(a,st){
   const seen={}, out=[]; named.concat(res.slice(0,5)).forEach(c=>{ const k=c.m.slice().sort().join(','); if(!seen[k]){ seen[k]=1; out.push(c); } });
   return out.slice(0,6); }
 // 국무위원 배분: 의석 수로 순번을 정하고(동트 방식), 각 당은 자기가 강한 분야의 부처를 먼저 고름
+// 장관 후보: 총재·대표 + 정당 인물
+function cands(a,f){ const p=a.P[f], out=[]; if(p.ld) out.push({n:p.ld,img:p.ldph||'',r:'총재·대표',s:'',lead:true}); (p.pp||[]).forEach(x=>{ if(x.n) out.push({n:x.n,img:x.img||'',r:x.r,s:x.s||''}); }); return out; }
+// 국무총리는 그 당 대표, 나머지는 전문 부처가 맞는 인물부터, 그다음 남은 인물 순서
+function staff(a,list,asg){ const used={}, who={};
+  list.forEach(x=>{ const f=asg[x.min], cs=cands(a,f); used[f]=used[f]||{}; let j=-1;
+    if(x.min==='국무총리'){ j=cs.findIndex(c=>c.lead); if(j<0) j=cs.length?0:-1; }
+    else { j=cs.findIndex((c,k)=>!used[f][k]&&c.s===x.min); if(j<0) j=cs.findIndex((c,k)=>!used[f][k]&&!c.lead); if(j<0) j=cs.findIndex((c,k)=>!used[f][k]); }
+    if(j>=0){ used[f][j]=1; } who[x.min]=j; });
+  return who; }
 function cabinet(a,m,st,R){ const k={}, out=[], left=MIN.slice(); m.forEach(f=>{ k[f]=0; });
-  for(let n=0;left.length;n++){ let f=m[0]; m.forEach(x=>{ if(st[x]/(k[x]+1)>st[f]/(k[f]+1)+1e-9) f=x; });
+  for(let n=0;left.length;n++){ let f=m[0]; if(n>0) m.forEach(x=>{ if(st[x]/(k[x]+1)>st[f]/(k[f]+1)+1e-9) f=x; });
     let pick=left[0];
     if(n>0){ const aff=fk=>R.fields[fk]&&R.C[fk]&&R.C[fk].t?R.fields[fk].tot[f]/R.C[fk].t:0; pick=left.filter(x=>x[0]!=='국무총리').sort((x,y)=>aff(y[1])-aff(x[1])||MIN.indexOf(x)-MIN.indexOf(y))[0]; }
     out.push({min:pick[0],f,n:n+1}); left.splice(left.indexOf(pick),1); k[f]++; }
@@ -1454,7 +1515,7 @@ function detail(){
    '<div class="plist">'+sorted.map(f=>{ const p=a.P[f], [x,y]=xy[f];
      const te=x<-.33?'분배·국가 역할':x>.33?'시장·성장':'경제 중도', ts=y<-.33?'자유·개혁':y>.33?'질서·안보':'정치 중도';
      const trs=Object.keys(p.tr).map(id=>a.T.find(t=>t.id===id)).filter(Boolean).map(t=>t.n);
-     return '<div class="prow"><i class="dot" style="background:'+p.c+'"></i><div><b>'+esc(p.n)+'</b>'+(p.d?'<small>'+esc(p.d)+'</small>':'')+'<div class="tags"><span class="tag">'+te+'</span><span class="tag">'+ts+'</span>'+trs.map(t=>'<span class="tag tr">'+esc(t)+'</span>').join('')+'</div><div class="lean" title="전체 성향"><i style="left:'+((p.l+1)/2*100)+'%;background:'+p.c+'"></i></div></div><span class="num">'+p.s+'석</span></div>'; }).join('')+'</div>'+
+     return '<div class="prow">'+mark(p,18)+'<div><b>'+esc(p.n)+'</b>'+(p.ld?' <span class="hint">대표 '+esc(p.ld)+'</span>':'')+(p.pp&&p.pp.length?'<small>주요 인물: '+p.pp.map(x=>esc(x.n)+(x.r?'('+esc(x.r)+')':'')).join(', ')+'</small>':'')+(p.ld?' <span class="hint">'+esc(p.ld)+'</span>':'')+(p.d?'<small>'+esc(p.d)+'</small>':'')+'<div class="tags"><span class="tag">'+te+'</span><span class="tag">'+ts+'</span>'+trs.map(t=>'<span class="tag tr">'+esc(t)+'</span>').join('')+'</div><div class="lean" title="전체 성향"><i style="left:'+((p.l+1)/2*100)+'%;background:'+p.c+'"></i></div></div><span class="num">'+p.s+'석</span></div>'; }).join('')+'</div>'+
    '<h3 style="margin-top:18px">선거제도와 실제 결과</h3>'+sysBar(a)+
    (notes.length?'<p class="hint" style="margin-top:8px">'+notes.map(esc).join(' ')+'</p>':'')+
    '<div class="hemi" id="dh" style="margin-top:12px">'+hemiSvg(a.N)+'</div>'+
@@ -1589,8 +1650,8 @@ function viewResult(keep){
    '<div class="box"><h3>분야별 의석</h3><p class="hint sub">분야마다 걸린 의석과 정당별 획득 의석입니다. 중요도를 바꾸면 분야 의석이 다시 나뉘고 국회 전체가 다시 계산됩니다. 답하지 않은 분야는 실제 지지율대로 나눕니다.</p><div class="fbar" id="fsum"></div><div class="syslg" id="fslg" style="margin-bottom:6px"></div><div id="fres"></div></div>'+
    '<div class="box"><h3>정당 스펙트럼 맵</h3><p class="hint sub">가로는 경제, 세로는 정치·안보 성향입니다. 원 크기는 나의 결과 의석수, 흰 원이 나의 위치입니다.</p>'+compass(a,mine,true)+'</div>'+
    '<div class="box"><h3>의결 정족수로 본 나의 국회</h3><p class="hint sub">검은 선은 과반, 금색 선은 개헌·탄핵 소추에 필요한 3분의 2입니다.</p><div class="thr" id="thr"></div></div>'+
-   '<div class="box" id="cobox"><h3>연립 정부</h3><p class="hint sub">대통령제인 한국에서는 드문 일이지만, 내각제를 가정하면 어떤 연합이 과반('+M+'석)을 만들 수 있는지 보여 줍니다.'+(a.co.span?' 성향이 가까운 정당끼리만 묶습니다.':'')+(a.co.veto.length?' 서로 연정을 거부한 정당은 함께 묶지 않습니다.':'')+' “정부 구성”을 누르면 국무위원을 나눕니다.</p><div class="coal" id="coal"></div>'+
-    '<span class="lbl" style="display:block;margin:14px 0 6px">직접 연합 만들기</span><div class="chips" id="copick"></div><div class="go" id="cogo" style="margin-top:10px"></div><div id="cab"></div></div>'+
+   '<div class="box" id="cobox"><h3 id="cotitle"></h3><p class="hint sub" id="cohint"></p><div class="pres" id="presrow"></div><div class="coal" id="coal"></div>'+
+    '<span class="lbl" style="display:block;margin:14px 0 6px" id="copicklbl"></span><div class="chips" id="copick"></div><div class="go" id="cogo" style="margin-top:10px"></div><div id="cab"></div></div>'+
    '<div class="box"><h3>나와 가까운 정당</h3><p class="hint sub">답변한 질문에서 각 정당 입장과의 평균 일치도입니다. 중요한 분야일수록 크게 반영됩니다.</p><div class="match" id="match"></div></div>'+
    '<div class="box"><h3>질문별 의석과 표결</h3><p class="hint sub">각 입장이 어느 정당의 것이었는지 여기서 공개됩니다.</p><div id="bills"></div></div>'+
    '<div class="acts"><button type="button" class="cta" id="again">같은 국회 다시 하기</button><button type="button" class="cta ghost" id="edit2">시험 편집하기</button><button type="button" class="cta ghost" id="other">다른 국회 고르기</button></div>'+
@@ -1599,7 +1660,7 @@ function viewResult(keep){
     '<p>각 질문에서 막대 위치와 정당 입장 사이 거리로 종 모양(가우스) 득표를 냅니다. '+(a.sys==='mmd'?'중대선거구라 2위·3위 정당도 의석을 나눠 갖습니다.':'소선거구라 가장 가까운 정당에 의석이 몰립니다.')+' 나의 정치 의견 질문에서 정당 위치는 그 정당의 이념적 특성(없으면 쟁점 입장)으로 계산합니다.</p>'+
     (a.Lst?'<p>분야의 '+a.ln+' 몫은 그 분야 질문의 평균 득표율로 나눕니다'+(a.semi?'. 준연동형 몫은 분야 의석 × 득표율에서 지역구 의석을 뺀 값의 절반을 채워 주는 방식입니다':'')+(a.thr?'. 득표율 '+a.thr+'% 미만 정당은 제외합니다':'')+(a.bonus?'. 제1당 프리미엄 '+a.bonus+'석은 모든 분야 득표를 중요도로 가중한 1위 정당이 받습니다':'')+'. 무소속은 비례 의석을 받지 않습니다.</p>':'')+
     (fixSum(a)?'<p>간선·고정 의석 '+fixSum(a)+'석은 답변과 무관하게 정해진 정당에 돌아갑니다.</p>':'')+
-    '<p>연립 정부의 국무위원은 동트 방식으로 순번을 정하고, 각 정당은 자기가 의석을 많이 얻은 분야의 부처를 먼저 고릅니다. 첫 순번은 국무총리입니다.</p>'+
+    '<p>정부 구성: 대통령제에서는 국무총리를 여당(공동정부면 첫 정당)이 맡고, 나머지 부처는 참여 정당의 의석에 비례한 순번(동트 방식)으로 나눕니다. 각 정당은 자기가 의석을 많이 얻은 분야의 부처를 먼저 고릅니다. 국무총리 임명동의는 참여 정당 의석이 과반이면 가결로 봅니다. 제2공화국(5대)은 내각책임제로 계산합니다.</p>'+
     '<p>“당시 지지 기반 반영”이 켜져 있으면 실제 의석 비율의 0.8제곱을 곱해, 같은 거리라도 큰 정당이 더 받습니다. 무소속은 한 덩어리 정당이 아니므로 득표 계산에서 0.4배로 줄여, 가운데 답변을 무소속이 쓸어 가지 않게 했습니다.</p></details>'+
   '</section>';
   const show=v=>{ S.view=v; paint($('#rh'),a,v==='mine'?R:plain(real),v==='mine'?'석 · 나의 결과':'석 · 실제 결과',a.N);
@@ -1639,23 +1700,54 @@ function viewResult(keep){
   h+=thrRow('3분의 2',two3(a.N),'헌법 개정안·대통령 탄핵 소추 의결');
   if(gov.length) h+='<div class="t"><b>여당 의석</b><span class="num">'+govSeats+'석</span><small>'+(govSeats>=M?'여대야소: 정부 법안이 무난히 통과됩니다.':'여소야대: 야당이 국회를 주도합니다.')+(govSeats<bl?' 개헌저지선('+bl+'석)도 지키지 못합니다.':'')+'</small></div>';
   $('#thr').innerHTML=h;
-  // 연립 정부
+  // 정부 구성: 대통령제(대통령이 국무위원 임명, 국무총리는 국회 임명동의) · 제2공화국만 내각책임제
+  const parl=a.n===5, govF=gov.filter(f=>mine[f]>0), presName=String(a.pres).split(/\s*(?:→|\()/)[0].trim();
+  const PX=f=>f<0?{n:'비정당 전문가',c:'#8b9098',logo:'',k:'_x'}:a.P[f];
   const coBar=m=>'<div class="vbar" style="height:12px">'+m.map(f=>'<span style="width:'+(mine[f]/N*100)+'%;background:'+a.P[f].c+'"></span>').join('')+'<em style="left:'+(M/N*100)+'%"></em></div>';
-  const coRow=(m,label)=>{ const t=sum(m.map(f=>mine[f])), nm=label||coName(a,m);
-    return '<div class="co"><div class="t"><span>'+(nm?'<b>'+esc(nm)+'</b> ':'')+m.map(f=>esc(a.P[f].n)).join(' + ')+'</span><em class="num">'+t+'석</em></div>'+coBar(m)+'<button type="button" class="chip" data-co="'+m.join(',')+'" style="margin-top:8px">정부 구성</button></div>'; };
-  const co=mine[L]>=M?[]:coalitions(a,mine);
-  $('#coal').innerHTML=(mine[L]>=M?coRow([L],'단독 정부'):'')+(co.length?co.map(c=>coRow(c.m)).join(''):(mine[L]>=M?'':'<p class="hint">이 결과로는 조건을 지키며 과반을 만드는 연합이 없습니다. 아래에서 직접 소수 정부를 꾸려 볼 수 있습니다.</p>'));
+  const coRow=(m,label,note)=>{ const t=sum(m.map(f=>mine[f])), nm=label||coName(a,m);
+    return '<div class="co"><div class="t"><span>'+(nm?'<b>'+esc(nm)+'</b> ':'')+m.map(f=>esc(a.P[f].n)).join(' + ')+'</span><em class="num">'+t+'석</em></div>'+coBar(m)+(note?'<p class="hint" style="margin:4px 0 0">'+note+'</p>':'')+'<button type="button" class="chip" data-co="'+m.join(',')+'" style="margin-top:8px">'+(parl?'정부 구성':'내각 구성')+'</button></div>'; };
+  if(parl){
+    $('#cotitle').textContent='정부 구성 (내각책임제)';
+    $('#cohint').textContent='제2공화국은 내각책임제라 민의원 과반('+M+'석)의 지지를 얻은 연합이 국무총리를 내고 내각을 꾸립니다.'+(a.co.span?' 성향이 가까운 정당끼리만 묶습니다.':'');
+    $('#presrow').innerHTML='<span class="hint">대통령(국가원수) '+esc(presName)+' · 행정 실권은 국무총리</span>';
+    const co=mine[L]>=M?[]:coalitions(a,mine);
+    $('#coal').innerHTML=(mine[L]>=M?coRow([L],'단독 내각'):'')+(co.length?co.map(c=>coRow(c.m)).join(''):(mine[L]>=M?'':'<p class="hint">조건을 지키며 과반을 만드는 연합이 없습니다. 아래에서 소수 내각을 꾸려 볼 수 있습니다.</p>'));
+  } else {
+    const gs=sum(govF.map(f=>mine[f]));
+    $('#cotitle').textContent='정부 구성 (대통령제)';
+    $('#cohint').textContent='대통령이 국무위원을 임명하고, 국무총리만 국회 임명동의(과반 '+M+'석)를 받습니다. 여당이 과반이 안 되면 다른 정당과 정책 연대나 공동정부(예: DJP 연합)로 총리 인준을 얻어야 합니다.';
+    $('#presrow').innerHTML='<span class="pres-chip">대통령 <b>'+esc(presName)+'</b></span>'+(govF.length?'<span class="pres-chip">'+govF.map(f=>mark(a.P[f],14)+' '+esc(a.P[f].n)).join(' · ')+' <b class="num">'+gs+'석</b> '+(gs>=M?'<em class="ok">여대야소</em>':'<em class="bad">여소야대</em>')+'</span>':'<span class="hint">이 시기에는 대통령을 뒷받침하는 원내 여당이 없었습니다.</span>');
+    let rows='';
+    if(govF.length){ rows+=coRow(govF,'여당 단독 내각',gs>=M?'단독으로 국무총리 임명동의를 가결할 수 있습니다.':'총리 인준에 '+(M-gs)+'석이 모자랍니다. 야당 협조가 필요합니다.');
+      if(gs<M){ const co=coalitions(a,mine).filter(c=>govF.every(f=>c.m.includes(f))); rows+=co.length?co.map(c=>coRow(c.m,'',coName(a,c.m)?'':'공동정부(정책 연대) 후보')).join(''):'<p class="hint">조건을 지키며 여당과 함께 과반을 만드는 연대가 없습니다. 아래에서 직접 골라 볼 수 있습니다.</p>'; } }
+    else { const co=coalitions(a,mine); rows+=co.length?co.map(c=>coRow(c.m,'','대통령 지지 연합 후보')).join(''):''; }
+    $('#coal').innerHTML=rows;
+  }
+  $('#copicklbl').textContent=parl?'직접 연합 만들기':'직접 연대 만들기'+(govF.length?' (여당은 항상 포함)':'');
+  if(!parl&&govF.length) govF.forEach(f=>{ if(!S.pick.includes(f)) S.pick.unshift(f); });
   const drawPick=()=>{ S.pick=S.pick.filter(f=>mine[f]>0); const t=sum(S.pick.map(f=>mine[f])), bp=badPair(a,S.pick), nm=coName(a,S.pick);
-    $('#copick').innerHTML=a.P.map((p,f)=>mine[f]?'<button type="button" class="chip" data-pk="'+f+'" aria-pressed="'+S.pick.includes(f)+'"><i class="dot" style="background:'+p.c+';width:8px;height:8px"></i> '+esc(p.n)+' · '+mine[f]+'</button>':'').join('');
-    $('#cogo').innerHTML='<button type="button" class="chip" data-co="'+S.pick.join(',')+'"'+(S.pick.length&&!bp?'':' disabled')+'>이 연합으로 정부 구성</button> <span class="hint">'+(bp?esc(a.P[bp[0]].n)+'과(와) '+esc(a.P[bp[1]].n)+'은(는) 연정을 거부합니다':S.pick.length?(nm?'“'+esc(nm)+'” · ':'')+t+'석 · '+(t>=M?'과반 정부':'소수 정부 (과반까지 '+(M-t)+'석 부족)'):'정부에 참여할 정당을 고르세요')+'</span>'; };
+    $('#copick').innerHTML=a.P.map((p,f)=>mine[f]?'<button type="button" class="chip" data-pk="'+f+'" aria-pressed="'+S.pick.includes(f)+'"'+(!parl&&govF.includes(f)?' disabled title="여당"':'')+'>'+mark(p,12)+' '+esc(p.n)+' · '+mine[f]+'</button>':'').join('');
+    $('#cogo').innerHTML='<button type="button" class="chip" data-co="'+S.pick.join(',')+'"'+(S.pick.length&&!bp?'':' disabled')+'>이 구성으로 '+(parl?'정부':'내각')+' 구성</button> <span class="hint">'+(bp?esc(a.P[bp[0]].n)+'과(와) '+esc(a.P[bp[1]].n)+'은(는) 함께하길 거부합니다':S.pick.length?(nm?'“'+esc(nm)+'” · ':'')+t+'석 · '+(t>=M?(parl?'과반 내각':'총리 인준 가능'):(parl?'소수 내각':'총리 인준까지 '+(M-t)+'석 부족')):'참여할 정당을 고르세요')+'</span>'; };
   const drawCab=()=>{ if(!S.cab){ $('#cab').innerHTML=''; return; } const m=S.cab.filter(f=>mine[f]>0); if(!m.length){ $('#cab').innerHTML=''; return; }
-    const cb=cabinet(a,m.slice().sort((x,y)=>mine[y]-mine[x]),mine,R), t=sum(m.map(f=>mine[f])), cnt={}; cb.forEach(x=>{ cnt[x.f]=(cnt[x.f]||0)+1; });
-    $('#cab').innerHTML='<div class="cabbox"><h4>'+(coName(a,m)?esc(coName(a,m))+' ':'')+(m.length>1?'연립 정부':'단독 정부')+' · '+t+'석 '+(t>=M?'(과반)':'(소수 정부)')+'</h4>'+
-      '<div class="syslg" style="margin:6px 0 10px">'+m.map(f=>'<span><i class="dot" style="background:'+a.P[f].c+'"></i>'+esc(a.P[f].n)+' 국무위원 <b class="num">'+(cnt[f]||0)+'</b> · 연합 의석의 '+Math.round(mine[f]/t*100)+'%</span>').join('')+'</div>'+
-      '<div class="cabg">'+cb.map(x=>'<div class="cabr" style="--c:'+a.P[x.f].c+'"><span class="num">'+x.n+'</span><b>'+x.min+'</b><span><i class="dot" style="background:'+a.P[x.f].c+'"></i> '+esc(a.P[x.f].n)+'</span></div>').join('')+'</div></div>'; };
+    const key=m.join(','), lead=parl?m.slice().sort((x,y)=>mine[y]-mine[x]):m.slice().sort((x,y)=>(govF.includes(y)-govF.includes(x))||mine[y]-mine[x]);
+    if(!S.cabSt||S.cabSt.key!==key){ const cb=cabinet(a,lead,mine,R), asg={}; cb.forEach(x=>{ asg[x.min]=x.f; }); S.cabSt={key,list:cb,asg,auto:Object.assign({},asg),who:staff(a,cb,asg)}; }
+    const st=S.cabSt, t=sum(m.map(f=>mine[f])), cnt={}; st.list.forEach(x=>{ const f=st.asg[x.min]; cnt[f]=(cnt[f]||0)+1; });
+    const usedBy=(f,j,min)=>st.list.find(x=>x.min!==min&&st.asg[x.min]===f&&st.who[x.min]===j);
+    const opts=m;
+    const title=parl?(coName(a,m)?esc(coName(a,m))+' ':'')+(m.length>1?'연립 내각':'단독 내각'):(m.length>1?(coName(a,m)?esc(coName(a,m))+' ':'')+'공동정부':'여당 단독 내각');
+    $('#cab').innerHTML='<div class="cabbox"><h4>'+title+' · '+t+'석</h4>'+
+      '<p class="vote '+(t>=M?'ok':'bad')+'">국무총리 임명동의 예상: 찬성 '+t+'석 / 필요 '+M+'석 → <b>'+(t>=M?'가결':'부결 위험')+'</b></p>'+
+      '<div class="syslg" style="margin:6px 0 10px">'+opts.filter(f=>cnt[f]).map(f=>'<span>'+mark(PX(f),14)+' '+esc(PX(f).n)+' 국무위원 <b class="num">'+cnt[f]+'</b></span>').join('')+'</div>'+
+      (m.length>1?'<p class="hint" style="margin:0 0 8px">부처를 다른 참여 정당에 넘길 수 있습니다.</p>':'')+
+      '<div class="cabg">'+st.list.map(x=>{ const f=st.asg[x.min], p=PX(f);
+        return '<div class="cabr" style="--c:'+p.c+'"><span class="num">'+x.n+'</span><b>'+x.min+'</b><span>'+(m.length>1?'<select class="in cpsel" data-cp="'+x.min+'" aria-label="'+x.min+' 맡을 정당">'+opts.map(g=>'<option value="'+g+'"'+(g===f?' selected':'')+'>'+esc(PX(g).n)+'</option>').join('')+'</select>':mark(p,12)+' '+esc(p.n))+(f!==st.auto[x.min]?' <small class="hint">· 직접 배정</small>':'')+'</span></div>'; }).join('')+'</div>'+
+      '<div class="go" style="margin-top:10px"><button type="button" class="chip" id="cabReset">규칙대로 다시 배분</button></div></div>';
+    $('#cabReset').addEventListener('click',()=>{ S.cabSt=null; drawCab(); }); };
+  $('#cab').addEventListener('change',e=>{ const t=e.target, st=S.cabSt; if(!st) return;
+    if(t.dataset.cp){ st.asg[t.dataset.cp]=+t.value; drawCab(); } });
   $('#cobox').addEventListener('click',e=>{ const pk=e.target.closest('[data-pk]');
-    if(pk){ const f=+pk.dataset.pk, i=S.pick.indexOf(f); if(i>=0) S.pick.splice(i,1); else S.pick.push(f); drawPick(); return; }
-    const b=e.target.closest('[data-co]'); if(b&&b.dataset.co&&!b.disabled){ S.cab=b.dataset.co.split(',').map(Number); drawCab(); $('#cab').scrollIntoView({behavior:'smooth',block:'nearest'}); } });
+    if(pk&&!pk.disabled){ const f=+pk.dataset.pk, i=S.pick.indexOf(f); if(i>=0) S.pick.splice(i,1); else S.pick.push(f); drawPick(); return; }
+    const b=e.target.closest('[data-co]'); if(b&&b.dataset.co&&!b.disabled){ S.cab=b.dataset.co.split(',').map(Number); S.cabSt=null; drawCab(); $('#cab').scrollIntoView({behavior:'smooth',block:'nearest'}); } });
   drawPick(); drawCab();
   // 일치도
   const done=asked.filter(i=>S.ans[i]!=null);
@@ -1688,17 +1780,32 @@ const fmtL=v=>(v<-.05?'왼쪽 ':v>.05?'오른쪽 ':'중도 ')+Math.round(Math.ab
 const fmtP=v=>(v<-.05?'A ':v>.05?'B ':'')+Math.round(Math.abs(v)*100);
 const AXE=[[-1,'분배'],[-.5,'약간 분배'],[0,'영향 없음'],[.5,'약간 시장'],[1,'시장']], AXS=[[-1,'자유·개혁'],[-.5,'약간 자유'],[0,'영향 없음'],[.5,'약간 질서'],[1,'질서·안보']];
 const optNear=(v,list)=>{ let b=list[0][0]; list.forEach(([x])=>{ if(Math.abs(x-v)<Math.abs(b-v)) b=x; }); return list.map(([x,n])=>'<option value="'+x+'"'+(x===b?' selected':'')+'>'+n+'</option>').join(''); };
+const SWATCH=['#E61E2B','#C9252B','#EF426F','#FF7210','#FFCC00','#FFD504','#00A366','#009A44','#1B5B40','#45BABD','#0073CF','#004EA2','#003B96','#211B7D','#782B90','#835B38','#8b9098'];
 const ASMK=['sys','D','ln','Lst','semi','bonus','thr'];
 function fnum(label,key,max,step){ return '<label class="fl"><span>'+label+'</span><input class="in" type="number" inputmode="numeric" id="e-'+key+'" data-k="'+key+'" data-num="1" min="0" max="'+max+'" step="'+(step||1)+'" value="'+C[key]+'"></label>'; }
 function fsel(label,key,opts){ return '<label class="fl"><span>'+label+'</span><select class="in" id="e-'+key+'" data-k="'+key+'">'+opts.map(([v,n])=>'<option value="'+v+'"'+(String(C[key])===String(v)?' selected':'')+'>'+n+'</option>').join('')+'</select></label>'; }
 function asmSum(){ const sp=sum(C.P.map(p=>p.s));
   return '<p class="tot">총 <b class="num">'+C.N+'</b>석 · 과반 <b class="num">'+maj(C.N)+'</b> · 개헌선 <b class="num">'+two3(C.N)+'</b></p>'+sysBar(C)+
     '<p class="hint" style="margin-top:6px">간선·고정 의석은 정당 카드에서 정합니다 (지금 '+fixSum(C)+'석). 준연동형과 제1당 프리미엄은 비례 의석 안에서 나뉩니다.'+(sp!==C.N?' <b class="warn">정당들의 실제 의석 합계('+sp+'석)가 총 의석과 다릅니다.</b>':'')+'</p>'; }
+function phBox(img,c,txt,w,id,small){ return '<div class="phbox'+(small?' sm':'')+'" style="--c:'+c+'">'+(img?'<img src="'+img+'" alt="">':'<span>'+esc(txt)+'</span>')+'</div>'; }
 function partyCard(i){ const p=C.P[i];
-  return '<details class="card" data-o="p'+p.k+'"'+op('p'+p.k)+'><summary><i class="dot" style="background:'+p.c+'" data-pd="'+i+'"></i><b data-pn="'+i+'">'+esc(p.n)+'</b><span class="hint num" data-ps="'+i+'">'+p.s+'석'+(C.gov.includes(p.k)?' · 여당':'')+'</span></summary><div class="secb">'+
-   '<div class="prow2"><input type="color" class="clr" id="pc-'+p.k+'" data-k="P.'+i+'.c" value="'+p.c+'" aria-label="정당 색"><input class="in" id="pn-'+p.k+'" data-k="P.'+i+'.n" value="'+esc(p.n)+'" aria-label="정당 이름" maxlength="40"></div>'+
+  return '<details class="card" data-o="p'+p.k+'"'+op('p'+p.k)+'><summary><span data-pd="'+i+'">'+mark(p,18)+'</span><b data-pn="'+i+'">'+esc(p.n)+'</b><span class="hint num" data-ps="'+i+'">'+p.s+'석'+(C.gov.includes(p.k)?' · 여당':'')+'</span></summary><div class="secb">'+
+   '<label class="fl"><span>정당 이름</span><input class="in" id="pn-'+p.k+'" data-k="P.'+i+'.n" value="'+esc(p.n)+'" aria-label="정당 이름" maxlength="40"></label>'+
+   '<div class="tg"><span class="lbl">정당 로고</span><div class="lgrow"><div class="lgbox" style="--c:'+p.c+'">'+(p.logo?'<img src="'+p.logo+'" alt="">':'<span>'+esc(abbr(p.n))+'</span>')+'</div><div class="phact"><label class="chip phup">로고 이미지 올리기<input type="file" accept="image/*" id="plg-'+p.k+'" data-logo="'+i+'" hidden></label>'+(p.logo?'<button type="button" class="link danger" data-act="delLogo" data-i="'+i+'">로고 지우기</button>':'')+'<small class="hint">정사각형으로 맞춰 저장되고, 결과표의 정당 카드와 정당 목록에 나옵니다. 이 브라우저에만 저장됩니다.</small></div></div></div>'+
+   '<div class="tg"><span class="lbl">정당 색</span><div class="crow"><input type="color" class="clr" id="pc-'+p.k+'" data-k="P.'+i+'.c" value="'+p.c+'" aria-label="정당 색 고르기"><input class="in mono hexin" id="phx-'+p.k+'" data-hex="'+i+'" value="'+p.c.toUpperCase()+'" maxlength="7" aria-label="정당 색 코드" spellcheck="false">'+
+    ((NAMU[C.n]||{})[p.k]?'<button type="button" class="chip" data-act="cNamu" data-i="'+i+'">나무위키 색 <i class="sw" style="background:'+NAMU[C.n][p.k]+'"></i></button>':'')+'</div>'+
+    '<div class="swrow">'+SWATCH.map(c=>'<button type="button" class="sw'+(c.toLowerCase()===p.c.toLowerCase()?' on':'')+'" data-act="sw" data-i="'+i+'" data-c="'+c+'" style="background:'+c+'" aria-label="'+c+'"></button>').join('')+'</div></div>'+
+   '<div class="tg"><span class="lbl">총재·대표 <span class="hint">(위키백과식 결과표 사진 자리에 나옵니다)</span></span><div class="ldrow">'+phBox(p.ldph,p.c,abbr(p.ld||p.n),'lead:'+i,'pldph-'+p.k)+
+    '<div class="phact"><input class="in" id="pld-'+p.k+'" data-k="P.'+i+'.ld" value="'+esc(p.ld||'')+'" placeholder="선거 당시 총재·대표 이름" maxlength="30" aria-label="총재·대표 이름">'+
+    '<div class="chips"><label class="chip phup">사진 올리기<input type="file" accept="image/*" id="pldf-'+p.k+'" data-img="lead:'+i+'" hidden></label>'+(p.ldph?'<button type="button" class="link danger" data-act="delImg" data-w="lead:'+i+'">사진 지우기</button>':'')+
+    (p.ld?'<a class="link" href="https://ko.wikipedia.org/wiki/'+encodeURIComponent(p.ld.split('·')[0])+'" target="_blank" rel="noopener">위키백과 열기 ↗</a>':'')+'</div>'+
+    '<small class="hint">이 페이지는 보안상 다른 사이트의 그림을 주소로 불러올 수 없어서, 위키백과 등에서 받은 사진 파일을 올려야 합니다. 정부 구성 때 국무총리나 장관으로도 나옵니다.</small></div></div></div>'+
+   '<div class="tg"><span class="lbl">정당 인물 <span class="hint">(연립 정부의 장관 후보 · 전문 부처를 고르면 그 부처를 먼저 맡습니다)</span></span><div class="rows">'+(p.pp||[]).map((x,j)=>'<div class="pprow2">'+phBox(x.img,p.c,(x.n||'?').slice(0,1),'pp:'+i+':'+j,'ppi-'+p.k+'-'+j,true)+
+     '<div class="ppf"><div class="pprow"><input class="in" id="ppn-'+p.k+'-'+j+'" data-k="P.'+i+'.pp.'+j+'.n" value="'+esc(x.n)+'" placeholder="이름" maxlength="30" aria-label="인물 이름"><input class="in" id="ppr-'+p.k+'-'+j+'" data-k="P.'+i+'.pp.'+j+'.r" value="'+esc(x.r)+'" placeholder="직책, 예: 원내대표" maxlength="20" aria-label="직책"><button type="button" class="x" data-act="ppDel" data-i="'+i+'" data-j="'+j+'" aria-label="인물 삭제">×</button></div>'+
+     '<div class="pprow"><select class="in" id="pps-'+p.k+'-'+j+'" data-k="P.'+i+'.pp.'+j+'.s" aria-label="전문 부처"><option value="">전문 부처 없음</option>'+MIN.filter(m=>m[0]!=='국무총리').map(m=>'<option value="'+m[0]+'"'+(x.s===m[0]?' selected':'')+'>'+m[0]+'</option>').join('')+'</select>'+
+     '<label class="chip phup">사진<input type="file" accept="image/*" id="ppf-'+p.k+'-'+j+'" data-img="pp:'+i+':'+j+'" hidden></label>'+(x.img?'<button type="button" class="link danger" data-act="delImg" data-w="pp:'+i+':'+j+'">지우기</button>':'')+'</div></div></div>').join('')+'</div>'+
+    ((p.pp||[]).length<12?'<button type="button" class="add" data-act="ppAdd" data-i="'+i+'">+ 인물 추가</button>':'')+'</div>'+
    '<input class="in" id="pdsc-'+p.k+'" data-k="P.'+i+'.d" value="'+esc(p.d)+'" placeholder="짧은 설명" maxlength="120" aria-label="정당 설명">'+
-   '<input class="in" id="pld-'+p.k+'" data-k="P.'+i+'.ld" value="'+esc(p.ld||'')+'" placeholder="선거 당시 대표 (선거 결과표에 표시)" maxlength="30" aria-label="정당 대표">'+
    '<div class="fgrid"><label class="fl"><span>실제 의석</span><input class="in" type="number" min="0" max="1000" id="ps-'+p.k+'" data-k="P.'+i+'.s" data-num="1" value="'+p.s+'"></label>'+
     '<label class="fl"><span>간선·고정 의석</span><input class="in" type="number" min="0" max="1000" id="pf-'+p.k+'" data-fix="'+p.k+'" value="'+(C.fixed[p.k]||0)+'"></label>'+
     '<label class="chk" style="align-self:end"><input type="checkbox" id="pg-'+p.k+'" data-gov="'+p.k+'"'+(C.gov.includes(p.k)?' checked':'')+'><span>여당 (대통령 소속)</span></label></div>'+
@@ -1737,7 +1844,7 @@ function viewEdit(){
     '<div class="rows">'+C.T.map((t,j)=>'<div class="trow"><input class="in" id="tn-'+j+'" data-k="T.'+j+'.n" value="'+esc(t.n)+'" maxlength="30" aria-label="특성 이름"><select class="in" id="te-'+j+'" data-k="T.'+j+'.e" data-num="1" aria-label="경제축">'+optNear(t.e,AXE)+'</select><select class="in" id="ts-'+j+'" data-k="T.'+j+'.s" data-num="1" aria-label="정치축">'+optNear(t.s,AXS)+'</select><span class="hint num">'+usedBy(t.id)+'개 정당</span><button type="button" class="x" data-act="delT" data-j="'+j+'" aria-label="특성 삭제">×</button></div>').join('')+'</div>'+
     '<div class="trow add2"><input class="in" id="ntn" maxlength="30" placeholder="새 특성, 예: 균형 외교" aria-label="새 특성 이름"><select class="in" id="nte" aria-label="새 특성 경제축">'+optNear(0,AXE)+'</select><select class="in" id="nts" aria-label="새 특성 정치축">'+optNear(0,AXS)+'</select><button type="button" class="chip" data-act="addT">+ 추가</button></div></div></details>'+
    // 4 연정
-   '<details class="box sec" data-o="coal"'+op('coal')+'><summary><span class="sn">4</span><h3>연립 정부</h3><span class="hint">연합 이름 '+C.co.named.length+'개</span></summary><div class="secb">'+
+   '<details class="box sec" data-o="coal"'+op('coal')+'><summary><span class="sn">4</span><h3>연대·공동정부</h3><span class="hint">연합 이름 '+C.co.named.length+'개</span></summary><div class="secb">'+
     '<label class="chk"><input type="checkbox" id="cospan" data-k="co.span"'+(C.co.span?' checked':'')+'><span>성향이 가까운 정당끼리만 연합<small>왼쪽→오른쪽 자리 순서에서 3칸 이내인 정당끼리만 묶습니다.</small></span></label>'+
     '<p class="hint" id="vetosum">'+esc(vetoText())+'</p>'+
     '<div class="rows">'+C.co.named.map((c,i)=>'<div class="coed"><div class="prow2"><input class="in" id="con-'+i+'" data-k="co.named.'+i+'.n" value="'+esc(c.n)+'" maxlength="40" aria-label="연합 이름"><button type="button" class="x" data-act="delCo" data-i="'+i+'" aria-label="연합 삭제">×</button></div><div class="chips">'+C.P.map(p=>'<button type="button" class="chip" data-act="coM" data-i="'+i+'" data-pk2="'+p.k+'" aria-pressed="'+c.m.includes(p.k)+'">'+esc(p.n)+'</button>').join('')+'</div></div>').join('')+'</div>'+
@@ -1754,19 +1861,32 @@ function viewEdit(){
    '<div class="launch"><button type="button" class="cta" id="estart"'+(C.N&&C.Q.some(q=>q.on)?'':' disabled')+'>분야 정하고 시작하기</button><button type="button" class="cta ghost" id="eback">국회 소개로</button></div>'+
   '</section>';
   const root=$('#ed');
-  root.addEventListener('input',onEdInput); root.addEventListener('click',onEdClick);
+  root.addEventListener('input',onEdInput); root.addEventListener('click',onEdClick); root.addEventListener('change',onLogo);
   root.addEventListener('toggle',e=>{ const d=e.target, o=d.dataset&&d.dataset.o; if(!o) return; OPEN[o]=d.open; const b=d.querySelector('[data-qb]'); if(d.open&&b&&!b.innerHTML) b.innerHTML=qGroup(b.dataset.qb); },true);
   $('#estart').addEventListener('click',()=>{ FK.forEach(k=>{ S.fimp[k]=2; }); viewPrio(); });
   $('#eback').addEventListener('click',viewHome);
   fillIO(true);
   window.scrollTo(0,sy); }
 function rerender(){ viewEdit(); }
+// 정당 로고: 올린 파일을 정사각형 안에 맞춰 작게 저장
+function onLogo(e){ const el=e.target; if(el.dataset.img!=null&&el.files&&el.files[0]) return onImg(el); if(el.dataset.logo==null||!el.files||!el.files[0]) return; const i=+el.dataset.logo, f=el.files[0]; if(!/^image\//.test(f.type)) return;
+  const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{ const S2=128,cv=document.createElement('canvas'); cv.width=cv.height=S2; const k=Math.min(S2/im.width,S2/im.height), w=im.width*k, h=im.height*k;
+    cv.getContext('2d').drawImage(im,(S2-w)/2,(S2-h)/2,w,h); try{ C.P[i].logo=cv.toDataURL('image/png'); }catch(_){ return; } if(C.P[i].logo.length>200000) C.P[i].logo=cv.toDataURL('image/webp',.9); save(); rerender(); }; im.src=rd.result; }; rd.readAsDataURL(f); }
+// 인물 사진: 세로 3:4로 잘라 작게 저장
+function onImg(el){ const w=el.dataset.img.split(':'), f=el.files[0]; if(!/^image\//.test(f.type)) return;
+  const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{ const W=150,H=200,cv=document.createElement('canvas'); cv.width=W; cv.height=H; const k=Math.max(W/im.width,H/im.height);
+    cv.getContext('2d').drawImage(im,(W-im.width*k)/2,(H-im.height*k)/3,im.width*k,im.height*k); let url; try{ url=cv.toDataURL('image/jpeg',.82); }catch(_){ return; }
+    const p=C.P[+w[1]]; if(w[0]==='lead') p.ldph=url; else if(p.pp[+w[2]]) p.pp[+w[2]].img=url; save(); rerender(); }; im.src=rd.result; }; rd.readAsDataURL(f); }
+// (예전) 대표 사진 처리
+function onPhoto(e){ const el=e.target; if(el.dataset.photo==null||!el.files||!el.files[0]) return; const i=+el.dataset.photo, f=el.files[0]; if(!/^image\//.test(f.type)) return;
+  const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{ const W=150,H=200,cv=document.createElement('canvas'); cv.width=W; cv.height=H; const k=Math.max(W/im.width,H/im.height), g=cv.getContext('2d');
+    g.drawImage(im,(W-im.width*k)/2,(H-im.height*k)/2.6,im.width*k,im.height*k); try{ C.P[i].ph=cv.toDataURL('image/jpeg',.82); }catch(_){ return; } save(); rerender(); }; im.src=rd.result; }; rd.readAsDataURL(f); }
 // ── 다른 기기로 이동: 원래 데이터와 달라진 부분만 압축해 짧은 코드로
 const B64=u8=>{ let s=''; for(let i=0;i<u8.length;i+=8192) s+=String.fromCharCode.apply(null,u8.subarray(i,i+8192)); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); };
 const UNB64=t=>{ t=t.replace(/-/g,'+').replace(/_/g,'/'); while(t.length%4) t+='='; const s=atob(t), u=new Uint8Array(s.length); for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); return u; };
 async function zip(data,pack){ const cs=pack?new CompressionStream('deflate-raw'):new DecompressionStream('deflate-raw');
   const out=await new Response(new Blob([pack?new TextEncoder().encode(data):data]).stream().pipeThrough(cs)).arrayBuffer(); return pack?new Uint8Array(out):new TextDecoder().decode(out); }
-const canon=c=>JSON.parse(strip(norm(JSON.parse(strip(c)))));
+const canon=c=>{ const o=JSON.parse(strip(norm(JSON.parse(strip(c))))); o.P.forEach(p=>{ delete p.ph; delete p.logo; delete p.ldph; (p.pp||[]).forEach(x=>{ delete x.img; }); }); return o; };
 function diffOf(c){ const base=canon(baseScenario(DATA.findIndex(d=>d.n===c.n))), cur=canon(c), d={};
   Object.keys(cur).forEach(k=>{ if(k==='Q'||k==='P') return; if(JSON.stringify(cur[k])!==JSON.stringify(base[k])) d[k]=cur[k]; });
   ['Q','P'].forEach(k=>{ if(JSON.stringify(cur[k])===JSON.stringify(base[k])) return;
@@ -1785,8 +1905,13 @@ function fillIO(now){ clearTimeout(ioTimer); ioTimer=setTimeout(()=>{ const ta=$
 function setPath(path,v){ const ps=path.split('.'); let o=C; for(let i=0;i<ps.length-1;i++) o=o[ps[i]]; o[ps[ps.length-1]]=v; }
 function fixAsm(){ C.D=ci(C.D,0,1000); C.Lst=ci(C.Lst,0,1000); C.semi=ci(C.semi,0,C.Lst); C.bonus=ci(C.bonus,0,C.Lst-C.semi); C.thr=clamp(+C.thr||0,0,20);
   ['semi','bonus'].forEach(k=>{ const el=$('#e-'+k); if(el&&document.activeElement!==el&&+el.value!==C[k]) el.value=C[k]; }); }
+function syncColor(i){ const p=C.P[i], d=$('[data-pd="'+i+'"]'); if(d) d.innerHTML=mark(p,18);
+  const h=$('#phx-'+p.k); if(h&&document.activeElement!==h) h.value=p.c.toUpperCase(); const ci2=$('#pc-'+p.k); if(ci2&&ci2.value.toLowerCase()!==p.c.toLowerCase()) ci2.value=p.c;
+  const lb=$('#plg-'+p.k); if(lb){ const box=lb.closest('.lgrow').querySelector('.lgbox'); if(box) box.style.setProperty('--c',p.c); }
+  $$('.sw[data-i="'+i+'"][data-c]').forEach(b=>b.classList.toggle('on',b.dataset.c.toLowerCase()===p.c.toLowerCase())); }
 function onEdInput(e){
   const el=e.target;
+  if(el.dataset.hex!=null){ let v=el.value.trim(); if(v[0]!=='#') v='#'+v; if(HEX.test(v)){ C.P[+el.dataset.hex].c=v.toLowerCase(); save(); syncColor(+el.dataset.hex); } return; }
   if(el.dataset.qp!=null){ const i=+el.dataset.qp, k=el.dataset.pk; C.Q[i].p[k]=+el.value; save(); const b=$('[data-qv="'+i+'-'+k+'"]'); if(b) b.textContent=fmtP(+el.value); return; }
   if(el.dataset.fix!=null){ const n=ci(el.value,0,1000); if(n) C.fixed[el.dataset.fix]=n; else delete C.fixed[el.dataset.fix]; save(); $('#asmsum').innerHTML=asmSum(); return; }
   if(el.dataset.gov!=null){ const k=el.dataset.gov; C.gov=C.gov.filter(x=>x!==k); if(el.checked) C.gov.push(k); save(); const i=C.P.findIndex(p=>p.k===k); const s=$('[data-ps="'+i+'"]'); if(s) s.textContent=C.P[i].s+'석'+(el.checked?' · 여당':''); return; }
@@ -1801,7 +1926,7 @@ function onEdInput(e){
   if(ASMK.includes(k)) $('#asmsum').innerHTML=asmSum();
   else if((m=/^P\.(\d+)\.(n|c|l|s)$/.exec(k))){ const i=+m[1], p=C.P[i];
     if(m[2]==='n'){ const b=$('[data-pn="'+i+'"]'); if(b) b.textContent=p.n; }
-    if(m[2]==='c'){ const d=$('[data-pd="'+i+'"]'); if(d) d.style.background=p.c; }
+    if(m[2]==='c'){ syncColor(i); }
     if(m[2]==='l'){ const d=$('[data-lv="'+i+'"]'); if(d) d.textContent=fmtL(p.l); }
     if(m[2]==='s'){ const d=$('[data-ps="'+i+'"]'); if(d) d.textContent=p.s+'석'+(C.gov.includes(p.k)?' · 여당':''); $('#asmsum').innerHTML=asmSum(); } }
   else if((m=/^Q\.(\d+)\.on$/.exec(k))){ const d=$('.qed[data-qi="'+m[1]+'"]'); if(d) d.classList.toggle('off',!v); }
@@ -1812,6 +1937,12 @@ function onEdClick(e){
   if(a==='veto'){ const x=b.dataset.a, y=b.dataset.b, j=C.co.veto.findIndex(v=>(v[0]===x&&v[1]===y)||(v[0]===y&&v[1]===x)); if(j>=0) C.co.veto.splice(j,1); else C.co.veto.push([x,y]); save();
     $$('[data-act="veto"]').forEach(c=>{ const cx=c.dataset.a, cy=c.dataset.b; if((cx===x&&cy===y)||(cx===y&&cy===x)) c.setAttribute('aria-pressed',j<0); }); const vs=$('#vetosum'); if(vs) vs.textContent=vetoText(); return; }
   if(a==='coM'){ const c=C.co.named[i], k=b.dataset.pk2, j=c.m.indexOf(k); if(j>=0) c.m.splice(j,1); else c.m.push(k); b.setAttribute('aria-pressed',j<0); save(); return; }
+  if(a==='delImg'){ const w=b.dataset.w.split(':'), p=C.P[+w[1]]; if(w[0]==='lead') p.ldph=''; else if(p.pp[+w[2]]) p.pp[+w[2]].img=''; save(); rerender(); return; }
+  if(a==='delLogo'){ C.P[i].logo=''; save(); rerender(); return; }
+  if(a==='sw'){ C.P[i].c=b.dataset.c.toLowerCase(); save(); syncColor(i); return; }
+  if(a==='cNamu'){ C.P[i].c=NAMU[C.n][C.P[i].k].toLowerCase(); save(); syncColor(i); return; }
+  if(a==='ppAdd'){ (C.P[i].pp=C.P[i].pp||[]).push({n:'',r:'',s:'',img:''}); OPEN['p'+C.P[i].k]=true; save(); rerender(); const els=$$('[id^="ppn-'+C.P[i].k+'-"]'); if(els.length) els[els.length-1].focus(); return; }
+  if(a==='ppDel'){ C.P[i].pp.splice(+b.dataset.j,1); save(); rerender(); return; }
   if(a==='qAuto'){ C.Q[i].p={}; save(); const d=$('.qed[data-qi="'+i+'"]'); if(d) d.outerHTML=qCard(i); return; }
   if(a==='addP'){ const k='p'+Date.now().toString(36); C.P.push({k,n:'새 정당',c:'#8a8f9c',l:0,s:0,d:'',tr:{}}); OPEN.party=true; OPEN['p'+k]=true; }
   else if(a==='delP'){ const k=C.P[i].k; C.P.splice(i,1); C.Q.forEach(q=>{ delete q.p[k]; if(q.L===k) q.L=null; if(q.R===k) q.R=null; }); delete C.fixed[k]; C.gov=C.gov.filter(x=>x!==k);
@@ -1830,7 +1961,7 @@ function onEdClick(e){
     try{ navigator.clipboard.writeText(ta.value.trim()).then(()=>{ $('#iomsg').textContent='복사했습니다. ('+ta.value.trim().length+'자)'; },sel); }catch(_){ sel(); } return; }
   else if(a==='imp'){ const txt=$('#io').value; $('#iomsg').textContent='불러오는 중…';
     readCode(txt).then(c=>{ if(!c){ $('#iomsg').textContent='코드를 읽지 못했습니다. KR1로 시작하는 코드를 빠짐없이 붙여 넣어 주세요.'; return; }
-      S.ai=DATA.findIndex(d=>d.n===c.n); try{ localStorage.setItem('kr-asm-sel',S.ai); }catch(_){} C=c; setFields(); save(); OPEN.io=true; rerender(); $('#iomsg').textContent=asmName(C)+' 시험을 불러왔습니다.'; })
+      S.ai=DATA.findIndex(d=>d.n===c.n); try{ localStorage.setItem('kr-asm-sel',S.ai); }catch(_){} if(C&&C.n===c.n) c.P.forEach(p=>{ const o=C.P.find(x=>x.k===p.k); if(o){ if(o.logo&&!p.logo) p.logo=o.logo; if(o.ldph&&!p.ldph) p.ldph=o.ldph; (p.pp||[]).forEach(x=>{ const y=(o.pp||[]).find(z=>z.n===x.n); if(y&&y.img&&!x.img) x.img=y.img; }); } }); C=c; setFields(); save(); OPEN.io=true; rerender(); $('#iomsg').textContent=asmName(C)+' 시험을 불러왔습니다.'; })
       .catch(()=>{ $('#iomsg').textContent='코드를 읽지 못했습니다. KR1로 시작하는 코드를 빠짐없이 붙여 넣어 주세요.'; }); return; }
   else if(a==='reset'){ if(!b.dataset.arm){ b.dataset.arm='1'; b.textContent='정말 되돌리기'; $('#rsmsg').textContent='한 번 더 누르면 편집 내용이 모두 지워집니다.'; return; }
     try{ localStorage.removeItem(SKEY(C.n)); }catch(_){} C=baseScenario(S.ai); C._edited=false; setFields(); }
