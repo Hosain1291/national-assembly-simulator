@@ -1287,7 +1287,12 @@ const LEADERS={1:{dc:'이승만',hm:'김성수',dd:'지청천',jm:'이범석'},2
  20:{dm:'김종인',sn:'김무성',kp:'안철수·천정배',jd:'심상정'},21:{dm:'이해찬',tt:'황교안',jd:'심상정',kp:'안철수'},22:{dm:'이재명',pp:'한동훈',jk:'조국',gs:'이준석',sm:'이낙연',jb:'윤희숙'}};
 const LV=[{n:'관심 없음',w:0},{n:'조금',w:1},{n:'보통',w:2},{n:'중요',w:3.5},{n:'매우 중요',w:5}];
 const TS=[0,.35,.7,1], SL=['','약','중','강'];
-const MIN=[['국무총리',''],['기획재정부','eco'],['외교부','uni'],['통일부','uni'],['법무부','pol'],['국방부','sec'],['행정안전부','pol'],['교육부','soc'],['보건복지부','lab'],['고용노동부','lab'],['산업통상자원부','eco'],['국토교통부','reg'],['농림축산식품부','reg'],['과학기술정보통신부','eco'],['문화체육관광부','soc'],['환경부','reg'],['여성가족부','soc'],['해양수산부','reg'],['국가보훈부','sec'],['중소벤처기업부','eco']];
+// 총선이 있던 해의 정부 조직(국무위원이 이끄는 부·원·처). 제4대(1958)는 1954년 개헌으로 국무총리가 없던 시기
+const GOVM={"1": "국무총리 내무부 외무부 국방부 재무부 법무부 문교부 농림부 상공부 사회부 교통부 체신부", "2": "국무총리 내무부 외무부 국방부 재무부 법무부 문교부 농림부 상공부 사회부 보건부 교통부 체신부", "3": "국무총리 내무부 외무부 국방부 재무부 법무부 문교부 농림부 상공부 사회부 보건부 교통부 체신부", "4": "내무부 외무부 국방부 재무부 법무부 문교부 농림부 상공부 보건사회부 교통부 체신부 부흥부", "5": "국무총리 내무부 외무부 국방부 재무부 법무부 문교부 농림부 상공부 보건사회부 교통부 체신부 부흥부", "6": "국무총리 경제기획원 외무부 내무부 재무부 법무부 국방부 문교부 농림부 상공부 건설부 보건사회부 교통부 체신부 공보부 총무처", "7": "국무총리 경제기획원 외무부 내무부 재무부 법무부 국방부 문교부 농림부 상공부 건설부 보건사회부 교통부 체신부 공보부 총무처 과학기술처", "8": "국무총리 경제기획원 국토통일원 외무부 내무부 재무부 법무부 국방부 문교부 농림부 상공부 건설부 보건사회부 교통부 체신부 문화공보부 총무처 과학기술처", "9": "국무총리 경제기획원 국토통일원 외무부 내무부 재무부 법무부 국방부 문교부 농수산부 상공부 건설부 보건사회부 교통부 체신부 문화공보부 총무처 과학기술처", "10": "국무총리 경제기획원 국토통일원 외무부 내무부 재무부 법무부 국방부 문교부 농수산부 상공부 동력자원부 건설부 보건사회부 교통부 체신부 문화공보부 총무처 과학기술처", "11": "국무총리 경제기획원 국토통일원 외무부 내무부 재무부 법무부 국방부 문교부 농수산부 상공부 동력자원부 건설부 보건사회부 노동부 교통부 체신부 문화공보부 총무처 과학기술처", "12": "국무총리 경제기획원 국토통일원 외무부 내무부 재무부 법무부 국방부 문교부 체육부 농수산부 상공부 동력자원부 건설부 보건사회부 노동부 교통부 체신부 문화공보부 총무처 과학기술처", "13": "국무총리 경제기획원 국토통일원 외무부 내무부 재무부 법무부 국방부 문교부 체육부 농림수산부 상공부 동력자원부 건설부 보건사회부 노동부 교통부 체신부 문화공보부 총무처 과학기술처", "14": "국무총리 경제기획원 통일원 외무부 내무부 재무부 법무부 국방부 교육부 체육청소년부 문화부 농림수산부 상공부 동력자원부 건설부 보건사회부 노동부 교통부 체신부 총무처 과학기술처 공보처 환경처", "15": "국무총리 재정경제원 통일원 외무부 내무부 법무부 국방부 교육부 문화체육부 농림수산부 통상산업부 정보통신부 보건복지부 환경부 노동부 건설교통부 해양수산부 총무처 과학기술처 공보처", "16": "국무총리 재정경제부 통일부 외교통상부 행정자치부 법무부 국방부 교육부 과학기술부 문화관광부 농림부 산업자원부 정보통신부 보건복지부 환경부 노동부 건설교통부 해양수산부 기획예산처", "17": "국무총리 재정경제부 교육인적자원부 과학기술부 통일부 외교통상부 법무부 국방부 행정자치부 문화관광부 농림부 산업자원부 정보통신부 보건복지부 환경부 노동부 여성부 건설교통부 해양수산부 기획예산처", "18": "국무총리 기획재정부 교육과학기술부 외교통상부 통일부 법무부 국방부 행정안전부 문화체육관광부 농림수산식품부 지식경제부 보건복지가족부 환경부 노동부 여성부 국토해양부", "19": "국무총리 기획재정부 교육과학기술부 외교통상부 통일부 법무부 국방부 행정안전부 문화체육관광부 농림수산식품부 지식경제부 보건복지부 환경부 고용노동부 여성가족부 국토해양부", "20": "국무총리 기획재정부 미래창조과학부 교육부 외교부 통일부 법무부 국방부 행정자치부 문화체육관광부 농림축산식품부 산업통상자원부 보건복지부 환경부 고용노동부 여성가족부 국토교통부 해양수산부", "21": "국무총리 기획재정부 교육부 과학기술정보통신부 외교부 통일부 법무부 국방부 행정안전부 문화체육관광부 농림축산식품부 산업통상자원부 보건복지부 환경부 고용노동부 여성가족부 국토교통부 해양수산부 중소벤처기업부", "22": "국무총리 기획재정부 교육부 과학기술정보통신부 외교부 통일부 법무부 국방부 행정안전부 문화체육관광부 농림축산식품부 산업통상자원부 보건복지부 환경부 고용노동부 여성가족부 국토교통부 해양수산부 국가보훈부 중소벤처기업부"};
+const MINF={"국무총리": "", "경제기획원": "eco", "재무부": "eco", "재정경제원": "eco", "재정경제부": "eco", "기획재정부": "eco", "상공부": "eco", "부흥부": "eco", "동력자원부": "eco", "통상산업부": "eco", "산업자원부": "eco", "지식경제부": "eco", "산업통상자원부": "eco", "체신부": "eco", "정보통신부": "eco", "과학기술처": "eco", "과학기술부": "eco", "미래창조과학부": "eco", "과학기술정보통신부": "eco", "중소벤처기업부": "eco", "기획예산처": "eco", "외무부": "uni", "외교통상부": "uni", "외교부": "uni", "국토통일원": "uni", "통일원": "uni", "통일부": "uni", "내무부": "pol", "법무부": "pol", "총무처": "pol", "행정자치부": "pol", "행정안전부": "pol", "국방부": "sec", "국가보훈부": "sec", "문교부": "soc", "교육부": "soc", "교육인적자원부": "soc", "교육과학기술부": "soc", "공보부": "soc", "문화공보부": "soc", "체육부": "soc", "체육청소년부": "soc", "문화부": "soc", "문화체육부": "soc", "문화관광부": "soc", "문화체육관광부": "soc", "공보처": "soc", "여성부": "soc", "여성가족부": "soc", "사회부": "lab", "보건부": "lab", "보건사회부": "lab", "보건복지부": "lab", "보건복지가족부": "lab", "노동부": "lab", "고용노동부": "lab", "농림부": "reg", "농수산부": "reg", "농림수산부": "reg", "농림수산식품부": "reg", "농림축산식품부": "reg", "교통부": "reg", "건설부": "reg", "건설교통부": "reg", "국토해양부": "reg", "국토교통부": "reg", "해양수산부": "reg", "환경처": "reg", "환경부": "reg"};
+const minsOf=a=>(GOVM[a.n]||GOVM[22]).split(' ').map(x=>[x,MINF[x]||'pol']);
+const hasPM=a=>minsOf(a)[0][0]==='국무총리';
+const MIN=minsOf({n:22});
 
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1495,10 +1500,10 @@ function staff(a,list,asg){ const used={}, who={};
     else { j=cs.findIndex((c,k)=>!used[f][k]&&c.s===x.min); if(j<0) j=cs.findIndex((c,k)=>!used[f][k]&&!c.lead); if(j<0) j=cs.findIndex((c,k)=>!used[f][k]); }
     if(j>=0){ used[f][j]=1; } who[x.min]=j; });
   return who; }
-function cabinet(a,m,st,R){ const k={}, out=[], left=MIN.slice(); m.forEach(f=>{ k[f]=0; });
+function cabinet(a,m,st,R){ const k={}, out=[], ML=minsOf(a), left=ML.slice(); m.forEach(f=>{ k[f]=0; });
   for(let n=0;left.length;n++){ let f=m[0]; if(n>0) m.forEach(x=>{ if(st[x]/(k[x]+1)>st[f]/(k[f]+1)+1e-9) f=x; });
     let pick=left[0];
-    if(n>0){ const aff=fk=>R.fields[fk]&&R.C[fk]&&R.C[fk].t?R.fields[fk].tot[f]/R.C[fk].t:0; pick=left.filter(x=>x[0]!=='국무총리').sort((x,y)=>aff(y[1])-aff(x[1])||MIN.indexOf(x)-MIN.indexOf(y))[0]; }
+    if(n>0||pick[0]!=='국무총리'){ const aff=fk=>R.fields[fk]&&R.C[fk]&&R.C[fk].t?R.fields[fk].tot[f]/R.C[fk].t:0; pick=left.filter(x=>x[0]!=='국무총리').sort((x,y)=>aff(y[1])-aff(x[1])||ML.indexOf(x)-ML.indexOf(y))[0]; }
     out.push({min:pick[0],f,n:n+1}); left.splice(left.indexOf(pick),1); k[f]++; }
   return out; }
 
@@ -1777,10 +1782,10 @@ function viewResult(keep){
   } else {
     const gs=sum(govF.map(f=>mine[f]));
     $('#cotitle').textContent='정부 구성 (대통령제)';
-    $('#cohint').textContent='대통령이 국무위원을 임명하고, 국무총리만 국회 임명동의(과반 '+M+'석)를 받습니다. 여당이 과반이 안 되면 다른 정당과 정책 연대나 공동정부(예: DJP 연합)로 총리 인준을 얻어야 합니다.';
+    $('#cohint').textContent=hasPM(a)?'대통령이 국무위원을 임명하고, 국무총리만 국회 임명동의(과반 '+M+'석)를 받습니다. 여당이 과반이 안 되면 다른 정당과 정책 연대나 공동정부(예: DJP 연합)로 총리 인준을 얻어야 합니다.':'1954년 개헌으로 국무총리가 없어 대통령이 국무위원을 직접 임명합니다. 법안과 예산을 통과시키려면 국회 과반('+M+'석)의 지지가 필요합니다.';
     $('#presrow').innerHTML='<span class="pres-chip">대통령 <b>'+esc(presName)+'</b></span>'+(govF.length?'<span class="pres-chip">'+govF.map(f=>mark(a.P[f],14)+' '+esc(a.P[f].n)).join(' · ')+' <b class="num">'+gs+'석</b> '+(gs>=M?'<em class="ok">여대야소</em>':'<em class="bad">여소야대</em>')+'</span>':'<span class="hint">이 시기에는 대통령을 뒷받침하는 원내 여당이 없었습니다.</span>');
     let rows='';
-    if(govF.length){ rows+=coRow(govF,'여당 단독 내각',gs>=M?'단독으로 국무총리 임명동의를 가결할 수 있습니다.':'총리 인준에 '+(M-gs)+'석이 모자랍니다. 야당 협조가 필요합니다.');
+    if(govF.length){ rows+=coRow(govF,'여당 단독 내각',hasPM(a)?(gs>=M?'단독으로 국무총리 임명동의를 가결할 수 있습니다.':'총리 인준에 '+(M-gs)+'석이 모자랍니다. 야당 협조가 필요합니다.'):(gs>=M?'단독으로 국회 과반입니다.':'국회 과반에 '+(M-gs)+'석이 모자랍니다.'));
       if(gs<M){ const co=coalitions(a,mine).filter(c=>govF.every(f=>c.m.includes(f))); rows+=co.length?co.map(c=>coRow(c.m,'',coName(a,c.m)?'':'공동정부(정책 연대) 후보')).join(''):'<p class="hint">조건을 지키며 여당과 함께 과반을 만드는 연대가 없습니다. 아래에서 직접 골라 볼 수 있습니다.</p>'; } }
     else { const co=coalitions(a,mine); rows+=co.length?co.map(c=>coRow(c.m,'','대통령 지지 연합 후보')).join(''):''; }
     $('#coal').innerHTML=rows;
@@ -1789,7 +1794,7 @@ function viewResult(keep){
   if(!parl&&govF.length) govF.forEach(f=>{ if(!S.pick.includes(f)) S.pick.unshift(f); });
   const drawPick=()=>{ S.pick=S.pick.filter(f=>mine[f]>0); const t=sum(S.pick.map(f=>mine[f])), bp=badPair(a,S.pick), nm=coName(a,S.pick);
     $('#copick').innerHTML=a.P.map((p,f)=>mine[f]?'<button type="button" class="chip" data-pk="'+f+'" aria-pressed="'+S.pick.includes(f)+'"'+(!parl&&govF.includes(f)?' disabled title="여당"':'')+'>'+mark(p,12)+' '+esc(p.n)+' · '+mine[f]+'</button>':'').join('');
-    $('#cogo').innerHTML='<button type="button" class="chip" data-co="'+S.pick.join(',')+'"'+(S.pick.length&&!bp?'':' disabled')+'>이 구성으로 '+(parl?'정부':'내각')+' 구성</button> <span class="hint">'+(bp?esc(a.P[bp[0]].n)+'과(와) '+esc(a.P[bp[1]].n)+'은(는) 함께하길 거부합니다':S.pick.length?(nm?'“'+esc(nm)+'” · ':'')+t+'석 · '+(t>=M?(parl?'과반 내각':'총리 인준 가능'):(parl?'소수 내각':'총리 인준까지 '+(M-t)+'석 부족')):'참여할 정당을 고르세요')+'</span>'; };
+    $('#cogo').innerHTML='<button type="button" class="chip" data-co="'+S.pick.join(',')+'"'+(S.pick.length&&!bp?'':' disabled')+'>이 구성으로 '+(parl?'정부':'내각')+' 구성</button> <span class="hint">'+(bp?esc(a.P[bp[0]].n)+'과(와) '+esc(a.P[bp[1]].n)+'은(는) 함께하길 거부합니다':S.pick.length?(nm?'“'+esc(nm)+'” · ':'')+t+'석 · '+(t>=M?(parl?'과반 내각':hasPM(a)?'총리 인준 가능':'국회 과반'):(parl?'소수 내각':(hasPM(a)?'총리 인준까지 ':'과반까지 ')+(M-t)+'석 부족')):'참여할 정당을 고르세요')+'</span>'; };
   const drawCab=()=>{ if(!S.cab){ $('#cab').innerHTML=''; return; } const m=S.cab.filter(f=>mine[f]>0); if(!m.length){ $('#cab').innerHTML=''; return; }
     const key=m.join(','), lead=parl?m.slice().sort((x,y)=>mine[y]-mine[x]):m.slice().sort((x,y)=>(govF.includes(y)-govF.includes(x))||mine[y]-mine[x]);
     if(!S.cabSt||S.cabSt.key!==key){ const cb=cabinet(a,lead,mine,R), asg={}; cb.forEach(x=>{ asg[x.min]=x.f; }); S.cabSt={key,list:cb,asg,auto:Object.assign({},asg),who:staff(a,cb,asg)}; }
@@ -1798,7 +1803,8 @@ function viewResult(keep){
     const opts=m;
     const title=parl?(coName(a,m)?esc(coName(a,m))+' ':'')+(m.length>1?'연립 내각':'단독 내각'):(m.length>1?(coName(a,m)?esc(coName(a,m))+' ':'')+'공동정부':'여당 단독 내각');
     $('#cab').innerHTML='<div class="cabbox"><h4>'+title+' · '+t+'석</h4>'+
-      '<p class="vote '+(t>=M?'ok':'bad')+'">국무총리 임명동의 예상: 찬성 '+t+'석 / 필요 '+M+'석 → <b>'+(t>=M?'가결':'부결 위험')+'</b></p>'+
+      '<p class="vote '+(t>=M?'ok':'bad')+'">'+(hasPM(a)?'국무총리 임명동의 예상: 찬성 '+t+'석 / 필요 '+M+'석 → <b>'+(t>=M?'가결':'부결 위험')+'</b>':'국회 지지 기반: '+t+'석 / 과반 '+M+'석 → <b>'+(t>=M?'안정':'불안')+'</b>')+'</p>'+
+      '<p class="hint" style="margin:0 0 8px">'+a.y+'년 정부 조직 기준 국무위원 '+st.list.length+'자리'+(hasPM(a)?' (국무총리 포함)':' · 국무총리 없음')+'</p>'+
       '<div class="syslg" style="margin:6px 0 10px">'+opts.filter(f=>cnt[f]).map(f=>'<span>'+mark(PX(f),14)+' '+esc(PX(f).n)+' 국무위원 <b class="num">'+cnt[f]+'</b></span>').join('')+'</div>'+
       (m.length>1?'<p class="hint" style="margin:0 0 8px">부처를 다른 참여 정당에 넘길 수 있습니다.</p>':'')+
       '<div class="cabg">'+st.list.map(x=>{ const f=st.asg[x.min], p=PX(f);
@@ -1864,7 +1870,7 @@ function partyCard(i){ const p=C.P[i];
     '<small class="hint">이 페이지는 보안상 다른 사이트의 그림을 주소로 불러올 수 없어서, 위키백과 등에서 받은 사진 파일을 올려야 합니다. 정부 구성 때 국무총리나 장관으로도 나옵니다.</small></div></div></div>'+
    '<div class="tg"><span class="lbl">정당 인물 <span class="hint">(연립 정부의 장관 후보 · 전문 부처를 고르면 그 부처를 먼저 맡습니다)</span></span><div class="rows">'+(p.pp||[]).map((x,j)=>'<div class="pprow2">'+phBox(x.img,p.c,(x.n||'?').slice(0,1),'pp:'+i+':'+j,'ppi-'+p.k+'-'+j,true)+
      '<div class="ppf"><div class="pprow"><input class="in" id="ppn-'+p.k+'-'+j+'" data-k="P.'+i+'.pp.'+j+'.n" value="'+esc(x.n)+'" placeholder="이름" maxlength="30" aria-label="인물 이름"><input class="in" id="ppr-'+p.k+'-'+j+'" data-k="P.'+i+'.pp.'+j+'.r" value="'+esc(x.r)+'" placeholder="직책, 예: 원내대표" maxlength="20" aria-label="직책"><button type="button" class="x" data-act="ppDel" data-i="'+i+'" data-j="'+j+'" aria-label="인물 삭제">×</button></div>'+
-     '<div class="pprow"><select class="in" id="pps-'+p.k+'-'+j+'" data-k="P.'+i+'.pp.'+j+'.s" aria-label="전문 부처"><option value="">전문 부처 없음</option>'+MIN.filter(m=>m[0]!=='국무총리').map(m=>'<option value="'+m[0]+'"'+(x.s===m[0]?' selected':'')+'>'+m[0]+'</option>').join('')+'</select>'+
+     '<div class="pprow"><select class="in" id="pps-'+p.k+'-'+j+'" data-k="P.'+i+'.pp.'+j+'.s" aria-label="전문 부처"><option value="">전문 부처 없음</option>'+minsOf(C).filter(m=>m[0]!=='국무총리').map(m=>'<option value="'+m[0]+'"'+(x.s===m[0]?' selected':'')+'>'+m[0]+'</option>').join('')+'</select>'+
      '<label class="chip phup">사진<input type="file" accept="image/*" id="ppf-'+p.k+'-'+j+'" data-img="pp:'+i+':'+j+'" hidden></label>'+(x.img?'<button type="button" class="link danger" data-act="delImg" data-w="pp:'+i+':'+j+'">지우기</button>':'')+'</div></div></div>').join('')+'</div>'+
     ((p.pp||[]).length<12?'<button type="button" class="add" data-act="ppAdd" data-i="'+i+'">+ 인물 추가</button>':'')+'</div>'+
    '<input class="in" id="pdsc-'+p.k+'" data-k="P.'+i+'.d" value="'+esc(p.d)+'" placeholder="짧은 설명" maxlength="120" aria-label="정당 설명">'+
