@@ -1310,7 +1310,7 @@ const HEX=/^#[0-9a-f]{6}$/i;
 const app=$('#app'), toHome=$('#toHome');
 // 링크 그림을 못 불러오면 이름 글자나 당색 점으로 대신 표시
 document.addEventListener('error',e=>{ const im=e.target; if(!im||im.tagName!=='IMG') return;
-  if(im.dataset.flag!=null){ im.outerHTML=flagSvg(); return; }
+  if(im.dataset.flag!=null){ if(im.dataset.flag==='1'){ im.dataset.flag='2'; im.src=FLAG_WM; } else im.outerHTML=flagSvg(); return; }
   if(im.dataset.dot!=null){ const d=document.createElement('i'); d.className='dot'; d.style.background=im.dataset.dot; im.replaceWith(d); return; }
   if(im.dataset.fb!=null){ const box=im.parentNode; if(box&&box.classList) box.classList.remove('pic','lg'); const sp=document.createElement('span'); sp.textContent=im.dataset.fb; im.replaceWith(sp); } },true);
 // 계산 상수: 입장 거리의 폭, 소선거구 승자독식 정도, 실제 지지 기반 반영 정도, 무소속 감점
@@ -1448,6 +1448,7 @@ function simAll(a,ans,upto){
 // ── 위키백과식 선거 결과표
 // 태극기: 사용자가 준 그림 링크, 못 불러오면 직접 그린 태극기
 const FLAG_URL='https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQazlH8dsYAv9R2ysgN-r3blPcDmyTnEKlBODQhH-vNEMEEzWtl';
+const FLAG_WM='https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Flag_of_South_Korea.svg/320px-Flag_of_South_Korea.svg.png';
 const flagImg=()=>'<img class="wb-flag" data-flag="1" referrerpolicy="no-referrer" src="'+FLAG_URL+'" alt="태극기">';
 function flagSvg(){
   const bar=(y,broken)=>broken?'<rect x="-6" y="'+y+'" width="5.3" height="2"/><rect x="0.7" y="'+y+'" width="5.3" height="2"/>':'<rect x="-6" y="'+y+'" width="12" height="2"/>';
@@ -1487,6 +1488,73 @@ function wikibox(a,mode,R){
     '<tr><th scope="row" class="wb-l">제1당</th><td colspan="3" class="wb-r">'+esc(a.P[L].n)+' ('+st[L]+'석, '+(st[L]>=M?'단독 과반':'과반 미달')+')</td></tr>'+
     (gov.length?'<tr><th scope="row" class="wb-l">정국 구도</th><td colspan="3" class="wb-r">'+(govSeats>=M?'여대야소':'여소야대')+' · 여당 '+gov.map(f=>esc(a.P[f].n)).join('·')+' '+govSeats+'석</td></tr>':'')+
     '<tr><th scope="row" class="wb-l">대통령</th><td colspan="3" class="wb-r">'+esc(a.pres)+'</td></tr>'+
+    '</tbody></table>'; }
+// ── 대통령 선거: 두마 시뮬레이터처럼 같은 답변으로 실제 후보들의 득표를 계산 (한국은 결선 없는 상대다수제)
+// [후보, 소속, 정당 키 후보(그 국회에 있으면 그 정당 입장 사용), 색, 이념 특성(정당이 없을 때), 실제 득표율(null=가상 후보)]
+const PRESD=[
+ {d:'1948.7.20',t:'제1대 대통령 선거',how:'제헌국회 간선',real:'이승만 국회 투표 180표(92.3%)로 당선',C:[['이승만','대한독립촉성국민회',['dc'],'#1271B5','anticom:3 strongpres:3 order:2',92.31],['김구','한국독립당',[],'#2f6b4f','engage:3 trad:2 democ:1',6.67],['안재홍','무소속',[],'#8b9098','balance:2 engage:2 democ:1 welfare:1',1.03]]},
+ {d:'1952.8.5',t:'제2대 대통령 선거',how:'직선(첫 직선제)',real:'이승만 74.6%로 재선 (발췌개헌 직후)',C:[['이승만','자유당',['jy','dk','gm'],'#2850a0','anticom:3 strongpres:3 order:2',74.62],['조봉암','무소속',[],'#c0392b','redist:2 welfare:2 engage:2 labor:2',11.36],['이시영','민주국민당',['mg'],'#ADFF2F','parl:2 anticom:2 market:1',10.89],['신흥우','무소속',[],'#8b9098','democ:1 market:1 rights:1',3.13]]},
+ {d:'1956.5.15',t:'제3대 대통령 선거',how:'직선',real:'이승만 70.0%로 3선. 신익희(민주당)는 선거 열흘 전 서거, 조봉암 30.0%',C:[['이승만','자유당',['jy'],'#2850a0','anticom:3 strongpres:3 order:2',69.99],['신익희','민주당',['mg','mj'],'#000080','democ:3 parl:3 market:1 rights:2',null],['조봉암','진보당',[],'#c0392b','redist:3 welfare:2 engage:3 labor:2',30.01]]},
+ {d:'1960.3.15',t:'제4대 대통령 선거',how:'직선',real:'조병옥(민주당) 선거 전 서거로 이승만 단독 당선, 3·15 부정선거로 4·19 혁명 뒤 무효',C:[['이승만','자유당',['jy'],'#2850a0','anticom:3 strongpres:3 order:3',100],['조병옥','민주당',['mj'],'#000080','democ:3 parl:2 market:2 rights:2',null]]},
+ {d:'1960.8.12',t:'제4대 대통령 선거(재선거)',how:'국회 양원 합동 간선',real:'윤보선 국회 투표 208표(82.2%)로 당선 (내각책임제의 상징적 국가원수)',C:[['윤보선','민주당',['mj'],'#000080','democ:3 parl:3 market:2 rights:2',82.21],['김창숙','무소속',[],'#8b9098','democ:2 engage:2 trad:1',11.46],['변영태','무소속',[],'#9a6b3f','anticom:2 order:1 trad:1',1.19]]},
+ {d:'1963.10.15',t:'제5대 대통령 선거',how:'직선',real:'박정희 46.6%로 윤보선(45.1%)을 15만 표 차로 이기고 당선',C:[['박정희','민주공화당',['gh'],'#835B38','growth:3 strongpres:3 anticom:3 order:2',46.65],['윤보선','민정당',['mj','sm'],'#FFD700','democ:3 rights:2 market:1',45.10],['오재영','추풍회',[],'#6b8e3a','farm:2 welfare:1',4.05],['변영태','정민회',[],'#9a6b3f','anticom:2 trad:1',2.23],['장이석','신흥당',[],'#8b9098','welfare:1 democ:1',1.97]]},
+ {d:'1967.5.3',t:'제6대 대통령 선거',how:'직선',real:'박정희 51.4%로 재선, 윤보선 40.9%',C:[['박정희','민주공화당',['gh'],'#835B38','growth:3 strongpres:3 anticom:3 order:2',51.44],['윤보선','신민당',['sm','mj'],'#DC352A','democ:3 rights:2 market:1',40.93],['오재영','통한당',[],'#6b8e3a','engage:2 farm:1',2.39],['김준연','민중당',['md'],'#332B43','anticom:2 democ:1',2.25],['전진한','한국독립당',['hs'],'#9a5fa0','labor:2 welfare:2',2.10],['이세진','정의당',[],'#8b9098','balance:1',0.89]]},
+ {d:'1971.4.27',t:'제7대 대통령 선거',how:'직선',real:'박정희 53.2%로 3선, 김대중 45.3%',C:[['박정희','민주공화당',['gh'],'#835B38','growth:3 strongpres:3 anticom:3 order:2',53.20],['김대중','신민당',['sm'],'#DC352A','democ:3 welfare:2 engage:2 rights:2',45.26],['진복기','정의당',[],'#8b9098','welfare:1',1.03],['박기출','국민당',[],'#9a6b3f','democ:1',0.37]]},
+ {d:'1972.12.23',t:'제8대 대통령 선거',how:'통일주체국민회의 간선',real:'유신헌법에 따라 박정희 단독 출마, 대의원 2,357표로 당선. 김대중은 가상 후보입니다',C:[['박정희','민주공화당',['gh','yj'],'#835B38','growth:3 strongpres:3 anticom:3 order:3',99.9],['김대중','신민당(가상)',['sm','tt'],'#DC352A','democ:3 welfare:2 engage:2 rights:2',null]]},
+ {d:'1978.7.6',t:'제9대 대통령 선거',how:'통일주체국민회의 간선',real:'박정희 단독 출마, 대의원 2,577표로 당선. 김영삼은 가상 후보입니다',C:[['박정희','민주공화당',['gh','yj'],'#835B38','growth:3 strongpres:3 anticom:3 order:3',99.9],['김영삼','신민당(가상)',['sm','tt'],'#DC352A','democ:3 rights:2 market:1',null]]},
+ {d:'1979.12.6',t:'제10대 대통령 선거',how:'통일주체국민회의 간선',real:'10·26 뒤 최규하 단독 출마로 당선. 김영삼·김대중·김종필은 “서울의 봄” 직선을 가정한 가상 후보입니다',C:[['최규하','무소속',['yj'],'#8b9098','order:2 growth:1 anticom:2',96.7],['김영삼','신민당(가상)',['sm'],'#DC352A','democ:3 rights:2 market:1',null],['김대중','재야(가상)',['tt'],'#3a8a5a','democ:3 welfare:2 engage:3 rights:2',null],['김종필','민주공화당(가상)',['gh'],'#835B38','growth:2 anticom:2 parl:2 trad:1',null]]},
+ {d:'1981.2.25',t:'제12대 대통령 선거',how:'대통령선거인단 간선',real:'전두환 선거인단 4,755표(90.2%)로 당선',C:[['전두환','민주정의당',['mjj'],'#004C97','order:3 anticom:3 strongpres:3 growth:2',90.23],['유치송','민주한국당',['mh'],'#ED2939','democ:1 market:1 welfare:1',7.67],['김종철','한국국민당',['kn'],'#F8C050','anticom:2 growth:2 trad:1',1.61],['김의택','민권당',['mk'],'#4CA459','democ:2 rights:1',0.49]]},
+ {d:'1987.12.16',t:'제13대 대통령 선거',how:'직선(6월 항쟁 뒤 직선제 부활)',real:'노태우 36.6%로 당선. 김영삼 28.0%, 김대중 27.0%로 야권 분열',C:[['노태우','민주정의당',['mjj'],'#004C97','order:2 anticom:2 growth:2 alliance:2',36.64],['김영삼','통일민주당',['tm','shm'],'#211B7D','democ:3 market:2 rights:1',28.03],['김대중','평화민주당',['pm'],'#FADA5E','democ:3 welfare:2 engage:2 balance:2',27.04],['김종필','신민주공화당',['gj','kn'],'#59955E','parl:3 anticom:3 growth:2 trad:2',8.06]]},
+ {d:'1992.12.18',t:'제14대 대통령 선거',how:'직선',real:'김영삼 42.0%로 당선, 김대중 33.8%, 정주영 16.3%',C:[['김영삼','민주자유당',['mja','tm'],'#003990','market:2 democ:2 order:1 alliance:2',41.96],['김대중','민주당',['md','pm'],'#D82634','democ:3 welfare:2 engage:2 balance:2',33.82],['정주영','통일국민당',['tk'],'#22B14C','market:3 chaebol:3 growth:2',16.32],['박찬종','신정당',['sj'],'#101299','democ:2 market:1',6.38],['백기완','무소속',['hg'],'#c0392b','labor:3 redist:3 democ:3',1.00]]},
+ {d:'1997.12.18',t:'제15대 대통령 선거',how:'직선',real:'김대중 40.3%로 당선(첫 여야 정권 교체, DJP 연합). 이회창 38.7%, 이인제 19.2%',C:[['김대중','새정치국민회의',['kh'],'#009A44','democ:2 welfare:2 engage:3 balance:2',40.27],['이회창','한나라당',['sh'],'#0000A8','market:2 security:3 alliance:3 order:2',38.74],['이인제','국민신당',[],'#d9822b','growth:1 market:1 balance:1 democ:1',19.20],['권영길','국민승리21',[],'#EE7700','labor:3 redist:3 welfare:3 prog:2',1.19]]},
+ {d:'2002.12.19',t:'제16대 대통령 선거',how:'직선',real:'노무현 48.9%로 당선, 이회창 46.6%',C:[['노무현','새천년민주당',['mj'],'#00AA7B','democ:3 engage:3 balance:3 welfare:2',48.91],['이회창','한나라당',['hn'],'#0000A8','market:2 security:3 alliance:3 order:2',46.58],['권영길','민주노동당',[],'#EE7700','labor:3 redist:3 welfare:3 prog:3',3.89]]},
+ {d:'2007.12.19',t:'제17대 대통령 선거',how:'직선',real:'이명박 48.7%로 당선, 정동영 26.1%, 이회창(무소속) 15.1%',C:[['이명박','한나라당',['hn'],'#0095DA','market:3 growth:3 chaebol:2 alliance:2',48.67],['정동영','대통합민주신당',['ur','tm'],'#419639','democ:2 engage:3 welfare:2 balance:2',26.14],['이회창','무소속',['sj'],'#00529C','security:3 alliance:3 order:3 trad:2',15.07],['문국현','창조한국당',['ch'],'#B30000','green:2 democ:2 welfare:1',5.82],['권영길','민주노동당',['dn'],'#EE7700','labor:3 redist:3 welfare:3 prog:3',3.01]]},
+ {d:'2012.12.19',t:'제18대 대통령 선거',how:'직선',real:'박근혜 51.6%로 당선(첫 과반 득표 직선 대통령), 문재인 48.0%',C:[['박근혜','새누리당',['sn','hn'],'#C9252B','welfare:1 security:3 alliance:3 order:2 market:2',51.55],['문재인','민주통합당',['mt','tm'],'#FFD504','welfare:3 redist:2 engage:2 democ:2',48.02]]},
+ {d:'2017.5.9',t:'제19대 대통령 선거',how:'직선(탄핵 뒤 보궐선거)',real:'문재인 41.1%로 당선, 홍준표 24.0%, 안철수 21.4%',C:[['문재인','더불어민주당',['dm'],'#004EA2','welfare:3 redist:2 engage:2 democ:3',41.08],['홍준표','자유한국당',['sn'],'#C9252B','market:3 security:3 order:3 trad:2',24.03],['안철수','국민의당',['kp'],'#006241','market:2 democ:2 openness:1',21.41],['유승민','바른정당',[],'#00B5E2','market:2 security:2 welfare:1 democ:1',6.76],['심상정','정의당',['jd'],'#FFCC00','labor:3 redist:3 welfare:3 prog:3',6.17]]},
+ {d:'2022.3.9',t:'제20대 대통령 선거',how:'직선',real:'윤석열 48.6%로 당선, 이재명 47.8% (0.73%p 차 역대 최소)',C:[['윤석열','국민의힘',['tt','pp'],'#E61E2B','market:3 security:3 alliance:3 order:3',48.56],['이재명','더불어민주당',['dm'],'#004EA2','welfare:3 redist:2 engage:2 democ:2',47.83],['심상정','정의당',['jd'],'#FFCC00','labor:3 redist:3 welfare:3 prog:3',2.37]]},
+ {d:'2025.6.3',t:'제21대 대통령 선거',how:'직선(탄핵 뒤 보궐선거)',real:'이재명 49.4%로 당선, 김문수 41.2%, 이준석 8.3%',C:[['이재명','더불어민주당',['dm'],'#003B96','welfare:3 redist:2 engage:2 democ:2',49.42],['김문수','국민의힘',['pp'],'#E61E2B','market:2 security:3 order:3 trad:3',41.15],['이준석','개혁신당',['gs'],'#FF7210','market:3 openness:2 rights:1',8.34],['권영국','민주노동당',[],'#EE7700','labor:3 redist:3 welfare:3 prog:2',0.98]]}
+].map(e=>Object.assign(e,{C:e.C.map(([n,pn,ks,c,tr,real])=>({n,pn,ks,c,tr:Object.fromEntries(tr.split(' ').map(x=>[x.split(':')[0],+x.split(':')[1]])),real}))}));
+// 대선 후보 사진(사용자가 준 링크). 정당 대표 사진보다 먼저 씀
+const PRESPH={"김구": "https://upload.wikimedia.org/wikipedia/ko/c/c4/Kim_Gu_%281947%29.jpg", "안재홍": "https://i.namu.wiki/i/m9mBS141qlCz7vEn_0nxxX1xhRiPOrMmJ2XXHe3nHg-vQ2YXITlwmefPmgckvohJrhUELFYRtjz0H5vjnrUytTqqzyaba4wFtWIiEh658zNZJNkvqbXpwyzw0amD-VUiEodZ-SahUiqjtPyKGd3T2w.webp", "조봉암": "https://upload.wikimedia.org/wikipedia/ko/6/6a/%EC%A1%B0%EB%B4%89%EC%95%94.jpg", "이시영": "https://upload.wikimedia.org/wikipedia/commons/3/36/Vicepresident_Lee_See-young.jpg", "김창숙": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Kim_Chang_Sook.jpg", "변영태": "https://i.namu.wiki/i/dN0K8VuY_oHV6nP-wIzdm0iO2ZmkJGXKC9OpUmfGTCxrkcDRtg_LBle5gJp7FT4D_seqXH7Ofv4rBM4agU0dG3g5JF-6H89aFGzesnFvJPascPkKYV6nyZnBx0Fl93zuSG0RaIYwoFD6sNzHhQAj6Q.webp", "오재영": "https://i.namu.wiki/i/e8-J9Su-9A98VFbbpm1l-6KycJ5vGP72nXG7g070b292E8PvrSwhT2bAA3qVbKfLlD4HGzBZJXlj9qjXlLG-gw.webp", "장이석": "https://i.namu.wiki/i/zrb0ifiiQxc3WEuYvkww-EHGq7Apk-aG9W4O8GY7XcBtz_ACbs_O8ny9TtI9pDASABGlE0ij2HOepDDEQW0vtQ.webp", "김준연": "https://devin.aks.ac.kr/image/06b1e725-8aa9-4c8c-bc01-42435a053307?preset=orig", "이세진": "https://i.namu.wiki/i/ZMyHhzAZ_efNMmWb1AcvIQ0GPSUyzcfGI2zdzyUpYrcuwRVDADpTKgMdPPmWqEwViSFx6yAj04Jfyh9TbCuJzcgEDBKoAmAdtmIMqSvBDNinVJRo4qTPoBqiTDNEH6_dGb5sk9u345wwkE4563y5jA.webp", "박기출": "https://i.namu.wiki/i/KjiENJEM3FQQzuC-pI_mflNDzM_YB9W8AiEGlgRr5Xtr3oZuqVQtN670G_76MUQz8y35kSC1mZmie8EOyLpih5qNmb4fuOM06gJQNDO59kjr9uhFO1OngaX1mHnNOr6p22mckEPfz-JuGXnOJioTYA.webp", "진복기": "https://i.namu.wiki/i/nK7ppX-nS1TSPe2XTZ822JDNQu99zJmjyzmmcgbr8zDkcY6upem-vUTvZpiSuNqsydzGgFkrMsp3i_ZMFTYJWxvb_NcAboBUgZwAgNaKk76Z8RX2QfoGrHywVEhqgHXTfFgldikr1guz7jgxyAxRbw.webp", "박찬종": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJIcJGjwo4JW1z6hQKu8FKsoNqJNlTt4sGJA9eL04Usw&s=10", "백기완": "https://img.khan.co.kr/news/2012/08/21/webj_MYXoAT.jpg", "이인제": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQryMdQ5w_2HrtdefN-AKRCLQXdyXwuYmGd5L9ATaeXoA&s=10", "노무현": "https://i.namu.wiki/i/dDKwYdTojxyh2sYq65yXxkI0hpt-AdrFSxLCeH8SykUwvqWo48fbp7FeCnNWEJiVsYBxZfB4IHKZVZn_yifAbyr6NtYbW8uMynZTajf7Xd0Xu3XMQsIO2_LBYEh0ptm7-gn9jd452-_TT2gnQdihDg.webp", "이명박": "https://i.namu.wiki/i/IhrOUgHikaFX_r8J7uiHIym6z00kqVkxES3tUmr5KOwxagM0pKs_ir3XAlGXUgBU_WqVJk7nB5pJGUlkKcaBvUIhUUE0ujbfoK7Udcner7YzsSNL6NVPfMSE0KHgAtXZgJrRAh9XP0m-51LkLZc8wQ.webp", "문재인": "https://i.namu.wiki/i/k8HCEpCAzwHzpcv_06fJASNgr7mU18uLAsEV94Z6SWvgCsWA8zyg2qmS2pmitI4od1orRVeMmmpULtYlVmfKOzvF4fU8kK0Vs1tFt75KsFeVgsWF-Wo7fhfYuQbKzkwep6EIL1HPdt7VHiU_gBtfVw.webp", "윤석열": "https://i.namu.wiki/i/_8pjCGh-Sw180CguloC-uYfPpaeW_vt_-r8wCTQcVSozS8ptcAtZCNCmIJUrcsFhlHwalM19UF3x2b36bE-hXzYxHX7Umz4SLwLIik5S40dweqDdce8jh5Q-9O9f7pThB46UFx-zyAy2BAh4TahSXA.webp", "유승민": "https://i.namu.wiki/i/WdUtRwGj_ffmcabKJshR9WArwQ7BZ6u8-yOOkLMRJlUlfvwDGQj2dgKqLade0k4qmcHGq7WT72Z41OCtAJI-BfOOF2ZGweO4mh3or-5Jg7ehdQwzNikNeuXfkthR7VU81XdlDyYJZ1bZ7WrQ1EPTdQ.webp", "홍준표": "https://i.namu.wiki/i/YiTGbvGr9E5xtGLN5Ng5ehZVsHtE3nrRpJM-Pmq9sBwYRaS0sc3-_MapfnF0f4PCWlWY9og-5r5bc5Opwiw0cl6hVGPiTC3f-yiuFc-kNMRF_r4-7K0hqsbvnVISzACLn38YtUJnGUPDg1-mCu_cBw.webp", "김문수": "https://i.namu.wiki/i/Fan7NO4AJ1NC2DuHnzz88FtJSwAuiOktPUIrqg-7RxKtKe9XInCyzIHDw7XLqth3DHx3GqSQnsqjOGH355ByxQNy5N1FjQiK5tQQtujCauIZkAK80TkgzK7HQo-t5Jzs0fJ6DE_OQKwy3Svxymn1eA.webp", "권영국": "https://i.namu.wiki/i/sC5z_DF4XqiGf_TRvSI2xGYsv0kTOJlZBRulwrP_y4tbmpIsNFJQb2dygo3l3u0JqnknqKGQ5OmtnoGAMNi2JcXdD--laaE7nyZ7RXsyRK6aUWVW8eQ5AQE9A9I3f8vHGc0ku-7nTjcxTEegnn7obg.webp", "박근혜": "https://pds.joongang.co.kr/news/component/htmlphoto_mmdata/201611/17/htm_2016111755214796692.jpg"};
+const dnum=s=>{ const [y,m,d]=s.split('.').map(Number); return y*10000+(m||0)*100+(d||0); };
+// 이 국회와 짝지을 대선: 임기 중 대선(없으면 1년 안의 직전 대선, 그것도 없으면 다음 대선) + 앞뒤 대선
+function presOpts(a){ const i=DATA.findIndex(d=>d.n===a.n), s=dnum(a.date), e=DATA[i+1]?dnum(DATA[i+1].date):99999999;
+  const prev=PRESD.filter(x=>dnum(x.d)<=s).pop(), during=PRESD.filter(x=>dnum(x.d)>s&&dnum(x.d)<e), next=PRESD.find(x=>dnum(x.d)>s);
+  const def=during[0]||(prev&&s-dnum(prev.d)<10000?prev:next||prev); const o=[];
+  [prev,...during,next].forEach(x=>{ if(x&&!o.includes(x)) o.push(x); }); o.sort((x,y)=>dnum(x.d)-dnum(y.d)); return {o,def}; }
+// 이념 특성 → 경제·정치 축 위치
+function trAx(tr){ let x=0,xw=0,y=0,yw=0; Object.keys(tr||{}).forEach(id=>{ const t=DEF_TRAITS.find(t=>t.id===id); if(!t) return; const v=TS[tr[id]]; x+=v*t.e; xw+=v*Math.abs(t.e); y+=v*t.s; yw+=v*Math.abs(t.s); });
+  return {e:clamp(xw?x/(xw+.4)*1.25:0,-1,1),s:clamp(yw?y/(yw+.4)*1.25:0,-1,1)}; }
+// 후보 사진: 같은 이름의 정당 대표 사진(편집에서 넣은 사진 우선)을 찾아 씀
+function face(nm){ if(PRESPH[nm]) return PRESPH[nm]; const cur=(C.P||[]).find(p=>p.ld===nm&&p.ldph); if(cur) return cur.ldph;
+  for(const n of Object.keys(LEADERS)){ const L=LEADERS[n]; for(const k of Object.keys(L)) if(L[k]===nm&&(LDPH[n]||{})[k]) return LDPH[n][k]; } return ''; }
+function presSim(a,E){ const used={}, cs=E.C.map(c=>{ let f=-1; for(const k of c.ks){ const j=a.P.findIndex(p=>p.k===k); if(j>=0&&!used[j]){ f=j; used[j]=1; break; } }
+    return Object.assign({},c,{f,ax:trAx(c.tr)}); });
+  const pr=cs.map(c=>S.prior?Math.pow(Math.max((c.real==null?5:c.real)/100,.01),.5):1);
+  const posOf=(c,q)=>{ const t=q.ax==='e'?c.ax.e:q.ax==='s'?c.ax.s:(c.ax.e+c.ax.s)/2; return c.f>=0?clamp(.8*pos(q,a.P[c.f])+.2*t,-1,1):t; };
+  const w=cs.map(()=>0); let tw=0, nq=0;
+  FK.forEach(k=>{ const lw=fw(k); if(!(lw>0)) return; const acc=cs.map(()=>0); let n=0;
+    a.Q.forEach((q,i)=>{ const v=S.ans[i]; if(!q.on||q.f!==k||v==null) return; n++; const g=cs.map((c,j)=>{ const d=v-posOf(c,q); return Math.exp(-d*d/(2*SIG*SIG))*pr[j]; }), G=sum(g)||1; g.forEach((x,j)=>{ acc[j]+=x/G; }); });
+    if(n){ acc.forEach((x,j)=>{ w[j]+=x/n*lw; }); tw+=lw; nq+=n; } });
+  const p=tw?w.map(x=>x/tw):cs.map(c=>(c.real||0)/100), win=p.indexOf(Math.max(...p));
+  return {cs,p,win,nq}; }
+function presBox(a,E){ const r=presSim(a,E), ord=r.cs.map((c,j)=>j).sort((x,y)=>r.p[y]-r.p[x]), pct=v=>(v*100).toFixed(1)+'%', W=r.cs[r.win], realWin=E.C.reduce((b,c,j)=>(c.real||0)>(E.C[b].real||0)?j:b,0);
+  let rows=''; for(let k=0;k<ord.length;k+=3){ const g=ord.slice(k,k+3), pad='<td></td>'.repeat(3-g.length), row=(th,fn)=>'<tr><th scope="row">'+th+'</th>'+g.map(j=>'<td>'+fn(j,r.cs[j])+'</td>').join('')+pad+'</tr>';
+    rows+=row('',(j,c)=>{ const ph=face(c.n); return '<div class="wb-ph'+(ph?' pic':'')+'" style="--c:'+c.c+'">'+(ph?'<img referrerpolicy="no-referrer" data-fb="'+esc(c.n.slice(0,2))+'" src="'+esc(ph)+'" alt="'+esc(c.n)+'">':'<span>'+esc(c.n.slice(0,2))+'</span>')+'</div>'; })+
+      row('후보',(j,c)=>j===r.win?'<b>'+esc(c.n)+'</b>':esc(c.n))+
+      row('소속',(j,c)=>'<span class="wb-pn"><i class="dot" style="background:'+c.c+'"></i> '+esc(c.pn)+'</span>')+
+      row('득표율',j=>j===r.win?'<b>'+pct(r.p[j])+'</b>':pct(r.p[j]))+
+      row('실제',(j,c)=>c.real==null?'<small class="hint">가상</small>':c.real.toFixed(1)+'%')+
+      '<tr><td colspan="4" class="wb-hr"></td></tr>'; }
+  const bar='<div class="vbar" style="height:14px;margin:4px 0">'+ord.map(j=>'<span style="width:'+(r.p[j]*100)+'%;background:'+r.cs[j].c+'" title="'+esc(r.cs[j].n)+' '+pct(r.p[j])+'"></span>').join('')+'</div>';
+  return '<table class="wb"><tbody><tr><th colspan="4" class="wb-title">'+esc(E.t)+'<div>'+(r.nq?'시험 답변 기준 가상 결과':'답변이 없어 실제 결과로 표시')+'</div></th></tr>'+
+    '<tr><td colspan="4" class="wb-c">'+flagImg()+'</td></tr>'+
+    '<tr><th scope="row" class="wb-l">선거일</th><td colspan="3" class="wb-r">'+E.d.replace(/^(\d+)\.(\d+)\.(\d+)$/,'$1년 $2월 $3일')+' · '+esc(E.how)+'</td></tr>'+
+    '<tr><td colspan="4" class="wb-hr"></td></tr>'+rows+
+    '<tr><td colspan="4">'+bar+'</td></tr>'+
+    '<tr><th scope="row" class="wb-l">결과</th><td colspan="3" class="wb-r"><b>'+esc(W.n)+'</b>('+esc(W.pn)+') 당선 · '+pct(r.p[r.win])+(r.p[r.win]>.5?' 과반':' 상대다수')+(r.win===realWin?' · 실제와 같음':' · <b>실제와 다름</b>')+'</td></tr>'+
+    '<tr><th scope="row" class="wb-l">실제</th><td colspan="3" class="wb-r">'+esc(E.real)+'</td></tr>'+
+    (/간선/.test(E.how)?'<tr><td colspan="4" class="wb-cap">실제로는 '+esc(E.how)+'였지만, 여기서는 국민 직선으로 가정해 계산합니다.</td></tr>':'')+
     '</tbody></table>'; }
 const actual=a=>a.P.map(p=>p.s);
 
@@ -1728,6 +1796,7 @@ function viewResult(keep){
     '<div class="hemi" id="rh">'+hemiSvg(a.N)+'</div><div class="hlg" id="hlg"></div>'+
     '<div class="tw"><table class="tbl"><thead><tr><th>정당</th><th>'+(fixSum(a)?'지역·간선':'지역구')+'</th>'+(a.Lst?'<th>'+a.ln+'</th>':'')+'<th>합계</th><th>실제</th><th>차이</th></tr></thead><tbody id="tb"></tbody></table></div></div>'+
    '<div class="box"><h3>선거 결과</h3><p class="hint sub">위키백과 선거 인포박스 형식입니다. 득표율은 시험 답변으로 계산한 가상 비례 득표율입니다. 화살표를 누르면 앞뒤 국회로 이동합니다.</p><div style="display:flex;justify-content:center;margin-bottom:10px"><div class="seg" id="wbseg" role="group" aria-label="결과표 전환"><button type="button" data-w="mine" aria-pressed="true">나의 결과</button><button type="button" data-w="real" aria-pressed="false">실제 결과</button></div></div><div class="wb-wrap" id="wb"></div></div>'+
+   '<div class="box" id="presbox"><h3>대통령 선거</h3><p class="hint sub">이 국회 시기의 실제 대선 후보들에게 같은 답변으로 표를 나눠 봅니다(결선 없는 상대다수제). 후보가 그 국회의 정당 소속이면 정당 입장을, 아니면 후보의 이념 특성을 씁니다.</p><div style="display:flex;justify-content:center;margin-bottom:10px"><div class="seg" id="prseg" role="group" aria-label="대선 고르기"></div></div><div class="wb-wrap" id="prwb"></div></div>'+
    '<div class="box"><h3>분야별 의석</h3><p class="hint sub">분야마다 걸린 의석과 정당별 획득 의석입니다. 중요도를 바꾸면 분야 의석이 다시 나뉘고 국회 전체가 다시 계산됩니다. 답하지 않은 분야는 실제 지지율대로 나눕니다.</p><div class="fbar" id="fsum"></div><div class="syslg" id="fslg" style="margin-bottom:6px"></div><div id="fres"></div></div>'+
    '<div class="box"><h3>정당 스펙트럼 맵</h3><p class="hint sub">가로는 경제, 세로는 정치·안보 성향입니다. 원 크기는 나의 결과 의석수, 흰 원이 나의 위치입니다.</p>'+compass(a,mine,true)+'</div>'+
    '<div class="box"><h3>의결 정족수로 본 나의 국회</h3><p class="hint sub">검은 선은 과반, 금색 선은 개헌·탄핵 소추에 필요한 3분의 2입니다.</p><div class="thr" id="thr"></div></div>'+
@@ -1753,6 +1822,10 @@ function viewResult(keep){
   $('#wbseg').addEventListener('click',e=>{ const b=e.target.closest('button[data-w]'); if(b) drawWB(b.dataset.w); });
   $('#wb').addEventListener('click',e=>{ const b=e.target.closest('[data-go]'); if(!b) return; S.ai=+b.dataset.go; try{ localStorage.setItem('kr-asm-sel',S.ai); }catch(_){} loadScenario(); viewHome(); });
   drawWB('mine');
+  const PO=presOpts(a); if(!S.presE||!PO.o.includes(S.presE)) S.presE=PO.def;
+  const drawPres=()=>{ $('#prseg').innerHTML=PO.o.map(E=>'<button type="button" data-pe="'+PRESD.indexOf(E)+'" aria-pressed="'+(E===S.presE)+'">'+E.d.split('.').slice(0,2).join('.')+(E===PO.def?' · 이 국회':'')+'</button>').join(''); $('#prwb').innerHTML=S.presE?presBox(a,S.presE):'<p class="hint">이 시기의 대통령 선거 자료가 없습니다.</p>'; };
+  $('#prseg').addEventListener('click',e=>{ const b=e.target.closest('button[data-pe]'); if(!b) return; S.presE=PRESD[+b.dataset.pe]; if(S.govSel&&S.govSel.v==='pres'){ S.govSel=null; S.cab=null; S.cabSt=null; } viewResult(true); });
+  drawPres();
   const order=a.P.map((p,f)=>f).sort((x,y)=>mine[y]-mine[x]||real[y]-real[x]);
   $('#tb').innerHTML=order.map(f=>{ const p=a.P[f], d=mine[f]-real[f];
     return '<tr><td><span><i class="dot" style="background:'+p.c+'"></i>'+esc(p.n)+(f===R.bonusTo?' <small style="color:var(--ink3)">+프리미엄 '+a.bonus+'</small>':'')+'</span></td><td>'+(R.dist[f]+R.fix[f])+'</td>'+(a.Lst?'<td>'+R.list[f]+'</td>':'')+'<td><b>'+mine[f]+'</b></td><td>'+real[f]+'</td><td class="'+(d>0?'up':d<0?'down':'')+'">'+(d>0?'+'+d:d<0?'−'+(-d):'0')+'</td></tr>'; }).join('');
@@ -1782,7 +1855,10 @@ function viewResult(keep){
   if(gov.length) h+='<div class="t"><b>여당 의석</b><span class="num">'+govSeats+'석</span><small>'+(govSeats>=M?'여대야소: 정부 법안이 무난히 통과됩니다.':'여소야대: 야당이 국회를 주도합니다.')+(govSeats<bl?' 개헌저지선('+bl+'석)도 지키지 못합니다.':'')+'</small></div>';
   $('#thr').innerHTML=h;
   // 정부 구성: 대통령제(대통령이 국무위원 임명, 국무총리는 국회 임명동의) · 제2공화국만 내각책임제
-  const parl=a.n===5, govF=gov.filter(f=>mine[f]>0), presName=String(a.pres).split(/\s*(?:→|\()/)[0].trim();
+  const pw=S.presE?presSim(a,S.presE):null, pwC=pw?pw.cs[pw.win]:null;
+  if(S.govSel&&S.govSel.n!==a.n) S.govSel=null;
+  const gsel=S.govSel?S.govSel.f:gov;
+  const parl=a.n===5, govF=gsel.filter(f=>f>=0&&mine[f]>0), presName=S.govSel&&S.govSel.name?S.govSel.name:String(a.pres).split(/\s*(?:→|\()/)[0].trim();
   const PX=f=>f<0?{n:'비정당 전문가',c:'#8b9098',logo:'',k:'_x'}:a.P[f];
   const coBar=m=>'<div class="vbar" style="height:12px">'+m.map(f=>'<span style="width:'+(mine[f]/N*100)+'%;background:'+a.P[f].c+'"></span>').join('')+'<em style="left:'+(M/N*100)+'%"></em></div>';
   const coRow=(m,label,note)=>{ const t=sum(m.map(f=>mine[f])), nm=label||coName(a,m);
@@ -1797,17 +1873,21 @@ function viewResult(keep){
     const gs=sum(govF.map(f=>mine[f]));
     $('#cotitle').textContent='정부 구성 (대통령제)';
     $('#cohint').textContent=hasPM(a)?'대통령이 국무위원을 임명하고, 국무총리만 국회 임명동의(과반 '+M+'석)를 받습니다. 여당이 과반이 안 되면 다른 정당과 정책 연대나 공동정부(예: DJP 연합)로 총리 인준을 얻어야 합니다.':'1954년 개헌으로 국무총리가 없어 대통령이 국무위원을 직접 임명합니다. 법안과 예산을 통과시키려면 국회 과반('+M+'석)의 지지가 필요합니다.';
-    $('#presrow').innerHTML='<span class="pres-chip">대통령 <b>'+esc(presName)+'</b></span>'+(govF.length?'<span class="pres-chip">'+govF.map(f=>mark(a.P[f],14)+' '+esc(a.P[f].n)).join(' · ')+' <b class="num">'+gs+'석</b> '+(gs>=M?'<em class="ok">여대야소</em>':'<em class="bad">여소야대</em>')+'</span>':'<span class="hint">이 시기에는 대통령을 뒷받침하는 원내 여당이 없었습니다.</span>');
+    const gv=S.govSel?S.govSel.v:'';
+    const govPick='<label class="pres-chip" style="gap:6px;white-space:nowrap;max-width:100%">여당 <select class="in" id="govsel" style="width:auto;max-width:220px;padding:2px 6px;font-size:13px" aria-label="여당 고르기"><option value=""'+(gv===''?' selected':'')+'>실제 여당'+(gov.length?' ('+gov.map(f=>esc(a.P[f].n)).join('·')+')':' 없음')+'</option>'+
+      (pwC&&pwC.f>=0?'<option value="pres"'+(gv==='pres'?' selected':'')+'>가상 대선 당선자('+esc(pwC.n)+') 정당</option>':'')+
+      a.P.map((p,f)=>mine[f]&&p.k!=='mu'?'<option value="'+f+'"'+(gv===String(f)?' selected':'')+'>'+esc(p.n)+'</option>':'').join('')+'<option value="none"'+(gv==='none'?' selected':'')+'>여당 없음</option></select></label>';
+    $('#presrow').innerHTML=govPick+'<span class="pres-chip">대통령 <b>'+esc(presName)+'</b></span>'+(govF.length?'<span class="pres-chip">'+govF.map(f=>mark(a.P[f],14)+' '+esc(a.P[f].n)).join(' · ')+' <b class="num">'+gs+'석</b> '+(gs>=M?'<em class="ok">여대야소</em>':'<em class="bad">여소야대</em>')+'</span>':'<span class="hint">이 시기에는 대통령을 뒷받침하는 원내 여당이 없었습니다.</span>');
     let rows='';
     if(govF.length){ rows+=coRow(govF,'여당 단독 내각',hasPM(a)?(gs>=M?'단독으로 국무총리 임명동의를 가결할 수 있습니다.':'총리 인준에 '+(M-gs)+'석이 모자랍니다. 야당 협조가 필요합니다.'):(gs>=M?'단독으로 국회 과반입니다.':'국회 과반에 '+(M-gs)+'석이 모자랍니다.'));
-      if(gs<M){ const co=coalitions(a,mine).filter(c=>govF.every(f=>c.m.includes(f))); rows+=co.length?co.map(c=>coRow(c.m,'',coName(a,c.m)?'':'공동정부(정책 연대) 후보')).join(''):'<p class="hint">조건을 지키며 여당과 함께 과반을 만드는 연대가 없습니다. 아래에서 직접 골라 볼 수 있습니다.</p>'; } }
+      if(gs<M){ const all=coalitions(a,mine), inc=c=>govF.every(f=>c.m.includes(f)), co=all.filter(inc).concat(all.filter(c=>!inc(c))); rows+=co.length?co.map(c=>coRow(c.m,'',coName(a,c.m)?'':inc(c)?'공동정부(정책 연대) 후보':'여당을 뺀 다수 연합')).join(''):'<p class="hint">조건을 지키며 과반을 만드는 연대가 없습니다. 아래에서 직접 골라 볼 수 있습니다.</p>'; } }
     else { const co=coalitions(a,mine); rows+=co.length?co.map(c=>coRow(c.m,'','대통령 지지 연합 후보')).join(''):''; }
     $('#coal').innerHTML=rows;
   }
-  $('#copicklbl').textContent=parl?'직접 연합 만들기':'직접 연대 만들기'+(govF.length?' (여당은 항상 포함)':'');
-  if(!parl&&govF.length) govF.forEach(f=>{ if(!S.pick.includes(f)) S.pick.unshift(f); });
+  $('#copicklbl').textContent=parl?'직접 연합 만들기':'직접 연대 만들기 (여당도 빼거나 넣을 수 있습니다)';
+  if(!parl&&govF.length&&!S.pick.length&&!S.pickTouched) S.pick=govF.slice();
   const drawPick=()=>{ S.pick=S.pick.filter(f=>mine[f]>0); const t=sum(S.pick.map(f=>mine[f])), bp=badPair(a,S.pick), nm=coName(a,S.pick);
-    $('#copick').innerHTML=a.P.map((p,f)=>mine[f]?'<button type="button" class="chip" data-pk="'+f+'" aria-pressed="'+S.pick.includes(f)+'"'+(!parl&&govF.includes(f)?' disabled title="여당"':'')+'>'+mark(p,12)+' '+esc(p.n)+' · '+mine[f]+'</button>':'').join('');
+    $('#copick').innerHTML=a.P.map((p,f)=>mine[f]?'<button type="button" class="chip" data-pk="'+f+'" aria-pressed="'+S.pick.includes(f)+'"'+'>'+mark(p,12)+' '+esc(p.n)+(!parl&&govF.includes(f)?' <small>여당</small>':'')+' · '+mine[f]+'</button>':'').join('');
     $('#cogo').innerHTML='<button type="button" class="chip" data-co="'+S.pick.join(',')+'"'+(S.pick.length&&!bp?'':' disabled')+'>이 구성으로 '+(parl?'정부':'내각')+' 구성</button> <span class="hint">'+(bp?esc(a.P[bp[0]].n)+'과(와) '+esc(a.P[bp[1]].n)+'은(는) 함께하길 거부합니다':S.pick.length?(nm?'“'+esc(nm)+'” · ':'')+t+'석 · '+(t>=M?(parl?'과반 내각':hasPM(a)?'총리 인준 가능':'국회 과반'):(parl?'소수 내각':(hasPM(a)?'총리 인준까지 ':'과반까지 ')+(M-t)+'석 부족')):'참여할 정당을 고르세요')+'</span>'; };
   const drawCab=()=>{ if(!S.cab){ $('#cab').innerHTML=''; return; } const m=S.cab.filter(f=>mine[f]>0); if(!m.length){ $('#cab').innerHTML=''; return; }
     const key=m.join(','), lead=parl?m.slice().sort((x,y)=>mine[y]-mine[x]):m.slice().sort((x,y)=>(govF.includes(y)-govF.includes(x))||mine[y]-mine[x]);
@@ -1827,8 +1907,11 @@ function viewResult(keep){
     $('#cabReset').addEventListener('click',()=>{ S.cabSt=null; drawCab(); }); };
   $('#cab').addEventListener('change',e=>{ const t=e.target, st=S.cabSt; if(!st) return;
     if(t.dataset.cp){ st.asg[t.dataset.cp]=+t.value; drawCab(); } });
+  $('#cobox').addEventListener('change',e=>{ if(e.target.id!=='govsel') return; const v=e.target.value;
+    S.govSel=!v?null:v==='none'?{n:a.n,v,f:[]}:v==='pres'?{n:a.n,v,f:[pwC.f],name:pwC.n}:{n:a.n,v,f:[+v]};
+    S.pick=[]; S.pickTouched=false; S.cab=null; S.cabSt=null; viewResult(true); });
   $('#cobox').addEventListener('click',e=>{ const pk=e.target.closest('[data-pk]');
-    if(pk&&!pk.disabled){ const f=+pk.dataset.pk, i=S.pick.indexOf(f); if(i>=0) S.pick.splice(i,1); else S.pick.push(f); drawPick(); return; }
+    if(pk&&!pk.disabled){ S.pickTouched=true; const f=+pk.dataset.pk, i=S.pick.indexOf(f); if(i>=0) S.pick.splice(i,1); else S.pick.push(f); drawPick(); return; }
     const b=e.target.closest('[data-co]'); if(b&&b.dataset.co&&!b.disabled){ S.cab=b.dataset.co.split(',').map(Number); S.cabSt=null; drawCab(); $('#cab').scrollIntoView({behavior:'smooth',block:'nearest'}); } });
   drawPick(); drawCab();
   // 일치도
