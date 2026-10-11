@@ -1310,6 +1310,7 @@ const HEX=/^#[0-9a-f]{6}$/i;
 const app=$('#app'), toHome=$('#toHome');
 // 링크 그림을 못 불러오면 이름 글자나 당색 점으로 대신 표시
 document.addEventListener('error',e=>{ const im=e.target; if(!im||im.tagName!=='IMG') return;
+  if(im.dataset.flag!=null){ im.outerHTML=flagSvg(); return; }
   if(im.dataset.dot!=null){ const d=document.createElement('i'); d.className='dot'; d.style.background=im.dataset.dot; im.replaceWith(d); return; }
   if(im.dataset.fb!=null){ const box=im.parentNode; if(box&&box.classList) box.classList.remove('pic','lg'); const sp=document.createElement('span'); sp.textContent=im.dataset.fb; im.replaceWith(sp); } },true);
 // 계산 상수: 입장 거리의 폭, 소선거구 승자독식 정도, 실제 지지 기반 반영 정도, 무소속 감점
@@ -1445,6 +1446,9 @@ function simAll(a,ans,upto){
   return {act,C:C2,fields,dist,list,fix,bonusTo,vs:VT?vs.map(x=>x/VT):vs,tot:dist.map((x,f)=>x+list[f]+fix[f])}; }
 
 // ── 위키백과식 선거 결과표
+// 태극기: 사용자가 준 그림 링크, 못 불러오면 직접 그린 태극기
+const FLAG_URL='https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQazlH8dsYAv9R2ysgN-r3blPcDmyTnEKlBODQhH-vNEMEEzWtl';
+const flagImg=()=>'<img class="wb-flag" data-flag="1" referrerpolicy="no-referrer" src="'+FLAG_URL+'" alt="태극기">';
 function flagSvg(){
   const bar=(y,broken)=>broken?'<rect x="-6" y="'+y+'" width="5.3" height="2"/><rect x="0.7" y="'+y+'" width="5.3" height="2"/>':'<rect x="-6" y="'+y+'" width="12" height="2"/>';
   const tri=(phi,kind)=>{ const r=phi*Math.PI/180, cx=45+22*Math.cos(r), cy=30+22*Math.sin(r), rows=[-4.5,-1,2.5];
@@ -1473,7 +1477,7 @@ function wikibox(a,mode,R){
   const gov=a.gov.map(k=>a.P.findIndex(p=>p.k===k)).filter(f=>f>=0), govSeats=sum(gov.map(f=>st[f])), L=ord[0];
   return '<table class="wb"><tbody>'+
     '<tr><th colspan="4" class="wb-title">'+(a.n===1?'제헌':'제'+a.n+'대')+' 대한민국 국회의원 선거<div>'+(real?'실제 결과':'시험 답변 기준 가상 결과')+'</div></th></tr>'+
-    '<tr><td colspan="4" class="wb-c">'+flagSvg()+'</td></tr>'+
+    '<tr><td colspan="4" class="wb-c">'+flagImg()+'</td></tr>'+
     '<tr><td colspan="4"><div class="wb-nav"><span>'+(prv?'<button type="button" class="wb-a" data-go="'+(prv.n-1)+'">← '+prv.y+'</button>':'')+'</span><b>'+a.date.replace(/^(\d+)\.(\d+)\.(\d+)$/,'$1년 $2월 $3일')+'</b><span>'+(nxt?'<button type="button" class="wb-a" data-go="'+(nxt.n-1)+'">'+nxt.y+' →</button>':'')+'</span></div></td></tr>'+
     '<tr><th scope="row" class="wb-l">의원 정수</th><td colspan="3" class="wb-r">'+N+'석 ('+esc(sysText(a))+')</td></tr>'+
     '<tr><th scope="row" class="wb-l">과반</th><td colspan="3" class="wb-r">'+M+'석 · 개헌선 '+two3(N)+'석</td></tr>'+
