@@ -1855,8 +1855,8 @@ function viewEdit(){
     (C.F.length<12?'<button type="button" class="add" data-act="addF">+ 분야 추가</button>':'')+
     '<span class="lbl" style="margin-top:14px;display:block">질문 <span class="hint">(체크를 끄면 시험에서 빠집니다)</span></span><div class="rows">'+C.F.map(F=>'<details class="card" data-o="q'+esc(F.k)+'"'+op('q'+F.k)+'><summary><i class="dot" style="background:'+F.c+'"></i><b>'+esc(F.n)+'</b><span class="hint num">'+non(F.k)+' / '+nq(F.k)+'</span></summary><div class="secb" data-qb="'+esc(F.k)+'">'+(OPEN['q'+F.k]?qGroup(F.k):'')+'</div></details>').join('')+'</div></div></details>'+
    // 6 이동
-   '<details class="box sec" data-o="io"'+op('io')+'><summary><span class="sn">6</span><h3>시험을 다른 기기로 이동</h3></summary><div class="secb"><p class="hint">아래 코드를 복사해 다른 기기의 같은 칸에 붙여 넣고 “코드 불러오기”를 누르세요. 원래 데이터와 달라진 부분만 압축해 담기 때문에 짧고, 몇 대 국회인지도 함께 옮겨집니다.</p>'+
-    '<textarea class="in mono iocode" id="io" rows="2" spellcheck="false" aria-label="시험 코드" placeholder="KR1.22…"></textarea><div class="acts" style="margin-top:8px"><button type="button" class="chip" data-act="copy">코드 복사</button><button type="button" class="chip" data-act="imp">코드 불러오기</button><button type="button" class="chip" data-act="exp">코드 새로 만들기</button><span class="hint" id="iomsg"></span></div>'+
+   '<details class="box sec" data-o="io"'+op('io')+'><summary><span class="sn">6</span><h3>시험을 다른 기기로 이동</h3></summary><div class="secb"><p class="hint">아래 코드를 복사해 다른 기기의 같은 칸에 붙여 넣고 “코드 불러오기”를 누르세요. 원래 데이터와 달라진 부분만 압축해 담기 때문에 짧고, 몇 대 국회인지도 함께 옮겨집니다. “TXT로 저장”은 코드와 함께 로고·사진까지 모두 담은 텍스트 파일을 내려받고, “TXT 불러오기”로 그 파일을 다시 열 수 있습니다.</p>'+
+    '<textarea class="in mono iocode" id="io" rows="2" spellcheck="false" aria-label="시험 코드" placeholder="KR1.22…"></textarea><div class="acts" style="margin-top:8px"><button type="button" class="chip" data-act="copy">코드 복사</button><button type="button" class="chip" data-act="imp">코드 불러오기</button><button type="button" class="chip" data-act="exp">코드 새로 만들기</button><button type="button" class="chip" data-act="txtSave">TXT로 저장</button><label class="chip phup">TXT 불러오기<input type="file" accept=".txt,text/plain" id="txtin" data-txt="1" hidden></label><span class="hint" id="iomsg"></span></div>'+
     '<div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px"><button type="button" class="link danger" data-act="reset">원래대로 되돌리기</button> <span class="hint" id="rsmsg">이 국회의 편집 내용을 모두 지우고 처음 데이터로 돌아갑니다.</span></div></div></details>'+
    '<div class="launch"><button type="button" class="cta" id="estart"'+(C.N&&C.Q.some(q=>q.on)?'':' disabled')+'>분야 정하고 시작하기</button><button type="button" class="cta ghost" id="eback">국회 소개로</button></div>'+
   '</section>';
@@ -1869,7 +1869,7 @@ function viewEdit(){
   window.scrollTo(0,sy); }
 function rerender(){ viewEdit(); }
 // 정당 로고: 올린 파일을 정사각형 안에 맞춰 작게 저장
-function onLogo(e){ const el=e.target; if(el.dataset.img!=null&&el.files&&el.files[0]) return onImg(el); if(el.dataset.logo==null||!el.files||!el.files[0]) return; const i=+el.dataset.logo, f=el.files[0]; if(!/^image\//.test(f.type)) return;
+function onLogo(e){ const el=e.target; if(el.dataset.txt&&el.files&&el.files[0]) return loadTxt(el); if(el.dataset.img!=null&&el.files&&el.files[0]) return onImg(el); if(el.dataset.logo==null||!el.files||!el.files[0]) return; const i=+el.dataset.logo, f=el.files[0]; if(!/^image\//.test(f.type)) return;
   const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{ const S2=128,cv=document.createElement('canvas'); cv.width=cv.height=S2; const k=Math.min(S2/im.width,S2/im.height), w=im.width*k, h=im.height*k;
     cv.getContext('2d').drawImage(im,(S2-w)/2,(S2-h)/2,w,h); try{ C.P[i].logo=cv.toDataURL('image/png'); }catch(_){ return; } if(C.P[i].logo.length>200000) C.P[i].logo=cv.toDataURL('image/webp',.9); save(); rerender(); }; im.src=rd.result; }; rd.readAsDataURL(f); }
 // 인물 사진: 세로 3:4로 잘라 작게 저장
@@ -1900,6 +1900,29 @@ async function makeCode(c){ const js=JSON.stringify(diffOf(c)); if(js==='{}') re
 async function readCode(t){ t=String(t||'').trim(); if(t[0]==='{') return norm(JSON.parse(t)); t=t.replace(/\s+/g,'');
   const m=/^KR1\.(\d+)(?:\.([zj])([A-Za-z0-9_-]+))?$/.exec(t); if(!m) return null; const n=+m[1]; if(!m[3]) return applyDiff(n,{});
   const u=UNB64(m[3]), js=m[2]==='j'?new TextDecoder().decode(u):await zip(u,false); return applyDiff(n,JSON.parse(js)); }
+// ── TXT 저장·불러오기: 사람이 읽을 머리말 + 이동 코드 + 전체 데이터(로고·사진 포함)
+const TXT_MARK='----- 전체 데이터 (이 아래는 고치지 마세요) -----';
+async function buildTxt(){ const code=await makeCode(C), now=new Date(), pad=n=>String(n).padStart(2,'0');
+  const head=['대한민국 국회 시뮬레이터 시험 파일','국회: '+asmName(C)+' ('+C.y+'년 총선)','의원 정수: '+C.N+'석 · '+sysText(C),'정당: '+C.P.map(p=>p.n).join(', '),
+    '질문: '+C.Q.filter(q=>q.on).length+'개 · 분야 '+C.F.length+'개','저장한 때: '+now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes()),'',
+    '----- 이동 코드 -----',code,'',TXT_MARK,strip(C),''];
+  return head.join('\n'); }
+async function saveTxt(){ const msg=$('#iomsg'); let txt; try{ txt=await buildTxt(); }catch(e){ if(msg) msg.textContent='파일 내용을 만들지 못했습니다.'; return; }
+  const fname='국회시뮬레이터_'+(C.n===1?'제헌':'제'+C.n+'대')+'.txt';
+  let dl=null; try{ dl=window.claude&&await window.claude.use('downloads'); }catch(_){ dl=null; }
+  if(!dl){ const ta=$('#io'); if(ta){ ta.value=txt; ta.focus(); ta.select(); } if(msg) msg.textContent='이 화면에서는 파일 저장을 쓸 수 없어 내용을 칸에 띄웠습니다. 복사해서 메모장에 .txt로 저장하세요.'; return; }
+  try{ await dl.save({filename:fname,data:txt}); if(msg) msg.textContent=fname+' 파일을 저장했습니다.'; }
+  catch(e){ const c=e&&e.code; if(msg) msg.textContent=c==='declined'?'저장을 취소했습니다.':c==='rate_limited'?'저장 창이 이미 열려 있습니다. 잠시 후 다시 눌러 주세요.':'파일을 저장하지 못했습니다. “코드 복사”를 이용해 주세요.'; } }
+async function parseTxt(t){ t=String(t||''); const i=t.indexOf(TXT_MARK);
+  if(i>=0){ const j=t.indexOf('{',i); if(j>=0){ try{ const c=norm(JSON.parse(t.slice(j,t.lastIndexOf('}')+1))); if(c) return c; }catch(_){} } }
+  const m=/KR1\.\d+(?:\.[zj][A-Za-z0-9_-]+)?/.exec(t); if(m) return await readCode(m[0]);
+  const k=t.indexOf('{'); if(k>=0){ try{ return norm(JSON.parse(t.slice(k,t.lastIndexOf('}')+1))); }catch(_){} }
+  return null; }
+function loadTxt(el){ const f=el.files[0], msg=$('#iomsg'); const rd=new FileReader();
+  rd.onload=()=>{ parseTxt(rd.result).then(c=>{ el.value=''; if(!c){ if(msg) msg.textContent='이 파일에서 시험을 찾지 못했습니다. 이 시뮬레이터에서 저장한 TXT 파일인지 확인해 주세요.'; return; }
+    S.ai=DATA.findIndex(d=>d.n===c.n); try{ localStorage.setItem('kr-asm-sel',S.ai); }catch(_){} C=c; setFields(); save(); OPEN.io=true; rerender(); const m2=$('#iomsg'); if(m2) m2.textContent=asmName(C)+' 시험을 TXT 파일에서 불러왔습니다.'; })
+    .catch(()=>{ if(msg) msg.textContent='파일을 읽지 못했습니다.'; }); };
+  rd.onerror=()=>{ if(msg) msg.textContent='파일을 읽지 못했습니다.'; }; rd.readAsText(f,'utf-8'); }
 let ioTimer=null;
 function fillIO(now){ clearTimeout(ioTimer); ioTimer=setTimeout(()=>{ const ta=$('#io'); if(!ta) return; makeCode(C).then(code=>{ const t=$('#io'); if(!t) return; t.value=code; const m=$('#iomsg'); if(m&&now) m.textContent='코드를 만들었습니다 ('+code.length+'자). 원래 데이터와 달라진 부분만 담깁니다.'; }); },now?0:400); }
 function setPath(path,v){ const ps=path.split('.'); let o=C; for(let i=0;i<ps.length-1;i++) o=o[ps[i]]; o[ps[ps.length-1]]=v; }
@@ -1956,6 +1979,7 @@ function onEdClick(e){
   else if(a==='addQ'){ const f=b.dataset.f2; C.Q.push({t:'새 질문',A:'',B:'',L:null,R:null,p:{},ax:'s',g:false,f,on:true}); OPEN.qs=true; OPEN['q'+f]=true; }
   else if(a==='delQ'){ C.Q.splice(i,1); }
   else if(a==='exp'){ fillIO(true); return; }
+  else if(a==='txtSave'){ saveTxt(); return; }
   else if(a==='copy'){ const ta=$('#io'); if(!ta.value){ fillIO(true); $('#iomsg').textContent='코드를 만드는 중입니다. 잠시 후 다시 눌러 주세요.'; return; }
     const sel=()=>{ ta.focus(); ta.select(); $('#iomsg').textContent='코드를 선택했습니다. 직접 복사해 주세요.'; };
     try{ navigator.clipboard.writeText(ta.value.trim()).then(()=>{ $('#iomsg').textContent='복사했습니다. ('+ta.value.trim().length+'자)'; },sel); }catch(_){ sel(); } return; }
