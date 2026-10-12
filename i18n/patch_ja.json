@@ -1,85 +1,89 @@
 {
- "prelude": "\n",
- "overrides": "\nfunction whenTxt(a,q){ if(!q.w) return '選挙当時の争点'; const [y,m]=q.w.split('.').map(Number), [ey,em]=a.date.split('.').map(Number); const d=(ey-y)*12+(em-(m||em)); return y+'年'+(m?m+'月':'')+' · '+(d<=0?'選挙直前':d<12?'選挙の'+d+'か月前':'選挙の'+Math.floor(d/12)+'年'+(d%12?(d%12)+'か月':'')+'前'); }\n",
- "replace": [
-  [
-   "(GOVM[a.n]||GOVM[22]).split(' ')",
-   "(GOVM[a.n]||GOVM[22]).split('|')"
-  ],
-  [
-   "'kr-asm-edit-'",
-   "'kr-asm-ja-edit-'"
-  ],
-  [
-   "https://ko.wikipedia.org/wiki/",
-   "https://ja.wikipedia.org/wiki/Special:Search?search="
-  ],
-  [
-   "/지명 총리/",
-   "/大統領指名/"
-  ],
-  [
-   "/대표|총재|최고|부총재|원내|의장|중진|고문/",
-   "/代表|総裁|最高|副総裁|院内|議長|重鎮|顧問/"
-  ],
-  [
-   "/간선/.test(E.how)",
-   "/間接/.test(E.how)"
-  ],
-  [
-   "n.replace(/[()·]/g,' ')",
-   "n.replace(/[()·・]/g,' ')"
-  ],
-  [
-   "/장관 후보|실제 장관/",
-   "/長官候補|実際の長官/"
-  ],
-  [
-   "/^실제 /.test(x.r||'')",
-   "/^実際の/.test(x.r||'')"
-  ]
- ],
- "regex": [],
- "html": [
-  [
-   "<a href=\"./\" lang=\"ko\" data-l=\"ko\" aria-current=\"page\">",
-   "<a href=\"./\" lang=\"ko\" data-l=\"ko\">"
-  ],
-  [
-   "<a href=\"ja.html\" lang=\"ja\" data-l=\"ja\">",
-   "<a href=\"ja.html\" lang=\"ja\" data-l=\"ja\" aria-current=\"page\">"
-  ],
-  [
-   "content:\"열기\"",
-   "content:\"開く\""
-  ],
-  [
-   "content:\"접기\"",
-   "content:\"閉じる\""
-  ],
-  [
-   "--f-display:\"HadaBatang\",\"Noto Serif KR\",\"Nanum Myeongjo\",serif;",
-   "--f-display:\"Noto Serif JP\",\"Hiragino Mincho ProN\",\"Yu Mincho\",\"Noto Serif CJK JP\",\"Noto Sans CJK JP\",\"HadaBatang\",serif;"
-  ],
-  [
-   "--f-body:\"HadaBatang\",\"Noto Serif KR\",\"Apple SD Gothic Neo\",serif;",
-   "--f-body:\"Noto Serif JP\",\"Hiragino Mincho ProN\",\"Yu Mincho\",\"Noto Serif CJK JP\",\"Noto Sans CJK JP\",\"HadaBatang\",serif;"
-  ],
-  [
-   "--f-display:\"Malmoi\",\"HadaBatang\",serif; --f-body:\"Malmoi\",\"HadaBatang\",serif}",
-   "--f-display:\"Malmoi\",\"HadaBatang\",\"Noto Serif JP\",\"Hiragino Mincho ProN\",\"Yu Mincho\",\"Noto Serif CJK JP\",\"Noto Sans CJK JP\",serif; --f-body:\"Malmoi\",\"HadaBatang\",\"Noto Serif JP\",\"Hiragino Mincho ProN\",\"Yu Mincho\",\"Noto Serif CJK JP\",\"Noto Sans CJK JP\",serif}"
-  ],
-  [
-   "--f-display:\"RoundedFixedsys\",monospace; --f-body:\"RoundedFixedsys\",monospace; --f-mono:\"RoundedFixedsys\",monospace}",
-   "--f-display:\"RoundedFixedsys\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",monospace; --f-body:\"RoundedFixedsys\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",monospace; --f-mono:\"RoundedFixedsys\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",monospace}"
-  ],
-  [
-   "--f-display:\"SeochoDotum\",\"Apple SD Gothic Neo\",sans-serif; --f-body:\"SeochoDotum\",\"Apple SD Gothic Neo\",sans-serif; --f-mono:\"SeochoDotum\",\"Apple SD Gothic Neo\",sans-serif}",
-   "--f-display:\"SeochoDotum\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",sans-serif; --f-body:\"SeochoDotum\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",sans-serif; --f-mono:\"SeochoDotum\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",sans-serif}"
-  ],
-  [
-   "--f-mono:\"IBM Plex Mono\",ui-monospace,monospace;",
-   "--f-mono:\"IBM Plex Mono\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",ui-monospace,monospace;"
-  ]
- ]
+"prelude": "\n",
+"overrides": "\nfunction whenTxt(a,q){ if(!q.w) return '選挙当時の争点'; const [y,m]=q.w.split('.').map(Number), [ey,em]=a.date.split('.').map(Number); const d=(ey-y)*12+(em-(m||em)); return y+'年'+(m?m+'月':'')+' · '+(d<=0?'選挙直前':d<12?'選挙の'+d+'か月前':'選挙の'+Math.floor(d/12)+'年'+(d%12?(d%12)+'か月':'')+'前'); }\n",
+"replace": [
+[
+"(GOVM[a.n]||GOVM[22]).split(' ')",
+"(GOVM[a.n]||GOVM[22]).split('|')"
+],
+[
+"'kr-asm-edit-'",
+"'kr-asm-ja-edit-'"
+],
+[
+"https://ko.wikipedia.org/wiki/",
+"https://ja.wikipedia.org/wiki/Special:Search?search="
+],
+[
+"/지명 총리/",
+"/大統領指名/"
+],
+[
+"/대표|총재|최고|부총재|원내|의장|중진|고문/",
+"/代表|総裁|最高|副総裁|院内|議長|重鎮|顧問/"
+],
+[
+"/간선/.test(E.how)",
+"/間接/.test(E.how)"
+],
+[
+"n.replace(/[()·]/g,' ')",
+"n.replace(/[()·・]/g,' ')"
+],
+[
+"/장관 후보|실제 장관/",
+"/長官候補|実際の長官/"
+],
+[
+"/^실제 /.test(x.r||'')",
+"/^実際の/.test(x.r||'')"
+]
+],
+"regex": [],
+"html": [
+[
+"<a href=\"./\" lang=\"ko\" data-l=\"ko\" aria-current=\"page\">",
+"<a href=\"./\" lang=\"ko\" data-l=\"ko\">"
+],
+[
+"<a href=\"ja.html\" lang=\"ja\" data-l=\"ja\">",
+"<a href=\"ja.html\" lang=\"ja\" data-l=\"ja\" aria-current=\"page\">"
+],
+[
+"content:\"열기\"",
+"content:\"開く\""
+],
+[
+"content:\"접기\"",
+"content:\"閉じる\""
+],
+[
+"--f-display:\"HadaBatang\",\"Noto Serif KR\",\"Nanum Myeongjo\",serif;",
+"--f-display:\"Noto Serif JP\",\"Hiragino Mincho ProN\",\"Yu Mincho\",\"Noto Serif CJK JP\",\"Noto Sans CJK JP\",\"HadaBatang\",serif;"
+],
+[
+"--f-body:\"HadaBatang\",\"Noto Serif KR\",\"Apple SD Gothic Neo\",serif;",
+"--f-body:\"Noto Serif JP\",\"Hiragino Mincho ProN\",\"Yu Mincho\",\"Noto Serif CJK JP\",\"Noto Sans CJK JP\",\"HadaBatang\",serif;"
+],
+[
+"--f-display:\"RoundedFixedsys\",monospace; --f-body:\"RoundedFixedsys\",monospace; --f-mono:\"RoundedFixedsys\",monospace}",
+"--f-display:\"RoundedFixedsys\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",monospace; --f-body:\"RoundedFixedsys\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",monospace; --f-mono:\"RoundedFixedsys\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",monospace}"
+],
+[
+"--f-display:\"SeochoDotum\",\"Apple SD Gothic Neo\",sans-serif; --f-body:\"SeochoDotum\",\"Apple SD Gothic Neo\",sans-serif; --f-mono:\"SeochoDotum\",\"Apple SD Gothic Neo\",sans-serif}",
+"--f-display:\"SeochoDotum\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",sans-serif; --f-body:\"SeochoDotum\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",sans-serif; --f-mono:\"SeochoDotum\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",sans-serif}"
+],
+[
+"--f-mono:\"IBM Plex Mono\",ui-monospace,monospace;",
+"--f-mono:\"IBM Plex Mono\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",ui-monospace,monospace;"
+],
+[
+"--f-display:\"Malmoi\",\"HadaBatang\",serif; --f-body:\"Malmoi\",\"HadaBatang\",serif}",
+"--f-display:\"New Tegomin\",\"Malmoi\",\"HadaBatang\",\"Noto Serif JP\",\"Hiragino Mincho ProN\",\"Yu Mincho\",serif; --f-body:\"New Tegomin\",\"Malmoi\",\"HadaBatang\",\"Noto Serif JP\",\"Hiragino Mincho ProN\",\"Yu Mincho\",serif}"
+],
+[
+"<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap\">",
+"<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap\">\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=New+Tegomin&display=swap\">"
+]
+]
 }

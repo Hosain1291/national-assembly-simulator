@@ -2551,6 +2551,19 @@ function cardEl(a,R,real,ans,tot){ const mine=R.tot, M=maj(a.N), sk=skinNow(),
       return '<div class="sc-row"><i class="sc-sw" style="background:'+x.p.c+'"></i><div class="sc-nm"><b>'+esc(x.p.n)+'</b><small>'+(a.Lst?'<span>Districts '+(R.dist[x.f]+R.fix[x.f])+' · '+a.ln+' '+R.list[x.f]+'</span>':'')+'<span>Actual '+x.r+(dd?' ('+(dd>0?'+':'−')+Math.abs(dd)+')':'')+'</span></small><span class="sc-bar"><span style="width:'+(x.m/mx*100).toFixed(1)+'%;background:'+x.p.c+'"></span></span></div><div class="sc-n num">'+x.m+'<small> seats</small></div></div>'; }).join('')+'</div>'+
     '<div class="sc-foot"><span>Korean National Assembly Simulator</span><span class="num">'+ds+'</span></div></div></div>';
   return w; }
+// 다른 출처(구글 폰트) 글꼴은 cssRules를 못 읽으므로, 카드에 쓰인 글자가 든 부분만 받아 data URL로 넣음
+const FEMB={};
+function inUR(txt,ur){ const rs=ur.split(',').map(x=>x.trim().replace(/^U\+/i,'')).map(x=>{ if(x.includes('?')) return [parseInt(x.replace(/\?/g,'0'),16),parseInt(x.replace(/\?/g,'F'),16)]; const [a,b]=x.split('-'); return [parseInt(a,16),parseInt(b||a,16)]; });
+  for(const ch of txt){ const c=ch.codePointAt(0); if(c>32&&rs.some(([a,b])=>c>=a&&c<=b)) return true; } return false; }
+function blobURL(u){ return fetch(u).then(r=>{ if(!r.ok) throw 0; return r.blob(); }).then(b=>new Promise((ok,no)=>{ const fr=new FileReader(); fr.onload=()=>ok(fr.result); fr.onerror=no; fr.readAsDataURL(b); })); }
+async function shotFontsAll(root){ let t=shotFonts(); const cs=getComputedStyle(document.documentElement), used=(getComputedStyle(document.body).fontFamily+cs.getPropertyValue('--f-display')+cs.getPropertyValue('--f-body')+cs.getPropertyValue('--f-mono')).replace(/['"]/g,''), txt=(root&&root.textContent)||'';
+  for(const sh of document.styleSheets){ let open=true; try{ void sh.cssRules; }catch(_){ open=false; } if(open||!sh.href||!/^https:\/\/fonts\.googleapis\.com\//.test(sh.href)) continue;
+    try{ if(!FEMB[sh.href]) FEMB[sh.href]=fetch(sh.href).then(r=>r.text()); const css=await FEMB[sh.href];
+      for(const blk of css.match(/@font-face\s*\{[^}]*\}/g)||[]){ const fam=((blk.match(/font-family:\s*['"]?([^;'"]+)/)||[])[1]||'').trim(); if(!fam||!used.includes(fam)) continue;
+        const ur=(blk.match(/unicode-range:\s*([^;]+)/)||[])[1]; if(ur&&!inUR(txt,ur)) continue;
+        const m=blk.match(/url\(([^)]+)\)/); if(!m) continue; const u=m[1].replace(/['"]/g,'');
+        try{ if(!FEMB[u]) FEMB[u]=blobURL(u); t+=blk.replace(m[0],'url("'+await FEMB[u]+'")')+'\n'; }catch(_){ delete FEMB[u]; } } }catch(_){ delete FEMB[sh.href]; } }
+  return t; }
 async function saveCard(a,R,real,ans,tot){ const btn=$('#cardgo'), msg=$('#cardmsg'); if(!btn||btn.disabled) return; const lab=btn.innerHTML, m0=msg?msg.textContent:'';
   btn.disabled=true; if(msg) msg.textContent='Creating image…';
   const done=t=>{ if(msg) msg.textContent=t; setTimeout(()=>{ btn.disabled=false; if(msg) msg.textContent=m0; },2600); };
@@ -2558,7 +2571,7 @@ async function saveCard(a,R,real,ans,tot){ const btn=$('#cardgo'), msg=$('#cardm
   try{ const h=await loadH2I(); w=cardEl(a,R,real,ans,tot); document.body.appendChild(w);
     const el=$('#schemi',w); paint(el,a,R,' seats · my result',a.N); $$('.seat',el).forEach(c=>{ c.classList.remove('s-in','s-out','s-sw'); c.style.animationDelay=''; }); delete SEATPREV.schemi;
     if(document.fonts&&document.fonts.ready) await document.fonts.ready;
-    const card=$('.scard',w), blob=await h.toBlob(card,{pixelRatio:2,backgroundColor:getComputedStyle(card).backgroundColor,fontEmbedCSS:shotFonts(),imagePlaceholder:PH1});
+    const card=$('.scard',w), blob=await h.toBlob(card,{pixelRatio:2,backgroundColor:getComputedStyle(card).backgroundColor,fontEmbedCSS:await shotFontsAll(card),imagePlaceholder:PH1});
     if(!blob) throw new Error('empty');
     const r=await giveFile(blob,'AssemblySimulator_'+(a.n===1?'Constituent':ORD(a.n)+'')+'_ResultCard.png');
     done(r==='ok'?'Saved':r==='declined'?'Save canceled':r==='busy'?'A save dialog is already open':'Couldn\'t save'); }
