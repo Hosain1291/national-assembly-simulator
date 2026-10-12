@@ -2017,22 +2017,24 @@ function viewQuiz(){
 // ── 4. 분야별 의석 발표
 function viewBoard(k){
   window.scrollTo(0,0);
-  // 두마 시뮬레이터처럼: 실제 의석에서 출발해, 분야 답변마다 국회 전체 예상 의석이 늘고 줄어듦
-  const a=A(), fi=S.order.indexOf(k), last=fi===S.order.length-1, F=fld(k);
-  const R=simAll(a,S.ans), fr=R.fields[k], C2=R.C[k], B=simAll(a,S.ans.map((v,j)=>a.Q[j]&&a.Q[j].f===k?undefined:v));
-  const ord=a.P.map((p,f)=>f).filter(f=>R.tot[f]||B.tot[f]).sort((x,y)=>R.tot[y]-R.tot[x]||(R.tot[y]-B.tot[y])-(R.tot[x]-B.tot[x])), L=ord[0], mx=Math.max(1,...ord.map(f=>Math.max(R.tot[f],B.tot[f])));
-  const up=ord.filter(f=>R.tot[f]>B.tot[f]), dn=ord.filter(f=>R.tot[f]<B.tot[f]), M=maj(a.N);
+  // 분야별 의석 분배: 이 분야 의석을 답변대로 나누고, 실제 지지율대로 나눴을 때보다 늘거나 빠진 의석을 보여 줌
+  const a=A(), fi=S.order.indexOf(k), done=S.order.slice(0,fi+1), last=fi===S.order.length-1, F=fld(k);
+  const R=simAll(a,S.ans,done), fr=R.fields[k], C2=R.C[k], given=sum(R.tot);
+  const Rb=simAll(a,S.ans.map((v,j)=>a.Q[j]&&a.Q[j].f===k?undefined:v),done), fb=Rb.fields[k];
+  const ord=a.P.map((p,f)=>f).filter(f=>R.tot[f]||fr.tot[f]||fb.tot[f]).sort((x,y)=>R.tot[y]-R.tot[x]||fr.tot[y]-fr.tot[x]), L=ord[0], mx=Math.max(1,...ord.map(f=>Math.max(R.tot[f],Rb.tot[f])));
+  const up=ord.filter(f=>fr.tot[f]>fb.tot[f]).sort((x,y)=>(fr.tot[y]-fb.tot[y])-(fr.tot[x]-fb.tot[x])), dn=ord.filter(f=>fr.tot[f]<fb.tot[f]).sort((x,y)=>(fr.tot[x]-fb.tot[x])-(fr.tot[y]-fb.tot[y]));
   app.innerHTML='<section class="stack"><div class="box">'+
-   '<span class="eyebrow">분야 '+(fi+1)+' / '+S.order.length+'</span><h2 style="font-size:clamp(22px,5.5vw,28px);margin:4px 0 6px">‘'+esc(F.n)+'’ 분야 결과</h2>'+
-   '<p class="hint">이 분야에 걸린 '+C2.t+'석('+(fr.empty?'답한 질문이 없어 실제 지지율대로':seatTxt(a,C2))+')을 답변대로 다시 나눴습니다. 입장이 가까운 정당은 의석이 늘고, 먼 정당은 빠집니다.</p>'+
+   '<span class="eyebrow">분야 '+(fi+1)+' / '+S.order.length+'</span><h2 style="font-size:clamp(22px,5.5vw,28px);margin:4px 0 6px">‘'+esc(F.n)+'’ 분야가 <span class="num">'+C2.t+'</span>석을 나눠 줍니다</h2>'+
+   '<p class="hint">'+(fr.empty?'답한 질문이 없어 실제 지지율대로 나눴습니다.':seatTxt(a,C2)+(a.sys==='mmd'?' · 2인 선거구라 2위 정당도 지역구를 나눠 가졌습니다.':'')+' · 입장이 가까운 정당은 실제 지지율 몫보다 더 받고, 먼 정당은 의석이 빠집니다.')+'</p>'+
    '<div class="hemi" id="bh" style="margin-top:10px">'+hemiSvg(a.N)+'</div>'+
-   '<div>'+ord.map(f=>{ const p=a.P[f], d=R.tot[f]-B.tot[f];
-     return '<div class="brow"><i class="dot" style="background:'+p.c+'"></i><div><b style="font-weight:600">'+esc(p.n)+'</b> <small style="color:var(--ink3)">이 분야 '+fr.tot[f]+'석</small><div class="bar"><span data-w="'+(R.tot[f]/mx*100)+'" style="width:'+(B.tot[f]/mx*100)+'%;background:'+p.c+'"></span></div></div><span class="add'+(d>0?' popin':d<0?' popin neg':' zero')+'">'+(d>0?'+'+d:d<0?'−'+(-d):'0')+'</span><span class="cum" data-from="'+B.tot[f]+'" data-to="'+R.tot[f]+'">'+R.tot[f]+'</span></div>'; }).join('')+'</div>'+
-   '<p class="hint" style="margin-top:10px">가운데 숫자는 이번 분야 답변으로 늘거나 빠진 의석, 오른쪽은 국회 전체 '+a.N+'석 예상입니다. 아직 답하지 않은 분야는 실제 지지율대로 둡니다'+(last?'':' · 남은 분야 '+(S.order.length-fi-1)+'개, '+sum(S.order.slice(fi+1).map(x=>R.C[x].t))+'석')+'.</p>'+
-   '<p class="lead" style="margin-top:8px">'+(up.length?'<b>'+up.slice(0,2).map(f=>esc(a.P[f].n)).join('·')+'</b> 상승':'')+(up.length&&dn.length?', ':'')+(dn.length?'<b>'+dn.slice(0,2).map(f=>esc(a.P[f].n)).join('·')+'</b> 하락':'')+(up.length||dn.length?' · ':'')+'예상 1위 <b>'+esc(a.P[L].n)+'</b> '+R.tot[L]+'석'+(R.tot[L]>=M?' (과반)':'')+'</p></div>'+
+   '<div>'+ord.map(f=>{ const p=a.P[f], got=fr.tot[f], d=got-fb.tot[f];
+     return '<div class="brow"><i class="dot" style="background:'+p.c+'"></i><div><b style="font-weight:600">'+esc(p.n)+'</b><small style="display:block;color:var(--ink3);font-size:12px;line-height:1.3">이 분야 '+got+'석'+(fr.empty?'':' (실제 지지율 몫 '+fb.tot[f]+'석)')+'</small><div class="bar"><span data-w="'+(R.tot[f]/mx*100)+'" style="width:'+(Rb.tot[f]/mx*100)+'%;background:'+p.c+'"></span></div></div><span class="add'+(d>0?' popin':d<0?' popin neg':' zero')+'">'+(d>0?'+'+d:d<0?'−'+(-d):'0')+'</span><span class="cum" data-from="'+Rb.tot[f]+'" data-to="'+R.tot[f]+'">'+R.tot[f]+'</span></div>'; }).join('')+'</div>'+
+   '<p class="hint" style="margin-top:10px">가운데 숫자는 이 분야 '+C2.t+'석을 실제 지지율대로 나눴을 때와 비교해 늘거나 빠진 의석, 오른쪽은 지금까지 누적입니다. 지금까지 '+given+'석 배분'+(last?(fixSum(a)?', 간선·고정 '+fixSum(a)+'석':'')+(LRULE[a.n]?', 최종 '+a.ln+'은 당시 규칙으로 전국 단위에서 다시 나눕니다':a.bonus?', 제1당 프리미엄 '+a.bonus+'석은 최종 결과에 더해집니다':''):', 남은 분야에 '+(sum(S.order.slice(fi+1).map(x=>R.C[x].t)))+'석')+'.</p>'+
+   '<p class="lead" style="margin-top:8px">'+(up.length?'<b>'+up.slice(0,2).map(f=>esc(a.P[f].n)).join('·')+'</b> 의석 증가':'')+(up.length&&dn.length?', ':'')+(dn.length?'<b>'+dn.slice(0,2).map(f=>esc(a.P[f].n)).join('·')+'</b> 의석 감소':'')+(up.length||dn.length?' · ':'')+'<b>'+esc(a.P[L].n)+'</b>'+(fi===0?' 앞서 나갑니다':' 누적 1위')+' · '+R.tot[L]+'석</p></div>'+
    '<div class="launch"><button type="button" class="cta" id="cont">'+(last?'최종 결과 보기':'다음 분야: '+esc(fld(S.order[fi+1]).n))+'</button>'+(!last?'<span>'+esc(fld(S.order[fi+1]).n)+'에 '+R.C[S.order[fi+1]].t+'석이 걸려 있습니다</span>':'')+'</div></section>';
-  paint($('#bh'),a,B,null,null);
-  paint($('#bh'),a,R,'석 · 예상',a.N);
+  // 먼저 이 분야를 실제 지지율대로 나눈 모습을 그린 뒤, 답변대로 나눈 결과로 바꿔 빠진 자리가 다른 정당으로 넘어가는 모습을 보여 줌
+  paint($('#bh'),a,Rb,null,null);
+  paint($('#bh'),a,R,'석 중 '+given+'석 배분',a.N);
   $$('.brow .add.popin',app).forEach((x,j)=>x.style.animationDelay=(j*60)+'ms');
   $$('.brow .cum',app).forEach(x=>tweenNum(x,+x.dataset.from,+x.dataset.to));
   const grow=()=>$$('.brow .bar span[data-w]',app).forEach(x=>x.style.width=x.dataset.w+'%');
