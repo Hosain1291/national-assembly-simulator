@@ -27,12 +27,16 @@
    "/indirect/i.test(E.how)"
   ],
   [
-   "/장관 후보/",
-   "/minister candidate/i"
-  ],
-  [
    "p.n.length>9?p.n.slice(0,8)+'…':p.n, w=t.length*10+4",
    "p.n.length>18?p.n.slice(0,17)+'…':p.n, w=t.length*6.2+4"
+  ],
+  [
+   "/장관 후보|실제 장관/",
+   "/minister candidate|actual minister/i"
+  ],
+  [
+   "/^실제 /.test(x.r||'')",
+   "/^Actual /.test(x.r||'')"
   ]
  ],
  "regex": [
