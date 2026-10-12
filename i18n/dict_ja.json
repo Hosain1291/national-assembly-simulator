@@ -2951,7 +2951,6 @@
 "<small class=\"hint\">위키백과 사진은 그림을 눌러 나온 파일 링크(…/wiki/파일:…)를 붙여넣거나, 이미지를 길게 눌러/우클릭해 “이미지 복사” 후 링크 칸에 붙여넣으세요.</small></div></div></div>": "<small class=\"hint\">ウィキペディアの写真は、画像を押して出るファイルリンク（…/wiki/ファイル:…）を貼り付けるか、画像を長押し/右クリックして「画像をコピー」してからリンク欄に貼り付けてください。</small></div></div></div>",
 "<div class=\"tg\"><span class=\"lbl\">정당 인물 <span class=\"hint\">(연립 정부의 장관 후보 · 전문 부처를 고르면 그 부처를 먼저 맡습니다)</span></span><div class=\"rows\">": "<div class=\"tg\"><span class=\"lbl\">政党の人物 <span class=\"hint\">（連立政府の長官候補・専門の部処を選ぶとその部処を優先して担当します）</span></span><div class=\"rows\">",
 "\" placeholder=\"이름\" maxlength=\"30\" aria-label=\"인물 이름\"><input class=\"in\" id=\"ppr-": "\" placeholder=\"名前\" maxlength=\"30\" aria-label=\"人物の名前\"><input class=\"in\" id=\"ppr-",
-"\" placeholder=\"직책, 예: 원내대표\" maxlength=\"20\" aria-label=\"직책\"><button type=\"button\" class=\"x\" data-act=\"ppDel\" data-i=\"": "\" placeholder=\"役職、例：院内代表\" maxlength=\"20\" aria-label=\"役職\"><button type=\"button\" class=\"x\" data-act=\"ppDel\" data-i=\"",
 "\" aria-label=\"인물 삭제\">×</button></div>": "\" aria-label=\"人物を削除\">×</button></div>",
 ".s\" aria-label=\"전문 부처\"><option value=\"\">전문 부처 없음</option>": ".s\" aria-label=\"専門の部処\"><option value=\"\">専門の部処なし</option>",
 "\">+ 인물 추가</button>": "\">+ 人物を追加</button>",
@@ -3096,5 +3095,11 @@
 "질문과 정당 위치는 각 국회의 대표 쟁점을 단순화한 것으로, 실제 당론·표결과 다를 수 있습니다. 무소속은 한 묶음으로 계산하고 비례 의석은 받지 않습니다. 위성정당 의석은 모정당에 합산했습니다. 정당 색은 나무위키 당색(선거 당시 기준)을 따랐고, 당색이 알려지지 않은 단체는 구분색을 썼습니다.": "質問と政党の位置は各国会の代表的な争点を単純化したもので、実際の党の方針・表決とは異なる場合があります。無所属は一つのまとまりとして計算し、比例議席は得ません。衛星政党の議席は母体政党に合算しました。政党の色はナムウィキの党色（選挙当時基準）に従い、党色が知られていない団体は区別のための色を使いました。",
 "테마": "テーマ",
 "실제 장관": "実際の長官",
-"실제 국무총리": "実際の国務総理"
+"실제 국무총리": "実際の国務総理",
+"\" placeholder=\"직책, 예: 원내대표\" maxlength=\"40\" aria-label=\"직책\"><button type=\"button\" class=\"x\" data-act=\"ppDel\" data-i=\"": "\" placeholder=\"役職、例：院内代表\" maxlength=\"40\" aria-label=\"役職\"><button type=\"button\" class=\"x\" data-act=\"ppDel\" data-i=\"",
+"<div class=\"improw\"><span class=\"lbl\">다른 국회의 정당 가져오기</span><div class=\"improw2\"><select class=\"in\" id=\"impP\" aria-label=\"가져올 정당\"><option value=\"\">정당 고르기…</option>": "<div class=\"improw\"><span class=\"lbl\">ほかの国会の政党を取り込む</span><div class=\"improw2\"><select class=\"in\" id=\"impP\" aria-label=\"取り込む政党\"><option value=\"\">政党を選ぶ…</option>",
+"</select><button type=\"button\" class=\"chip\" data-act=\"impP\">가져오기</button></div><p class=\"hint\" id=\"impmsg\">국회와 상관없이 고른 정당을 색·대표·인물·이념적 특성과 함께 이 국회에 더합니다. 이 국회 질문에 대한 입장은 전체 성향과 특성으로 자동 계산되고, 실제 의석은 0으로 시작합니다.</p></div>": "</select><button type=\"button\" class=\"chip\" data-act=\"impP\">取り込む</button></div><p class=\"hint\" id=\"impmsg\">国会に関係なく選んだ政党を、色・代表・人物・イデオロギー的特性ごとこの国会に加えます。この国会の質問への立場は全体の傾向と特性から自動で計算され、実際の議席は0から始まります。</p></div>",
+"가져올 정당을 먼저 고르세요.": "取り込む政党を先に選んでください。",
+"이미 이 국회에 있는 정당입니다.": "その政党はすでにこの国会にあります。",
+"정당은 최대 12개까지입니다.": "政党は最大12個までです。"
 }

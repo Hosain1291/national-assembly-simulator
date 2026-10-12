@@ -2951,7 +2951,6 @@
 "<small class=\"hint\">위키백과 사진은 그림을 눌러 나온 파일 링크(…/wiki/파일:…)를 붙여넣거나, 이미지를 길게 눌러/우클릭해 “이미지 복사” 후 링크 칸에 붙여넣으세요.</small></div></div></div>": "<small class=\"hint\">For Wikipedia photos, paste the file link you get by clicking the picture (…/wiki/File:…), or long-press/right-click the image, \"Copy image\" and paste it into the link field.</small></div></div></div>",
 "<div class=\"tg\"><span class=\"lbl\">정당 인물 <span class=\"hint\">(연립 정부의 장관 후보 · 전문 부처를 고르면 그 부처를 먼저 맡습니다)</span></span><div class=\"rows\">": "<div class=\"tg\"><span class=\"lbl\">Party figures <span class=\"hint\">(minister candidates for coalition governments · choosing a specialty ministry makes them take that ministry first)</span></span><div class=\"rows\">",
 "\" placeholder=\"이름\" maxlength=\"30\" aria-label=\"인물 이름\"><input class=\"in\" id=\"ppr-": "\" placeholder=\"Name\" maxlength=\"30\" aria-label=\"Person's name\"><input class=\"in\" id=\"ppr-",
-"\" placeholder=\"직책, 예: 원내대표\" maxlength=\"20\" aria-label=\"직책\"><button type=\"button\" class=\"x\" data-act=\"ppDel\" data-i=\"": "\" placeholder=\"Position, e.g. floor leader\" maxlength=\"20\" aria-label=\"Position\"><button type=\"button\" class=\"x\" data-act=\"ppDel\" data-i=\"",
 "\" aria-label=\"인물 삭제\">×</button></div>": "\" aria-label=\"Delete person\">×</button></div>",
 ".s\" aria-label=\"전문 부처\"><option value=\"\">전문 부처 없음</option>": ".s\" aria-label=\"Specialty ministry\"><option value=\"\">No specialty ministry</option>",
 "\">+ 인물 추가</button>": "\">+ Add person</button>",
@@ -3096,5 +3095,11 @@
 "질문과 정당 위치는 각 국회의 대표 쟁점을 단순화한 것으로, 실제 당론·표결과 다를 수 있습니다. 무소속은 한 묶음으로 계산하고 비례 의석은 받지 않습니다. 위성정당 의석은 모정당에 합산했습니다. 정당 색은 나무위키 당색(선거 당시 기준)을 따랐고, 당색이 알려지지 않은 단체는 구분색을 썼습니다.": "Questions and party positions simplify the main issues of each assembly and may differ from actual party lines and votes. Independents are counted as one bloc and receive no PR seats. Satellite party seats are merged into their parent parties. Party colors follow Namuwiki party colors (as of the election); groups without a known color use a distinguishing color.",
 "테마": "Theme",
 "실제 장관": "Actual minister",
-"실제 국무총리": "Actual prime minister"
+"실제 국무총리": "Actual prime minister",
+"\" placeholder=\"직책, 예: 원내대표\" maxlength=\"40\" aria-label=\"직책\"><button type=\"button\" class=\"x\" data-act=\"ppDel\" data-i=\"": "\" placeholder=\"Position, e.g. floor leader\" maxlength=\"40\" aria-label=\"Position\"><button type=\"button\" class=\"x\" data-act=\"ppDel\" data-i=\"",
+"<div class=\"improw\"><span class=\"lbl\">다른 국회의 정당 가져오기</span><div class=\"improw2\"><select class=\"in\" id=\"impP\" aria-label=\"가져올 정당\"><option value=\"\">정당 고르기…</option>": "<div class=\"improw\"><span class=\"lbl\">Import a party from another assembly</span><div class=\"improw2\"><select class=\"in\" id=\"impP\" aria-label=\"Party to import\"><option value=\"\">Choose a party…</option>",
+"</select><button type=\"button\" class=\"chip\" data-act=\"impP\">가져오기</button></div><p class=\"hint\" id=\"impmsg\">국회와 상관없이 고른 정당을 색·대표·인물·이념적 특성과 함께 이 국회에 더합니다. 이 국회 질문에 대한 입장은 전체 성향과 특성으로 자동 계산되고, 실제 의석은 0으로 시작합니다.</p></div>": "</select><button type=\"button\" class=\"chip\" data-act=\"impP\">Import</button></div><p class=\"hint\" id=\"impmsg\">Adds the chosen party, from any assembly, to this one with its colour, leader, key figures and ideological traits. Its stances on this assembly's questions are worked out automatically from its overall leanings and traits, and its real seat count starts at 0.</p></div>",
+"가져올 정당을 먼저 고르세요.": "Choose a party to import first.",
+"이미 이 국회에 있는 정당입니다.": "That party is already in this assembly.",
+"정당은 최대 12개까지입니다.": "You can have at most 12 parties."
 }
