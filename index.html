@@ -1442,6 +1442,30 @@ function fieldRes(a,k,C2,ans){
     if(rest>0) lr(sh,rest).forEach((x,f)=>list[f]+=x);
   }
   return {dist,list,tot:dist.map((x,f)=>x+list[f]),vs,per,empty:false}; }
+// ── 전국구 배분 규칙 (나무위키 「전국구」 참고). 전국 단위로 다시 나눔
+// 6대: 제1당 ½·제2당 나머지의 ⅔ 고정 · 7·8대: 제1당 ½(과반 득표면 득표 비례) · 11·12대: 지역구 제1당 ⅔, 나머지는 지역구 5석 이상 정당에 지역구 의석 비례
+// 13대: 지역구 제1당 ½(지역구 과반이면 비례), 나머지는 지역구 의석 비례 · 14대: 지역구 의석 비례(5석 이상, 3% 이상 득표 정당은 1석)
+// 15·16대: 지역구 득표 비례(5석 이상 또는 5% 이상, 3~5% 정당은 1석) · 17대 이후: 정당 투표(기존 계산)
+const LRULE={6:'h6',7:'h7',8:'h7',11:'t23',12:'t23',13:'h13',14:'ds',15:'dv',16:'dv'};
+const LRULE_TXT={h6:'제1당 ½ · 제2당은 나머지의 ⅔ 고정, 남은 의석은 득표 비례',h7:'제1당 ½(과반 득표 시 득표 비례), 나머지는 득표 비례',t23:'지역구 제1당 ⅔, 나머지는 지역구 5석 이상 정당에 지역구 의석 비례',h13:'지역구 제1당 ½(지역구 과반 시 비례), 나머지는 지역구 5석 이상 정당에 지역구 의석 비례',ds:'지역구 5석 이상 정당에 지역구 의석 비례, 3% 이상 득표 정당은 1석',dv:'지역구 5석 이상 또는 득표 5% 이상 정당에 득표 비례, 3~5% 정당은 1석'};
+function natList(a,rule,dist,vs){ const r=natList0(a,rule,dist,vs), P=a.P, gap=a.Lst-sum(r.out);
+  if(gap>0){ const w=P.map((p,f)=>p.k!=='mu'&&!(p.k in a.fixed)?(vs[f]||0)+(dist[f]||0)*1e-3:0); lr(sum(w)?w:P.map(()=>1),gap).forEach((x,f)=>r.out[f]+=x); }
+  return r; }
+function natList0(a,rule,dist,vs){ const P=a.P, n=P.length, L=a.Lst, out=Array(n).fill(0), ok=f=>P[f].k!=='mu'&&!(P[f].k in a.fixed), V=sum(vs.filter((x,f)=>ok(f)))||1, sh=f=>ok(f)?vs[f]/V:0, D=sum(dist)||1;
+  const idx=P.map((p,f)=>f).filter(ok), top=arr=>idx.slice().sort((x,y)=>arr[y]-arr[x]);
+  const share=(fs,w,k)=>{ if(k<=0||!fs.length) return; const ww=P.map((p,f)=>fs.includes(f)?w[f]:0); if(!sum(ww)) fs.forEach(f=>ww[f]=1); lr(ww,k).forEach((x,f)=>out[f]+=x); };
+  let prem=-1;
+  if(rule==='h6'||rule==='h7'){ const el=idx.filter(f=>dist[f]>=3||sh(f)>=.05), o=top(vs).filter(f=>el.includes(f)); if(!o.length) return {out,prem};
+    const F=o[0]; if(sh(F)>=.5){ share(el,vs,L); return {out,prem}; }
+    prem=F; out[F]=Math.ceil(L/2); let rem=L-out[F];
+    if(rule==='h6'&&o[1]!=null){ const s2=Math.floor(rem*2/3); out[o[1]]+=s2; rem-=s2; share(el.filter(f=>f!==F&&f!==o[1]),vs,rem); }
+    else share(el.filter(f=>f!==F),vs,rem); return {out,prem}; }
+  if(rule==='t23'||rule==='h13'){ const F=top(dist)[0]; if(F==null) return {out,prem};
+    if(rule==='h13'&&dist[F]/D>=.5){ share(idx.filter(f=>dist[f]>=5),dist,L); return {out,prem}; }
+    prem=F; out[F]=rule==='t23'?Math.round(L*2/3):Math.ceil(L/2); share(idx.filter(f=>f!==F&&dist[f]>=5),dist,L-out[F]); return {out,prem}; }
+  if(rule==='ds'||rule==='dv'){ const big=idx.filter(f=>dist[f]>=5||(rule==='dv'&&sh(f)>=.05)), small=idx.filter(f=>!big.includes(f)&&sh(f)>=.03);
+    small.forEach(f=>out[f]=1); share(big,rule==='ds'?dist:vs,L-small.length); return {out,prem}; }
+  return {out,prem}; }
 function simAll(a,ans,upto){
   const act=activeOf(a), C2=chunks(a,act), nF=a.P.length, Z=()=>Array(nF).fill(0), dist=Z(), list=Z(), vs=Z(), fields={};
   act.forEach(k=>{ const r=fieldRes(a,k,C2[k],ans); fields[k]=r; vs.forEach((_,f)=>vs[f]+=r.vs[f]*fw(k));
@@ -1450,7 +1474,9 @@ function simAll(a,ans,upto){
   if(!upto&&a.bonus){ bonusTo=argmax(vs.map((x,f)=>a.P[f].k==='mu'?0:x)); list[bonusTo]+=a.bonus; }
   if(!act.length&&!upto){ const pr=priorArr(a); lr(pr,a.D).forEach((x,f)=>dist[f]+=x); lr(pr.map((x,f)=>a.P[f].k==='mu'?0:x),a.Lst-a.bonus).forEach((x,f)=>list[f]+=x); }
   const VT=sum(vs);
-  return {act,C:C2,fields,dist,list,fix,bonusTo,vs:VT?vs.map(x=>x/VT):vs,tot:dist.map((x,f)=>x+list[f]+fix[f])}; }
+  const rule=LRULE[a.n]; let lrule='';
+  if(rule&&a.Lst&&!upto&&(act.length||true)){ const r=natList(a,rule,dist,vs); for(let f=0;f<nF;f++) list[f]=r.out[f]; bonusTo=r.prem; lrule=LRULE_TXT[rule]; }
+  return {act,C:C2,fields,dist,list,fix,bonusTo,lrule,vs:VT?vs.map(x=>x/VT):vs,tot:dist.map((x,f)=>x+list[f]+fix[f])}; }
 
 // ── 위키백과식 선거 결과표
 // 태극기: 사용자가 준 그림 링크, 못 불러오면 직접 그린 태극기
@@ -1805,7 +1831,7 @@ function viewBoard(k){
    '<div class="hemi" id="bh" style="margin-top:10px">'+hemiSvg(a.N)+'</div>'+
    '<div>'+ord.filter(f=>R.tot[f]||fr.tot[f]).map(f=>{ const p=a.P[f], add=fr.tot[f];
      return '<div class="brow"><i class="dot" style="background:'+p.c+'"></i><div><b style="font-weight:600">'+esc(p.n)+'</b><div class="bar"><span style="width:'+(R.tot[f]/mx*100)+'%;background:'+p.c+'"></span></div></div><span class="add'+(add?'':' zero')+'">'+(add?'+'+add:'0')+'</span><span class="cum">'+R.tot[f]+'</span></div>'; }).join('')+'</div>'+
-   '<p class="hint" style="margin-top:10px">가운데 숫자는 이번 분야에서 얻은 의석, 오른쪽은 누적입니다. 지금까지 '+given+'석 배분'+(last?(fixSum(a)?', 간선·고정 '+fixSum(a)+'석':'')+(a.bonus?', 제1당 프리미엄 '+a.bonus+'석은 최종 결과에 더해집니다':''):', 남은 분야에 '+(sum(S.order.slice(fi+1).map(x=>R.C[x].t)))+'석')+'.</p>'+
+   '<p class="hint" style="margin-top:10px">가운데 숫자는 이번 분야에서 얻은 의석, 오른쪽은 누적입니다. 지금까지 '+given+'석 배분'+(last?(fixSum(a)?', 간선·고정 '+fixSum(a)+'석':'')+(LRULE[a.n]?', 최종 '+a.ln+'은 당시 규칙으로 전국 단위에서 다시 나눕니다':a.bonus?', 제1당 프리미엄 '+a.bonus+'석은 최종 결과에 더해집니다':''):', 남은 분야에 '+(sum(S.order.slice(fi+1).map(x=>R.C[x].t)))+'석')+'.</p>'+
    '<p class="lead" style="margin-top:8px"><b>'+esc(a.P[L].n)+'</b>'+(fi===0?' 앞서 나갑니다':' 누적 1위')+' · '+R.tot[L]+'석</p></div>'+
    '<div class="launch"><button type="button" class="cta" id="cont">'+(last?'최종 결과 보기':'다음 분야: '+esc(fld(S.order[fi+1]).n))+'</button>'+(!last?'<span>'+esc(fld(S.order[fi+1]).n)+'에 '+R.C[S.order[fi+1]].t+'석이 걸려 있습니다</span>':'')+'</div></section>';
   paint($('#bh'),a,R,'석 중 '+given+'석 배분',a.N);
@@ -1835,7 +1861,7 @@ function viewResult(keep){
    '<details class="box how"><summary>계산 방식</summary>'+
     '<p>분야 중요도(관심 없음 0 · 조금 1 · 보통 2 · 중요 3.5 · 매우 중요 5)에 비례해 지역구 '+a.D+'석'+(a.Lst?'과 '+a.ln+' '+(a.Lst-a.bonus)+'석':'')+'을 분야별로 나누고, 질문 수도 중요도에 따라 정합니다. 분야 안에서는 질문마다 지역구를 똑같이 나누고, “잘 모르겠음” 질문의 지역구는 그 분야의 비례 몫으로 넘어갑니다.</p>'+
     '<p>각 질문에서 막대 위치와 정당 입장 사이 거리로 종 모양(가우스) 득표를 냅니다. '+(a.sys==='mmd'?'중대선거구라 2위·3위 정당도 의석을 나눠 갖습니다.':'소선거구라 가장 가까운 정당에 의석이 몰립니다.')+' 나의 정치 의견 질문에서 정당 위치는 그 정당의 이념적 특성(없으면 쟁점 입장)으로 계산합니다.</p>'+
-    (a.Lst?'<p>분야의 '+a.ln+' 몫은 그 분야 질문의 평균 득표율로 나눕니다'+(a.semi?'. 준연동형 몫은 분야 의석 × 득표율에서 지역구 의석을 뺀 값의 절반을 채워 주는 방식입니다':'')+(a.thr?'. 득표율 '+a.thr+'% 미만 정당은 제외합니다':'')+(a.bonus?'. 제1당 프리미엄 '+a.bonus+'석은 모든 분야 득표를 중요도로 가중한 1위 정당이 받습니다':'')+'. 무소속은 비례 의석을 받지 않습니다.</p>':'')+
+    (a.Lst?'<p>분야의 '+a.ln+' 몫은 그 분야 질문의 평균 득표율로 나눕니다'+(a.semi?'. 준연동형 몫은 분야 의석 × 득표율에서 지역구 의석을 뺀 값의 절반을 채워 주는 방식입니다':'')+(a.thr?'. 득표율 '+a.thr+'% 미만 정당은 제외합니다':'')+(LRULE[a.n]?'. 최종 '+a.ln+'은 당시 규칙대로 전국 단위에서 다시 나눕니다: '+LRULE_TXT[LRULE[a.n]]+' (나무위키 「전국구」 참고)':a.bonus?'. 제1당 프리미엄 '+a.bonus+'석은 모든 분야 득표를 중요도로 가중한 1위 정당이 받습니다':'')+'. 무소속은 비례 의석을 받지 않습니다.</p>':'')+
     (fixSum(a)?'<p>간선·고정 의석 '+fixSum(a)+'석은 답변과 무관하게 정해진 정당에 돌아갑니다.</p>':'')+
     '<p>정부 구성: 대통령제에서는 국무총리를 여당(공동정부면 첫 정당)이 맡고, 나머지 부처는 참여 정당의 의석에 비례한 순번(동트 방식)으로 나눕니다. 각 정당은 자기가 의석을 많이 얻은 분야의 부처를 먼저 고릅니다. 국무총리 임명동의는 참여 정당 의석이 과반이면 가결로 봅니다. 제2공화국(5대)은 내각책임제로 계산합니다.</p>'+
     '<p>“당시 지지 기반 반영”이 켜져 있으면 실제 의석 비율의 0.8제곱을 곱해, 같은 거리라도 큰 정당이 더 받습니다. 무소속은 한 덩어리 정당이 아니므로 득표 계산에서 0.4배로 줄여, 가운데 답변을 무소속이 쓸어 가지 않게 했습니다.</p></details>'+
@@ -1855,7 +1881,7 @@ function viewResult(keep){
   drawPres();
   const order=a.P.map((p,f)=>f).sort((x,y)=>mine[y]-mine[x]||real[y]-real[x]);
   $('#tb').innerHTML=order.map(f=>{ const p=a.P[f], d=mine[f]-real[f];
-    return '<tr><td><span><i class="dot" style="background:'+p.c+'"></i>'+esc(p.n)+(f===R.bonusTo?' <small style="color:var(--ink3)">+프리미엄 '+a.bonus+'</small>':'')+'</span></td><td>'+(R.dist[f]+R.fix[f])+'</td>'+(a.Lst?'<td>'+R.list[f]+'</td>':'')+'<td><b>'+mine[f]+'</b></td><td>'+real[f]+'</td><td class="'+(d>0?'up':d<0?'down':'')+'">'+(d>0?'+'+d:d<0?'−'+(-d):'0')+'</td></tr>'; }).join('');
+    return '<tr><td><span><i class="dot" style="background:'+p.c+'"></i>'+esc(p.n)+(f===R.bonusTo?' <small style="color:var(--ink3)">+'+(LRULE[a.n]?'전국구 우선 배분':'프리미엄 '+a.bonus)+'</small>':'')+'</span></td><td>'+(R.dist[f]+R.fix[f])+'</td>'+(a.Lst?'<td>'+R.list[f]+'</td>':'')+'<td><b>'+mine[f]+'</b></td><td>'+real[f]+'</td><td class="'+(d>0?'up':d<0?'down':'')+'">'+(d>0?'+'+d:d<0?'−'+(-d):'0')+'</td></tr>'; }).join('');
   const L=order[0], gov=a.gov.map(k=>a.P.findIndex(p=>p.k===k)).filter(f=>f>=0), govSeats=sum(gov.map(f=>mine[f]));
   $('#lead').innerHTML='제1당은 <b>'+esc(a.P[L].n)+'</b> '+mine[L]+'석'+(a.Lst?' (지역구 '+(R.dist[L]+R.fix[L])+' · '+a.ln+' '+R.list[L]+')':'')+'입니다. '+(mine[L]>=two3(a.N)?'혼자서 개헌선까지 넘었습니다.':mine[L]>=M?'단독 과반으로 법안을 혼자 처리할 수 있습니다.':'어느 정당도 과반('+M+'석)을 넘지 못해 연대가 필요합니다.')+
     (gov.length?' 당시 여당은 '+gov.map(f=>esc(a.P[f].n)).join('·')+'이었습니다.':'');
