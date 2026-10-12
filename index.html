@@ -109,6 +109,11 @@ h3{font-size:19px}
 .hemi svg{width:100%;height:auto;display:block}
 .hemi .seat{transition:fill .5s ease,stroke .5s ease}
 .hemi .seat.rg{filter:drop-shadow(0 0 .6px var(--seat-edge))}
+html:root[data-skin="pc"] .hemi .seat{shape-rendering:crispEdges}
+html:root[data-skin="pc"] .hemi .seat.rg{filter:none}
+html:root[data-skin="pc"] .hemi svg{image-rendering:pixelated}
+html:root[data-skin="paper"] .hemi .seatg{filter:url(#kr-sketch)}
+html:root[data-skin="paper"] .hemi .seat{fill-opacity:.88}
 .hemi .big{font-family:var(--f-display);font-weight:800;font-size:46px;fill:var(--ink)}
 .hemi .sm{font-size:15px;fill:var(--ink3)}
 .hlg{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--ink3);margin-top:4px}
@@ -1338,6 +1343,8 @@ const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 const ci=(v,lo,hi)=>clamp(Math.round(+v)||0,lo,hi);
 const HEX=/^#[0-9a-f]{6}$/i;
 const app=$('#app'), toHome=$('#toHome');
+// 올드 페이퍼 테마: 반원 차트를 색연필로 칠한 듯 보이게 하는 필터 (가장자리 흔들림 + 종이 결)
+document.body.insertAdjacentHTML('beforeend','<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><filter id="kr-sketch" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G" result="d"/><feTurbulence type="fractalNoise" baseFrequency="1.2" numOctaves="2" seed="9" result="g"/><feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.8 1.25" result="ga"/><feComposite in="d" in2="ga" operator="in"/></filter></defs></svg>');
 // 링크 그림을 못 불러오면 이름 글자나 당색 점으로 대신 표시
 document.addEventListener('error',e=>{ const im=e.target; if(!im||im.tagName!=='IMG') return;
   if(im.dataset.flag!=null){ if(im.dataset.flag==='1'){ im.dataset.flag='2'; im.src=FLAG_WM; } else im.outerHTML=flagSvg(); return; }
@@ -1676,7 +1683,7 @@ function layout(N){
   return {seats,rad:sp*.4}; }
 function hemiSvg(N){
   const L=layout(N), K=290, r=K*L.rad;
-  return '<svg viewBox="0 0 600 312" role="img" aria-label="본회의장 의석 배치" data-rw="'+(r*0.42).toFixed(2)+'">'+L.seats.map(s=>'<circle class="seat" cx="'+(300+K*s.r*Math.cos(s.t)).toFixed(1)+'" cy="'+(302-K*s.r*Math.sin(s.t)).toFixed(1)+'" r="'+r.toFixed(2)+'" fill="var(--line)"/>').join('')+
+  return '<svg viewBox="0 0 600 312" role="img" aria-label="본회의장 의석 배치" data-rw="'+(r*0.42).toFixed(2)+'"><g class="seatg">'+L.seats.map(s=>{ const cx=300+K*s.r*Math.cos(s.t), cy=302-K*s.r*Math.sin(s.t); return '<rect class="seat" data-r="'+r.toFixed(2)+'" x="'+(cx-r).toFixed(1)+'" y="'+(cy-r).toFixed(1)+'" width="'+(2*r).toFixed(2)+'" height="'+(2*r).toFixed(2)+'" rx="'+r.toFixed(2)+'" fill="var(--line)"/>'; }).join('')+'</g>'+
     '<text class="big" x="300" y="268" text-anchor="middle">'+N+'</text><text class="sm" x="300" y="296" text-anchor="middle">석</text></svg>'; }
 function paint(el,a,R,label,big,dim){
   const order=a.P.map((p,f)=>f).sort((x,y)=>a.P[x].l-a.P[y].l||x-y), seq=[];
@@ -1687,6 +1694,7 @@ function paint(el,a,R,label,big,dim){
     // 테마 바탕과 정당색이 비슷해도 보이도록 외곽선을 둠 (지역구: 테마 대비색 테두리, 비례: 정당색 링 + 바깥 대비 그림자)
     if(s.ring){ c.setAttribute('fill','color-mix(in srgb, '+s.c+' 22%, var(--surface))'); c.setAttribute('stroke',s.c); c.setAttribute('stroke-width',rw); c.classList.add('rg'); }
     else { c.setAttribute('fill',s.c); c.setAttribute('stroke','var(--seat-edge)'); c.setAttribute('stroke-width',(rw*0.42).toFixed(2)); c.classList.remove('rg'); } });
+  seatShape(el);
   if(label!=null) $('.sm',el).textContent=label;
   if(big!=null) $('.big',el).textContent=big; }
 const plain=st=>({dist:st,list:st.map(()=>0),fix:st.map(()=>0)});
@@ -2304,8 +2312,9 @@ function onEdClick(e){
   setFields(); rerender(); }
 
 // 테마: 자동(기기 설정) · 라이트 · 다크 · 민트
+function seatShape(root){ const pc=document.documentElement.getAttribute('data-skin')==='pc'; $$('.hemi .seat',root||document).forEach(c=>{ const r=+c.dataset.r; c.setAttribute('rx',pc?0:r); }); }
 function setSkin(k){ if(k==='auto') document.documentElement.removeAttribute('data-skin'); else document.documentElement.setAttribute('data-skin',k);
-  $$('#skin button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.skin===k)); try{ localStorage.setItem('kr-asm-skin',k); }catch(e){} }
+  $$('#skin button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.skin===k)); seatShape(); try{ localStorage.setItem('kr-asm-skin',k); }catch(e){} }
 let SK='auto'; try{ SK=localStorage.getItem('kr-asm-skin')||'auto'; }catch(e){} setSkin(SK);
 $('#skin').addEventListener('click',e=>{ const b=e.target.closest('button[data-skin]'); if(b) setSkin(b.dataset.skin); });
 toHome.addEventListener('click',viewHome);
