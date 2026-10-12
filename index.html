@@ -556,6 +556,23 @@ html:root[data-skin="ios"] .lv em{color:#fff;border:1px solid #fff;box-shadow:0 
 html:root[data-skin="ios"] .lv em.up{background:linear-gradient(#7fd36b,#2f961d)}
 html:root[data-skin="ios"] .lv em.down{background:linear-gradient(#ff8a80,#d61f19)}
 html:root[data-skin="paper"] .lv em{background:transparent;font-family:var(--f-display);font-size:14px;text-decoration:underline wavy;text-decoration-thickness:1px}
+
+.shooting .tw,.shooting .wb-wrap{overflow:visible!important;max-height:none!important}
+.shooting .tbl{min-width:0!important}
+.shotbar{display:flex;justify-content:flex-end;margin-top:12px}
+.imgsave{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line2);background:transparent;color:var(--ink2);border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600}
+.imgsave:hover{color:var(--ink);border-color:var(--ink3)}
+.imgsave:disabled{opacity:.7;cursor:default}
+html:root[data-skin="pc"] .imgsave{border-radius:0;border-color:var(--accent);color:var(--accent)}
+html:root[data-skin="ios"] .imgsave{background:linear-gradient(#ffffff,#e2e2e2);border:1px solid #a3a7ad;color:#4c566c;text-shadow:0 1px 0 #fff;border-radius:6px}
+
+.lang{display:inline-flex;border:1px solid var(--line2);border-radius:999px;padding:2px;gap:2px;background:var(--surface)}
+.lang a{padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--ink2);text-decoration:none;white-space:nowrap}
+.lang a[aria-current="page"]{background:var(--ink);color:var(--bg)}
+html:root[data-skin="pc"] .lang a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+html:root[data-skin="ios"] .lang{background:transparent;border:1px solid #3c5070;border-radius:7px;padding:0;gap:0;overflow:hidden}
+html:root[data-skin="ios"] .lang a{border-radius:0;color:#fff;text-shadow:0 -1px 0 rgba(0,0,0,.4);background:linear-gradient(#9cadc6,#7d93b3 50%,#6f87aa 51%,#6c84a7);border-right:1px solid #4b6083}
+html:root[data-skin="ios"] .lang a[aria-current="page"]{background:linear-gradient(#5f7aa3,#4a6690 50%,#3f5b86 51%,#3e5a85);box-shadow:inset 0 1px 3px rgba(0,0,0,.45)}
 @media (prefers-reduced-motion: reduce){.hemi .seat,.popin,.sdl{animation:none!important}.sdl{display:none}}
 
 </style>
@@ -567,6 +584,7 @@ html:root[data-skin="paper"] .lv em{background:transparent;font-family:var(--f-d
       <div>국회 시뮬레이터<small>제헌국회 1948 — 제22대 2024</small></div>
     </div>
     <div class="topr">
+      <nav class="lang" aria-label="Language"><a href="./" lang="ko" data-l="ko" aria-current="page">한국어</a><a href="en.html" lang="en" data-l="en">English</a><a href="ja.html" lang="ja" data-l="ja">日本語</a></nav>
       <div class="skin" id="skin" role="group" aria-label="테마">
         <button type="button" data-skin="auto">자동</button>
         <button type="button" data-skin="light"><i style="background:#eef0ed"></i>라이트</button>
@@ -2041,6 +2059,7 @@ function viewBoard(k){
   paint(el,a,R0,null,null);
   if(noMo()){ stage(R,R0,f=>fi===0?fr.tot[f]:fr.tot[f]-fb.tot[f],'석 중 '+given+'석 배분'); }
   else requestAnimationFrame(()=>requestAnimationFrame(()=>stage(R,R0,f=>fi===0?fr.tot[f]:fr.tot[f]-fb.tot[f],'석 중 '+given+'석 배분')));
+  addShots(app,'section.stack>.box');
   $('#cont').addEventListener('click',()=>{ if(last) viewResult(); else { S.qi++; viewQuiz(); } }); }
 
 // ── 5. 결과
@@ -2116,6 +2135,7 @@ function viewResult(keep){
     $('#mvgo').addEventListener('click',()=>{ const f=+$('#mvf').value, k=Math.max(1,Math.min(mine[f]||0,Math.round(+$('#mvk').value||0))), t=+$('#mvt').value; if(!mine[f]) return;
       if(!S.mv||S.mv.n!==a.n) S.mv={n:a.n,l:[]}; S.mv.l.push({f,k,t}); S.mvOpen=true; S.cab=null; viewResult(true); });
     $('#mvlog').addEventListener('click',e=>{ const b=e.target.closest('button[data-u]'); if(!b) return; if(b.dataset.u==='all') S.mv.l=[]; else S.mv.l.splice(+b.dataset.u,1); S.cab=null; viewResult(true); }); }
+  addShots(app,'section.stack>.box:not(details)');
   const L=order[0], gov=a.gov.map(k=>a.P.findIndex(p=>p.k===k)).filter(f=>f>=0), govSeats=sum(gov.map(f=>mine[f]));
   $('#lead').innerHTML='제1당은 <b>'+esc(a.P[L].n)+'</b> '+mine[L]+'석'+(a.Lst?' (지역구 '+(R.dist[L]+R.fix[L])+' · '+a.ln+' '+R.list[L]+')':'')+'입니다. '+(mine[L]>=two3(a.N)?'혼자서 개헌선까지 넘었습니다.':mine[L]>=M?'단독 과반으로 법안을 혼자 처리할 수 있습니다.':'어느 정당도 과반('+M+'석)을 넘지 못해 연대가 필요합니다.')+
     (gov.length?' 당시 여당은 '+gov.map(f=>esc(a.P[f].n)).join('·')+'이었습니다.':'');
@@ -2414,6 +2434,28 @@ async function buildTxt(){ const code=await makeCode(C), now=new Date(), pad=n=>
     '질문: '+C.Q.filter(q=>q.on).length+'개 · 분야 '+C.F.length+'개','저장한 때: '+now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes()),'',
     '----- 이동 코드 -----',code,'',TXT_MARK,strip(C),''];
   return head.join('\n'); }
+// ── 이미지 저장: 결과 상자를 PNG로 (html-to-image를 필요할 때만 불러옴)
+let H2I=null;
+function loadH2I(){ if(window.htmlToImage) return Promise.resolve(window.htmlToImage); if(H2I) return H2I;
+  H2I=new Promise((ok,no)=>{ const sc=document.createElement('script'); sc.src='https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js'; sc.onload=()=>window.htmlToImage?ok(window.htmlToImage):no(new Error('load')); sc.onerror=()=>{ H2I=null; no(new Error('load')); }; document.head.appendChild(sc); }); return H2I; }
+function shotFonts(){ const cs=getComputedStyle(document.documentElement), used=(getComputedStyle(document.body).fontFamily+cs.getPropertyValue('--f-display')+cs.getPropertyValue('--f-mono')).replace(/['"]/g,''); let t='';
+  for(const sh of document.styleSheets){ let rs; try{ rs=sh.cssRules; }catch(_){ continue; } for(const r of rs){ if(r.type!==5) continue; const fam=(r.style.getPropertyValue('font-family')||'').replace(/['"]/g,'').trim(); if(fam&&used.includes(fam)) t+=r.cssText+'\n'; } } return t; }
+async function giveFile(blob,fname){ let dl=null; try{ dl=window.claude&&await window.claude.use('downloads'); }catch(_){ dl=null; }
+  if(dl){ try{ await dl.save({filename:fname,data:blob}); return 'ok'; }catch(e){ const c=e&&e.code; if(c==='declined') return 'declined'; if(c==='rate_limited') return 'busy'; } }
+  try{ const u=URL.createObjectURL(blob), a=document.createElement('a'); a.href=u; a.download=fname; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); return 'ok'; }catch(_){ return 'fail'; } }
+const PH1='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+async function saveShot(btn){ const box=btn.closest('.box'); if(!box||btn.disabled) return; const lab=btn.textContent; btn.disabled=true; btn.textContent='이미지 만드는 중…';
+  const done=t=>{ btn.textContent=t; setTimeout(()=>{ btn.textContent=lab; btn.disabled=false; },2200); };
+  try{ const h=await loadH2I(), bg=getComputedStyle(box).backgroundColor, a=A(), h3=$('h3,h2',box);
+    box.classList.add('shooting'); let blob; try{ blob=await h.toBlob(box,{pixelRatio:2,backgroundColor:bg&&bg!=='rgba(0, 0, 0, 0)'?bg:getComputedStyle(document.body).backgroundColor,fontEmbedCSS:shotFonts(),imagePlaceholder:PH1,filter:n=>!(n.classList&&(n.classList.contains('shotbar')||n.classList.contains('sdl')))}); } finally { box.classList.remove('shooting'); }
+    if(!blob) throw new Error('empty');
+    const nm=(btn.dataset.name||(h3?h3.textContent:'결과')).replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_').slice(0,40);
+    const r=await giveFile(blob,'국회시뮬레이터_'+(a.n===1?'제헌':'제'+a.n+'대')+'_'+nm+'.png');
+    done(r==='ok'?'저장했습니다':r==='declined'?'저장을 취소했습니다':r==='busy'?'저장 창이 이미 열려 있습니다':'저장하지 못했습니다'); }
+  catch(e){ done(navigator.onLine===false?'인터넷 연결이 필요합니다':'이미지를 만들지 못했습니다'); } }
+function addShots(root,sel){ $$(sel||'.box',root||app).forEach(b=>{ if(b.matches('details')||$('.shotbar',b)) return; b.insertAdjacentHTML('beforeend','<div class="shotbar"><button type="button" class="imgsave" title="이 상자를 PNG 이미지로 저장">'+ICON_CAM+'이미지 저장</button></div>'); }); }
+const ICON_CAM='<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('.imgsave'); if(b) saveShot(b); });
 async function saveTxt(){ const msg=$('#iomsg'); let txt; try{ txt=await buildTxt(); }catch(e){ if(msg) msg.textContent='파일 내용을 만들지 못했습니다.'; return; }
   const fname='국회시뮬레이터_'+(C.n===1?'제헌':'제'+C.n+'대')+'.txt';
   let dl=null; try{ dl=window.claude&&await window.claude.use('downloads'); }catch(_){ dl=null; }
