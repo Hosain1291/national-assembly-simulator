@@ -517,6 +517,24 @@ html:root[data-skin="ios"] .skin{background:#6d84a2}
 html:root[data-skin="ios"] .sdl{border:2px solid #fff;font:700 11px/1 var(--f-mono);padding:3px 6px;color:#fff;text-shadow:0 -1px 0 rgba(0,0,0,.3);box-shadow:0 2px 3px rgba(0,0,0,.35)}
 html:root[data-skin="ios"] .sdl.up{background:linear-gradient(#7fd36b,#3ea52a 50%,#2f961d 51%,#38a126);color:#fff}
 html:root[data-skin="ios"] .sdl.down{background:linear-gradient(#ff8a80,#e8302a 50%,#d61f19 51%,#e02a22);color:#fff}
+
+/* 다른 정당으로 넘어간 자리: 옛 색이 줄어들며 빠지고 새 색이 채워짐 */
+.hemi .seat.s-sw{animation:seatSw .8s ease-in-out backwards}
+@keyframes seatSw{0%{fill:var(--old);transform:scale(1.15)}42%{fill:var(--old);transform:scale(.12)}43%{fill:var(--new);transform:scale(.12)}75%{transform:scale(1.15)}100%{fill:var(--new);transform:scale(1)}}
+html:root[data-skin="pc"] .hemi .seat.s-sw{animation:pxSw .64s steps(1,end) backwards}
+@keyframes pxSw{0%{fill:var(--old)}20%{fill:var(--bg)}40%{fill:var(--old)}60%{fill:var(--bg)}80%{fill:var(--new)}}
+html:root[data-skin="paper"] .hemi .seat.s-sw{animation:paperSw 1s ease-in-out backwards}
+@keyframes paperSw{0%{fill:var(--old);clip-path:polygon(0 0,210% 0,0 210%)}40%{fill:var(--old);clip-path:polygon(0 0,0 0,0 0)}41%{fill:var(--new);clip-path:polygon(0 0,0 0,0 0)}100%{fill:var(--new);clip-path:polygon(0 0,210% 0,0 210%)}}
+.mv{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.mv summary{cursor:pointer;font-weight:700;font-size:14px}
+.mv summary small{font-weight:500;color:var(--ink3);margin-left:6px}
+.mvrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;font-size:14px}
+.mvrow select.in{width:auto;flex:1 1 130px}
+.mvrow input.in{width:64px;flex:none}
+.mvlog{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:13px}
+.mvlog div{display:flex;gap:8px;align-items:center;color:var(--ink2)}
+.mvlog b{color:var(--warn)}
+.mvlog button{margin-left:auto;white-space:nowrap;flex:none;border:1px solid var(--line2);background:transparent;border-radius:999px;padding:1px 8px;font-size:12px;color:var(--ink2)}
 @media (prefers-reduced-motion: reduce){.hemi .seat,.popin,.sdl{animation:none!important}.sdl{display:none}}
 
 </style>
@@ -1799,10 +1817,12 @@ function dBadge(host,d){ if(!host||!d||noMo()) return; const b=document.createEl
 function seatAnim(el,keys){ const id=el.id||'', prev=SEATPREV[id], same=prev&&prev.length===keys.length, seats=$$('.seat',el), ch=[];
   SEATPREV[id]=keys; seats.forEach(c=>{ c.classList.remove('s-in','s-out'); c.style.animationDelay=''; });
   if(noMo()) return;
-  keys.forEach((k,i)=>{ const p=same?prev[i]:''; if(k&&k!==p) ch.push([i,'s-in']); else if(!k&&p) ch.push([i,'s-out']); });
+  const fillOf=k=>{ const [c,r]=k.split('|'); return r?'color-mix(in srgb, '+c+' var(--ring-mix,22%), var(--ring-base,var(--surface)))':c; };
+  keys.forEach((k,i)=>{ const p=same?prev[i]:''; if(k&&p&&k!==p) ch.push([i,'s-sw',p]); else if(k&&k!==p) ch.push([i,'s-in']); else if(!k&&p) ch.push([i,'s-out']); });
   if(!ch.length) return; void el.getBoundingClientRect();
   const span=Math.min(750,ch.length*18);
-  ch.forEach(([i,cl],j)=>{ const c=seats[i]; c.style.animationDelay=(ch.length>1?Math.round(j/(ch.length-1)*span):0)+'ms'; c.classList.add(cl); }); }
+  seats.forEach(c=>{ c.classList.remove('s-sw'); c.style.removeProperty('--old'); c.style.removeProperty('--new'); });
+  ch.forEach(([i,cl,p],j)=>{ const c=seats[i]; if(p){ c.style.setProperty('--old',fillOf(p)); c.style.setProperty('--new',fillOf(keys[i])); } c.style.animationDelay=(ch.length>1?Math.round(j/(ch.length-1)*span):0)+'ms'; c.classList.add(cl); }); }
 function paint(el,a,R,label,big,dim){
   const order=a.P.map((p,f)=>f).sort((x,y)=>a.P[x].l-a.P[y].l||x-y), seq=[];
   order.forEach(f=>{ const c=a.P[f].c, o=dim&&!dim.includes(f); for(let k=0;k<R.dist[f]+R.fix[f];k++) seq.push({c,ring:false,o}); for(let k=0;k<R.list[f];k++) seq.push({c,ring:true,o}); });
@@ -1994,15 +2014,31 @@ function viewBoard(k){
 
 // ── 5. 결과
 function bills(a,q,st){ let l=0,r=0,ab=0; a.P.forEach((p,f)=>{ const x=pos(q,p); if(x<=-.25) l+=st[f]; else if(x>=.25) r+=st[f]; else ab+=st[f]; }); return {l,r,ab}; }
+// ── 의석 이동: 한 정당의 의석을 빼서 특정 정당 또는 나머지 정당(의석 비율대로)에 나눔
+function applyMv(a,R){ if(!S.mv||S.mv.n!==a.n||!S.mv.l.length) return R;
+  const dist=R.dist.slice(), list=R.list.slice(), tot=R.tot.slice();
+  S.mv.l.forEach(m=>{ const from=m.f, n=Math.min(m.k,dist[from]+list[from]); m.got=[]; if(n<=0) return;
+    let tg;
+    if(m.t>=0&&m.t!==from) tg=[[m.t,n]];
+    else { const oth=a.P.map((p,f)=>f).filter(f=>f!==from&&tot[f]>0), W=sum(oth.map(f=>tot[f])); if(!W) return;
+      const q=oth.map(f=>{ const x=n*tot[f]/W; return [f,Math.floor(x),x-Math.floor(x)]; }); let r=n-sum(q.map(x=>x[1]));
+      q.slice().sort((x,y)=>y[2]-x[2]||tot[y[0]]-tot[x[0]]).slice(0,r).forEach(x=>x[1]++); tg=q.filter(x=>x[1]>0).map(x=>[x[0],x[1]]).sort((x,y)=>y[1]-x[1]); }
+    const fd=Math.min(dist[from],n); dist[from]-=fd; list[from]-=n-fd; tot[from]-=n;
+    let dl=fd; tg.forEach(([f,k])=>{ const d=Math.min(k,dl); dl-=d; dist[f]+=d; list[f]+=k-d; tot[f]+=k; }); m.got=tg; m.n=n; });
+  return Object.assign({},R,{dist,list,tot}); }
 function viewResult(keep){
   const sy=window.scrollY; toHome.hidden=false;
-  const a=A(), R=simAll(a,S.ans), mine=R.tot, real=actual(a), asked=a.Q.map((q,i)=>i).filter(i=>S.ans[i]!==undefined), answered=asked.filter(i=>S.ans[i]!=null).length, M=maj(a.N);
+  if(S.mv&&S.mv.n!==A().n) S.mv=null;
+  const a=A(), R=applyMv(a,simAll(a,S.ans)), mine=R.tot, real=actual(a), asked=a.Q.map((q,i)=>i).filter(i=>S.ans[i]!==undefined), answered=asked.filter(i=>S.ans[i]!=null).length, M=maj(a.N);
   const fs=fieldsOf(a);
   app.innerHTML='<section class="stack">'+
    '<div class="rhead"><div class="pills"><span class="pill strong">'+a.y+'</span><span class="pill">'+esc(sysText(a))+'</span><span class="pill" id="yeoya"></span><span class="pill">답변 '+answered+' / '+asked.length+'</span></div><h2>나의 '+asmName(a)+'</h2><p class="lead" id="lead"></p></div>'+
    '<div class="box"><div style="display:flex;justify-content:center;margin-bottom:6px"><div class="seg" role="group" aria-label="보기 전환"><button type="button" data-v="mine" aria-pressed="true">나의 결과</button><button type="button" data-v="real" aria-pressed="false">실제 결과</button></div></div>'+
     '<div class="hemi" id="rh">'+hemiSvg(a.N)+'</div><div class="hlg" id="hlg"></div>'+
-    '<div class="tw"><table class="tbl"><thead><tr><th>정당</th><th>'+(fixSum(a)?'지역·간선':'지역구')+'</th>'+(a.Lst?'<th>'+a.ln+'</th>':'')+'<th>합계</th><th>실제</th><th>차이</th></tr></thead><tbody id="tb"></tbody></table></div></div>'+
+    '<div class="tw"><table class="tbl"><thead><tr><th>정당</th><th>'+(fixSum(a)?'지역·간선':'지역구')+'</th>'+(a.Lst?'<th>'+a.ln+'</th>':'')+'<th>합계</th><th>실제</th><th>차이</th></tr></thead><tbody id="tb"></tbody></table></div>'+
+    '<details class="mv" id="mvbox"'+(S.mvOpen?' open':'')+'><summary>의석 이동<small>탈당·의원직 상실·합당 등을 가정해 한 정당의 의석을 빼서 다른 정당에 나눠 줍니다</small></summary>'+
+     '<div class="mvrow"><select class="in" id="mvf" aria-label="의석이 줄어드는 정당"></select><input class="in" type="number" id="mvk" min="1" value="5" aria-label="옮길 의석 수"><span>석을</span><select class="in" id="mvt" aria-label="받는 쪽"></select><button type="button" class="cta" id="mvgo" style="padding:8px 16px">이동</button></div>'+
+     '<div class="mvlog" id="mvlog"></div></details></div>'+
    '<div class="box"><h3>선거 결과</h3><p class="hint sub">위키백과 선거 인포박스 형식입니다. 득표율은 시험 답변으로 계산한 가상 비례 득표율입니다. 화살표를 누르면 앞뒤 국회로 이동합니다.</p><div style="display:flex;justify-content:center;margin-bottom:10px"><div class="seg" id="wbseg" role="group" aria-label="결과표 전환"><button type="button" data-w="mine" aria-pressed="true">나의 결과</button><button type="button" data-w="real" aria-pressed="false">실제 결과</button></div></div><div class="wb-wrap" id="wb"></div></div>'+
    '<div class="box" id="presbox"><h3>대통령 선거</h3><p class="hint sub">이 국회 시기의 실제 대선 후보들에게 같은 답변으로 표를 나눠 봅니다(결선 없는 상대다수제). 후보가 그 국회의 정당 소속이면 정당 입장을, 아니면 후보의 이념 특성을 씁니다.</p><div style="display:flex;justify-content:center;margin-bottom:10px"><div class="seg" id="prseg" role="group" aria-label="대선 고르기"></div></div><div class="wb-wrap" id="prwb"></div></div>'+
    '<div class="box"><h3>분야별 의석</h3><p class="hint sub">분야마다 걸린 의석과 정당별 획득 의석입니다. 중요도를 바꾸면 분야 의석이 다시 나뉘고 국회 전체가 다시 계산됩니다. 답하지 않은 분야는 실제 지지율대로 나눕니다.</p><div class="fbar" id="fsum"></div><div class="syslg" id="fslg" style="margin-bottom:6px"></div><div id="fres"></div></div>'+
@@ -2039,6 +2075,16 @@ function viewResult(keep){
     return '<tr><td><span><i class="dot" style="background:'+p.c+'"></i>'+esc(p.n)+(f===R.bonusTo?' <small style="color:var(--ink3)">+'+(LRULE[a.n]?'전국구 우선 배분':'프리미엄 '+a.bonus)+'</small>':'')+'</span></td><td>'+(R.dist[f]+R.fix[f])+'</td>'+(a.Lst?'<td>'+R.list[f]+'</td>':'')+'<td class="tc" data-f="'+f+'"><b>'+mine[f]+'</b></td><td>'+real[f]+'</td><td class="'+(d>0?'up':d<0?'down':'')+'">'+(d>0?'+'+d:d<0?'−'+(-d):'0')+'</td></tr>'; }).join('');
   { const pk='r'+a.n, pv=SEATCNT[pk]; SEATCNT[pk]=mine.slice();
     $$('#tb td.tc').forEach(td=>{ const f=+td.dataset.f, from=pv?(pv[f]||0):0; tweenNum($('b',td),from,mine[f]); if(pv) dBadge(td,mine[f]-from); }); }
+  { const has=a.P.map((p,f)=>f).filter(f=>mine[f]>0).sort((x,y)=>mine[y]-mine[x]);
+    $('#mvf').innerHTML=has.map(f=>'<option value="'+f+'">'+esc(a.P[f].n)+' ('+mine[f]+'석)</option>').join('');
+    const fillT=()=>{ const fr=+$('#mvf').value; $('#mvt').innerHTML='<option value="-1">나머지 정당에 의석 비율대로</option>'+a.P.map((p,f)=>f).filter(f=>f!==fr).map(f=>'<option value="'+f+'">'+esc(a.P[f].n)+'에게</option>').join(''); $('#mvk').max=mine[fr]||1; };
+    fillT(); $('#mvf').addEventListener('change',fillT);
+    $('#mvbox').addEventListener('toggle',()=>{ S.mvOpen=$('#mvbox').open; });
+    const ml=S.mv&&S.mv.n===a.n?S.mv.l:[];
+    $('#mvlog').innerHTML=ml.map((m,j)=>'<div><span><i class="dot" style="background:'+a.P[m.f].c+'"></i> '+esc(a.P[m.f].n)+' <b>−'+(m.n||0)+'</b> → '+((m.got||[]).map(([f,k])=>esc(a.P[f].n)+' +'+k).join(', ')||'받을 정당 없음')+'</span><button type="button" data-u="'+j+'">취소</button></div>').join('')+(ml.length>1?'<div><button type="button" data-u="all">모두 되돌리기</button></div>':'');
+    $('#mvgo').addEventListener('click',()=>{ const f=+$('#mvf').value, k=Math.max(1,Math.min(mine[f]||0,Math.round(+$('#mvk').value||0))), t=+$('#mvt').value; if(!mine[f]) return;
+      if(!S.mv||S.mv.n!==a.n) S.mv={n:a.n,l:[]}; S.mv.l.push({f,k,t}); S.mvOpen=true; S.cab=null; viewResult(true); });
+    $('#mvlog').addEventListener('click',e=>{ const b=e.target.closest('button[data-u]'); if(!b) return; if(b.dataset.u==='all') S.mv.l=[]; else S.mv.l.splice(+b.dataset.u,1); S.cab=null; viewResult(true); }); }
   const L=order[0], gov=a.gov.map(k=>a.P.findIndex(p=>p.k===k)).filter(f=>f>=0), govSeats=sum(gov.map(f=>mine[f]));
   $('#lead').innerHTML='제1당은 <b>'+esc(a.P[L].n)+'</b> '+mine[L]+'석'+(a.Lst?' (지역구 '+(R.dist[L]+R.fix[L])+' · '+a.ln+' '+R.list[L]+')':'')+'입니다. '+(mine[L]>=two3(a.N)?'혼자서 개헌선까지 넘었습니다.':mine[L]>=M?'단독 과반으로 법안을 혼자 처리할 수 있습니다.':'어느 정당도 과반('+M+'석)을 넘지 못해 연대가 필요합니다.')+
     (gov.length?' 당시 여당은 '+gov.map(f=>esc(a.P[f].n)).join('·')+'이었습니다.':'');
@@ -2148,7 +2194,7 @@ function viewResult(keep){
     const row=(lab,s)=>{ const b=bills(a,q,s), vd=b.l>=M?esc(Lp.n)+(named?' 안':'')+' 가결 ('+b.l+'표)':b.r>=M?esc(Rp.n)+(named?' 안':'')+' 가결 ('+b.r+'표)':'어느 쪽도 과반 실패';
       return '<div class="vrow"><span>'+lab+'</span><div class="vbar"><span style="width:'+(b.l/N*100)+'%;background:'+Lp.c+'"></span><span style="width:'+(b.ab/N*100)+'%;background:var(--line2)"></span><span style="width:'+(b.r/N*100)+'%;background:'+Rp.c+'"></span><em style="left:'+(M/N*100)+'%"></em></div><div class="vnum"><span>'+esc(Lp.n)+' '+b.l+'</span><span>기권 '+b.ab+'</span><span>'+esc(Rp.n)+' '+b.r+'</span></div><div class="vnum verdict">'+vd+'</div></div>'; };
     return '<div class="bill"><h4>'+esc(q.t)+' <span class="tag"><i class="dot" style="background:'+fld(q.f).c+';width:7px;height:7px"></i> '+esc(fld(q.f).n)+'</span> <span class="tag">'+(q.g?'나의 정치 의견':esc(whenTxt(a,q)))+'</span></h4>'+ab+'<p class="you">나의 입장: <b>'+esc(you)+'</b></p><div class="stake">'+st+'</div>'+row('나의 국회',mine)+row('실제 국회',real)+'</div>'; }).join('');
-  $('#again').addEventListener('click',viewPrio);
+  $('#again').addEventListener('click',()=>{ S.mv=null; viewPrio(); });
   $('#edit2').addEventListener('click',viewEdit);
   $('#other').addEventListener('click',viewHome);
   show(keep?S.view:'mine');
