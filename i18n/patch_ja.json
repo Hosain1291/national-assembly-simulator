@@ -58,11 +58,11 @@
 "content:\"閉じる\""
 ],
 [
-"--f-display:\"HadaBatang\",\"Noto Serif KR\",\"Nanum Myeongjo\",serif;",
+"--f-display:\"LineSeed\",\"HadaBatang\",\"Apple SD Gothic Neo\",\"Noto Sans KR\",sans-serif;",
 "--f-display:\"LINE Seed JP\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",\"HadaBatang\",sans-serif;"
 ],
 [
-"--f-body:\"HadaBatang\",\"Noto Serif KR\",\"Apple SD Gothic Neo\",serif;",
+"--f-body:\"LineSeed\",\"HadaBatang\",\"Apple SD Gothic Neo\",\"Noto Sans KR\",sans-serif;",
 "--f-body:\"LINE Seed JP\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",\"HadaBatang\",sans-serif;"
 ],
 [

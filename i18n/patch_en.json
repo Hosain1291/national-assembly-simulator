@@ -1,66 +1,74 @@
 {
- "prelude": "\nconst ORD=n=>{ n=+n; const t=n%100; return n+((t>=11&&t<=13)?'th':({1:'st',2:'nd',3:'rd'}[n%10]||'th')); };\n",
- "overrides": "\nfunction whenTxt(a,q){ if(!q.w) return 'Issue at election time'; const [y,m]=q.w.split('.').map(Number), [ey,em]=a.date.split('.').map(Number); const d=(ey-y)*12+(em-(m||em)), MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], pl=(n,w)=>n+' '+w+(n>1?'s':''); return (m?MO[m-1]+' ':'')+y+' · '+(d<=0?'right before the election':d<12?pl(d,'month')+' before the election':pl(Math.floor(d/12),'year')+(d%12?' '+pl(d%12,'month'):'')+' before the election'); }\n",
- "replace": [
-  [
-   "(GOVM[a.n]||GOVM[22]).split(' ')",
-   "(GOVM[a.n]||GOVM[22]).split('|')"
-  ],
-  [
-   "'kr-asm-edit-'",
-   "'kr-asm-en-edit-'"
-  ],
-  [
-   "https://ko.wikipedia.org/wiki/",
-   "https://en.wikipedia.org/wiki/Special:Search?search="
-  ],
-  [
-   "/지명 총리/",
-   "/nominated by the president/i"
-  ],
-  [
-   "/대표|총재|최고|부총재|원내|의장|중진|고문/",
-   "/leader|party president|supreme|floor|chair|senior|adviser/i"
-  ],
-  [
-   "/간선/.test(E.how)",
-   "/indirect/i.test(E.how)"
-  ],
-  [
-   "p.n.length>9?p.n.slice(0,8)+'…':p.n, w=t.length*10+4",
-   "p.n.length>18?p.n.slice(0,17)+'…':p.n, w=t.length*6.2+4"
-  ],
-  [
-   "/장관 후보|실제 장관/",
-   "/minister candidate|actual minister/i"
-  ],
-  [
-   "/^실제 /.test(x.r||'')",
-   "/^Actual /.test(x.r||'')"
-  ]
- ],
- "regex": [
-  [
-   "''\\+([A-Za-z_$][\\w.$]*)\\+'th",
-   "ORD(\\1)+'"
-  ]
- ],
- "html": [
-  [
-   "<a href=\"./\" lang=\"ko\" data-l=\"ko\" aria-current=\"page\">",
-   "<a href=\"./\" lang=\"ko\" data-l=\"ko\">"
-  ],
-  [
-   "<a href=\"en.html\" lang=\"en\" data-l=\"en\">",
-   "<a href=\"en.html\" lang=\"en\" data-l=\"en\" aria-current=\"page\">"
-  ],
-  [
-   "content:\"열기\"",
-   "content:\"Open\""
-  ],
-  [
-   "content:\"접기\"",
-   "content:\"Close\""
-  ]
- ]
+"prelude": "\nconst ORD=n=>{ n=+n; const t=n%100; return n+((t>=11&&t<=13)?'th':({1:'st',2:'nd',3:'rd'}[n%10]||'th')); };\n",
+"overrides": "\nfunction whenTxt(a,q){ if(!q.w) return 'Issue at election time'; const [y,m]=q.w.split('.').map(Number), [ey,em]=a.date.split('.').map(Number); const d=(ey-y)*12+(em-(m||em)), MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], pl=(n,w)=>n+' '+w+(n>1?'s':''); return (m?MO[m-1]+' ':'')+y+' · '+(d<=0?'right before the election':d<12?pl(d,'month')+' before the election':pl(Math.floor(d/12),'year')+(d%12?' '+pl(d%12,'month'):'')+' before the election'); }\n",
+"replace": [
+[
+"(GOVM[a.n]||GOVM[22]).split(' ')",
+"(GOVM[a.n]||GOVM[22]).split('|')"
+],
+[
+"'kr-asm-edit-'",
+"'kr-asm-en-edit-'"
+],
+[
+"https://ko.wikipedia.org/wiki/",
+"https://en.wikipedia.org/wiki/Special:Search?search="
+],
+[
+"/지명 총리/",
+"/nominated by the president/i"
+],
+[
+"/대표|총재|최고|부총재|원내|의장|중진|고문/",
+"/leader|party president|supreme|floor|chair|senior|adviser/i"
+],
+[
+"/간선/.test(E.how)",
+"/indirect/i.test(E.how)"
+],
+[
+"p.n.length>9?p.n.slice(0,8)+'…':p.n, w=t.length*10+4",
+"p.n.length>18?p.n.slice(0,17)+'…':p.n, w=t.length*6.2+4"
+],
+[
+"/장관 후보|실제 장관/",
+"/minister candidate|actual minister/i"
+],
+[
+"/^실제 /.test(x.r||'')",
+"/^Actual /.test(x.r||'')"
+]
+],
+"regex": [
+[
+"''\\+([A-Za-z_$][\\w.$]*)\\+'th",
+"ORD(\\1)+'"
+]
+],
+"html": [
+[
+"<a href=\"./\" lang=\"ko\" data-l=\"ko\" aria-current=\"page\">",
+"<a href=\"./\" lang=\"ko\" data-l=\"ko\">"
+],
+[
+"<a href=\"en.html\" lang=\"en\" data-l=\"en\">",
+"<a href=\"en.html\" lang=\"en\" data-l=\"en\" aria-current=\"page\">"
+],
+[
+"content:\"열기\"",
+"content:\"Open\""
+],
+[
+"content:\"접기\"",
+"content:\"Close\""
+],
+[
+"--f-display:\"LineSeed\",\"HadaBatang\",\"Apple SD Gothic Neo\",\"Noto Sans KR\",sans-serif;",
+"--f-display:\"HadaBatang\",\"Noto Serif KR\",\"Nanum Myeongjo\",serif;"
+],
+[
+"--f-body:\"LineSeed\",\"HadaBatang\",\"Apple SD Gothic Neo\",\"Noto Sans KR\",sans-serif;",
+"--f-body:\"HadaBatang\",\"Noto Serif KR\",\"Apple SD Gothic Neo\",serif;"
+]
+]
 }
