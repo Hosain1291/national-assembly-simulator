@@ -440,19 +440,31 @@ html:root[data-skin="pc"] .hemi .seat.s-out{animation:pxOut .6s steps(1,end) bac
 @keyframes pxOut{0%{fill:var(--accent)}25%{fill:var(--bg)}50%{fill:var(--accent)}75%{fill:var(--bg)}}
 html:root[data-skin="pc"] .popin{animation:pxIn .48s steps(1,end) backwards}
 html:root[data-skin="pc"] .brow .bar span{transition:width .64s steps(8,end)}
+/* PC통신: 파란 바탕에서 파란 계열 정당(한나라당 등)도 보이도록 막대 바탕을 흰색으로 */
+html:root[data-skin="pc"] :is(.sysbar,.lbar,.meter,.match .bar,.vbar,.brow .bar,.fbar){background:#fff;border:1px solid #fff;border-radius:0}
+html:root[data-skin="pc"] .brow .bar{height:8px}
+html:root[data-skin="pc"] :is(.sysbar,.lbar,.meter,.vbar,.fbar) span+span{box-shadow:inset 1px 0 0 #fff}
+html:root[data-skin="pc"] :is(.mk,.vbar em,.lbar em){background:#000}
+html:root[data-skin="pc"] .mk.l2{background:#aa0000}
+html:root[data-skin="pc"] .dot{box-shadow:0 0 0 1px #fff}
 html:root[data-skin="pc"] .sdl{border-radius:0;border:0;font:14px/1 var(--f-mono);padding:2px 3px;animation:pxDl 2.2s steps(1,end) forwards}
 html:root[data-skin="pc"] .sdl.up{background:var(--accent);color:var(--accent-ink)}
 html:root[data-skin="pc"] .sdl.down{background:var(--warn);color:#fff}
 @keyframes pxDl{0%{opacity:1;transform:translate(-50%,0)}10%{opacity:0}20%{opacity:1}30%{opacity:0}40%{opacity:1;transform:translate(-50%,0)}60%{transform:translate(-50%,-4px)}80%{transform:translate(-50%,-8px)}90%{opacity:0}}
 /* 올드 페이퍼: 도장·잉크 번짐 */
-html:root[data-skin="paper"] .hemi .seat.s-in{animation:inkIn .7s ease-out backwards}
-html:root[data-skin="paper"] .hemi .seat.s-out{animation:inkOut .85s ease-in-out backwards}
+html:root[data-skin="paper"] .hemi .seat.s-in{animation:crayon .62s cubic-bezier(.45,0,.35,1) backwards}
+html:root[data-skin="paper"] .hemi .seat.s-out{animation:erase .8s ease-in-out backwards}
+@keyframes crayon{0%{clip-path:polygon(0 0,0 0,0 0);fill-opacity:.35}35%{fill-opacity:.55}70%{fill-opacity:.75}100%{clip-path:polygon(0 0,210% 0,0 210%);fill-opacity:.88}}
+@keyframes erase{0%{opacity:1}20%{opacity:.35;transform:translateX(-.7px) rotate(-6deg)}40%{opacity:.75;transform:translateX(.7px) rotate(5deg)}60%{opacity:.25;transform:translateX(-.4px)}100%{opacity:1;transform:none}}
+html:root[data-skin="paper"] :is(.sysbar,.lbar,.meter,.match .bar,.vbar,.brow .bar,.fbar) span{background-image:repeating-linear-gradient(-62deg,rgba(255,250,235,.22) 0 1.5px,transparent 1.5px 4px)!important}
 @keyframes inkIn{0%{transform:scale(2) rotate(-16deg);opacity:0}55%{transform:scale(.9) rotate(3deg);opacity:1}100%{transform:none}}
 @keyframes inkOut{0%{opacity:1;transform:none}50%{opacity:.12;transform:scale(.8) rotate(-12deg) translateX(-1px)}100%{opacity:1;transform:none}}
-html:root[data-skin="paper"] .popin{animation:inkIn .7s ease-out backwards}
-html:root[data-skin="paper"] .sdl{background:transparent;border:0;border-radius:0;font:700 15px/1 var(--f-display);padding:0 2px;text-decoration:underline wavy;text-underline-offset:3px;text-decoration-thickness:1px;animation:inkDl 2.4s ease-out forwards}
-html:root[data-skin="paper"] .sdl.up{color:var(--ok)}
-html:root[data-skin="paper"] .sdl.down{color:var(--accent)}
+html:root[data-skin="paper"] .popin{animation:crayonX .6s cubic-bezier(.45,0,.35,1) backwards}
+@keyframes crayonX{0%{clip-path:inset(0 100% 0 0)}100%{clip-path:inset(0 0 0 0)}}
+html:root[data-skin="paper"] .sdl{border:0;border-radius:2px;font:700 15px/1 var(--f-display);padding:2px 4px;background-repeat:no-repeat;background-position:0 60%;animation:inkDl 2.4s ease-out forwards,hilite .5s cubic-bezier(.45,0,.35,1) backwards}
+html:root[data-skin="paper"] .sdl.up{color:var(--ok);background-image:linear-gradient(-2deg,transparent 8%,color-mix(in srgb,var(--ok) 32%,transparent) 12% 88%,transparent 92%)}
+html:root[data-skin="paper"] .sdl.down{color:var(--accent);background-image:linear-gradient(-2deg,transparent 8%,color-mix(in srgb,var(--accent) 28%,transparent) 12% 88%,transparent 92%)}
+@keyframes hilite{0%{background-size:0% 100%}100%{background-size:100% 100%}}
 @keyframes inkDl{0%{opacity:0;transform:translate(-50%,0) scale(1.8) rotate(-14deg);filter:blur(2px)}18%{opacity:1;transform:translate(-50%,0) scale(1) rotate(-6deg);filter:none}75%{opacity:1;transform:translate(-50%,-3px) rotate(-6deg)}100%{opacity:0;transform:translate(-50%,-8px) rotate(-6deg)}}
 @media (prefers-reduced-motion: reduce){.hemi .seat,.popin,.sdl{animation:none!important}.sdl{display:none}}
 
