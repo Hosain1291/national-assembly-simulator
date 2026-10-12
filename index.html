@@ -2029,17 +2029,18 @@ function viewBoard(k){
    '<div class="hemi" id="bh" style="margin-top:10px">'+hemiSvg(a.N)+'</div>'+
    '<div>'+ord.map(f=>{ const p=a.P[f], got=fr.tot[f], d=got-fb.tot[f];
      return '<div class="brow"><i class="dot" style="background:'+p.c+'"></i><div><b style="font-weight:600">'+esc(p.n)+'</b><small style="display:block;color:var(--ink3);font-size:12px;line-height:1.3">이 분야 '+got+'석'+(fr.empty?'':' (실제 지지율 몫 '+fb.tot[f]+'석)')+'</small><div class="bar"><span data-f="'+f+'" style="width:'+(R0.tot[f]/mx*100)+'%;background:'+p.c+'"></span></div></div><span class="add" data-f="'+f+'"></span><span class="cum" data-f="'+f+'">'+R0.tot[f]+'</span></div>'; }).join('')+'</div>'+
-   '<p class="hint" style="margin-top:10px">먼저 이 분야 '+C2.t+'석이 실제 지지율 몫대로 새로 생기고(+), 이어서 답변대로 다시 나뉘며 입장이 먼 정당의 의석이 빠집니다(−). 가운데 숫자는 실제 지지율 몫과 비교한 증감, 오른쪽은 지금까지 누적입니다. 지금까지 '+given+'석 배분'+(last?(fixSum(a)?', 간선·고정 '+fixSum(a)+'석':'')+(LRULE[a.n]?', 최종 '+a.ln+'은 당시 규칙으로 전국 단위에서 다시 나눕니다':a.bonus?', 제1당 프리미엄 '+a.bonus+'석은 최종 결과에 더해집니다':''):', 남은 분야에 '+(sum(S.order.slice(fi+1).map(x=>R.C[x].t)))+'석')+'.</p>'+
+   '<p class="hint" style="margin-top:10px">'+(fi===0?'먼저 이 분야 '+C2.t+'석이 실제 지지율 몫대로 새로 생기고(+), 이어서 답변대로 다시 나뉘며 입장이 먼 정당의 의석이 빠집니다(−). ':'이 분야 '+C2.t+'석이 답변대로 누적 의석에 더해집니다. ')+'가운데 숫자는 실제 지지율 몫과 비교한 증감, 오른쪽은 지금까지 누적입니다. 지금까지 '+given+'석 배분'+(last?(fixSum(a)?', 간선·고정 '+fixSum(a)+'석':'')+(LRULE[a.n]?', 최종 '+a.ln+'은 당시 규칙으로 전국 단위에서 다시 나눕니다':a.bonus?', 제1당 프리미엄 '+a.bonus+'석은 최종 결과에 더해집니다':''):', 남은 분야에 '+(sum(S.order.slice(fi+1).map(x=>R.C[x].t)))+'석')+'.</p>'+
    '<p class="lead" style="margin-top:8px">'+(up.length?'<b>'+up.slice(0,2).map(f=>esc(a.P[f].n)).join('·')+'</b> 의석 증가':'')+(up.length&&dn.length?', ':'')+(dn.length?'<b>'+dn.slice(0,2).map(f=>esc(a.P[f].n)).join('·')+'</b> 의석 감소':'')+(up.length||dn.length?' · ':'')+'<b>'+esc(a.P[L].n)+'</b>'+(fi===0?' 앞서 나갑니다':' 누적 1위')+' · '+R.tot[L]+'석</p></div>'+
    '<div class="launch"><button type="button" class="cta" id="cont">'+(last?'최종 결과 보기':'다음 분야: '+esc(fld(S.order[fi+1]).n))+'</button>'+(!last?'<span>'+esc(fld(S.order[fi+1]).n)+'에 '+R.C[S.order[fi+1]].t+'석이 걸려 있습니다</span>':'')+'</div></section>';
-  // 1단계: 이전 분야까지의 의석(첫 분야는 빈 회의장)에서 이 분야 의석이 실제 지지율 몫대로 새로 생김
-  // 2단계: 답변대로 다시 나눠, 입장이 먼 정당의 자리가 가까운 정당으로 넘어감(증감)
+  // 첫 분야: ① 빈 회의장에 이 분야 의석이 실제 지지율 몫대로 새로 생김 → ② 답변대로 다시 나눠 증감
+  // 다음 분야: 누적 의석에 새 분야 의석이 답변대로 바로 더해지고, 실제 지지율 몫과 비교한 증감(±)을 표시
   const el=$('#bh'), rows=f=>({bar:$('.bar span[data-f="'+f+'"]',app),add:$('.add[data-f="'+f+'"]',app),cum:$('.cum[data-f="'+f+'"]',app)});
   const stage=(T,from,addOf,lab)=>{ paint(el,a,T,lab,a.N); ord.forEach((f,j)=>{ const r=rows(f), v=addOf(f);
       r.bar.style.width=(T.tot[f]/mx*100)+'%'; tweenNum(r.cum,from.tot[f],T.tot[f]);
       r.add.className='add'+(v>0?' popin':v<0?' popin neg':' zero'); r.add.textContent=v>0?'+'+v:v<0?'−'+(-v):'0'; r.add.style.animationDelay=(j*60)+'ms'; }); };
   paint(el,a,R0,null,null);
   if(noMo()){ stage(R,R0,f=>fr.tot[f]-fb.tot[f],'석 중 '+given+'석 배분'); }
+  else if(fi>0){ requestAnimationFrame(()=>requestAnimationFrame(()=>stage(R,R0,f=>fr.tot[f]-fb.tot[f],'석 중 '+given+'석 배분'))); }
   else { requestAnimationFrame(()=>requestAnimationFrame(()=>{
       stage(Rb,R0,f=>fb.tot[f],'석 중 '+given+'석 배분');
       if(!fr.empty) setTimeout(()=>{ if(!document.body.contains(el)) return; stage(R,Rb,f=>fr.tot[f]-fb.tot[f],'석 중 '+given+'석 배분'); },1500); })); }
