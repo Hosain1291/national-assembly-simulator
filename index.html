@@ -559,6 +559,80 @@ html:root[data-skin="paper"] .lv em{background:transparent;font-family:var(--f-d
 
 .shooting .tw,.shooting .wb-wrap{overflow:visible!important;max-height:none!important}
 .shooting .tbl{min-width:0!important}
+.cardsave{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:12px}
+.cardsave .cta{display:inline-flex;align-items:center;gap:7px}
+.cardsave .cta:disabled{opacity:.7;cursor:default}
+.scwrap{position:fixed;left:-20000px;top:0;pointer-events:none}
+.scard{width:600px;box-sizing:border-box;background:var(--bg);color:var(--ink);font-family:var(--f-body,inherit);padding:22px}
+.scard .sc-in{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:26px 26px 18px;position:relative;overflow:hidden}
+.scard .sc-in::before{content:"";position:absolute;inset:0 0 auto 0;height:6px;background:var(--accent)}
+.scard .sc-mast{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--ink3);text-align:center;margin:0 0 10px}
+.scard .sc-top{text-align:center}
+.scard .sc-eye{display:inline-block;font-size:12px;color:var(--ink2);border:1px solid var(--line2);border-radius:999px;padding:3px 12px}
+.scard h1{font-family:var(--f-display);font-size:34px;margin:10px 0 4px;line-height:1.2}
+.scard .sc-top p{margin:0;font-size:13px;color:var(--ink3)}
+.scard .sc-hemi{margin:10px 0 0}
+.scard .sc-hemi .seat{animation:none!important}
+.scard .sc-sum{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin:4px 0 16px}
+.scard .sc-sum span{font-size:12.5px;background:var(--sunk);border-radius:999px;padding:4px 12px;color:var(--ink2)}
+.scard .sc-sum b{color:var(--ink)}
+.scard .sc-list{display:grid;grid-template-columns:1fr;gap:8px 16px}
+.scard .sc-list.two{grid-template-columns:1fr 1fr}
+.scard .sc-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;background:var(--sunk)}
+.scard .sc-sw{width:12px;height:34px;border-radius:4px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.scard .sc-nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.scard .sc-nm b{font-size:14.5px;line-height:1.25;overflow-wrap:anywhere}
+.scard .sc-nm small{font-size:11px;color:var(--ink3)}
+.scard .sc-nm small span{display:block;white-space:nowrap;word-break:keep-all}
+.scard .sc-bar{display:block;height:5px;border-radius:9px;background:var(--line);overflow:hidden;margin-top:3px}
+.scard .sc-bar span{display:block;height:100%;border-radius:9px}
+.scard .sc-n{font-size:26px;font-weight:800;line-height:1;text-align:right;white-space:nowrap}
+.scard .sc-n small{font-size:12px;font-weight:600;color:var(--ink3);margin-left:2px}
+.scard .sc-foot{display:flex;justify-content:space-between;margin-top:16px;padding-top:10px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3)}
+/* 올드페이퍼: 신문 호외 */
+.scard[data-sk="paper"]{background:#e4d3ab;background-image:radial-gradient(ellipse at 50% 40%,#f3e7c8 0,#e8d8b0 60%,#d8c291 100%)}
+.scard[data-sk="paper"] .sc-in{border-radius:2px;border:1px solid #6b5432;box-shadow:0 0 0 4px #f3e7c8,0 0 0 5px #6b5432;background:transparent;padding-top:22px}
+.scard[data-sk="paper"] .sc-in::before{display:none}
+.scard[data-sk="paper"] .sc-mast{font-family:var(--f-display);font-size:30px;font-weight:800;letter-spacing:.18em;color:#3a2814;border-top:3px double #3a2814;border-bottom:3px double #3a2814;padding:6px 0;margin:0 0 16px}
+.scard[data-sk="paper"] .sc-eye{border-radius:0;border-color:#6b5432}
+.scard[data-sk="paper"] .sc-sum span{background:transparent;border:1px solid #8a7352;border-radius:0}
+.scard[data-sk="paper"] .sc-row{background:transparent;border-radius:0;border-bottom:1px dotted #8a7352;padding:7px 4px}
+.scard[data-sk="paper"] .sc-sw{border-radius:50%;width:16px;height:16px;background-image:repeating-linear-gradient(120deg,rgba(255,255,255,.28) 0 2px,transparent 2px 5px)!important;background-blend-mode:normal}
+.scard[data-sk="paper"] .sc-bar{background:rgba(107,84,50,.15);border-radius:0;height:7px}
+.scard[data-sk="paper"] .sc-bar span{border-radius:0;opacity:.85;-webkit-mask:repeating-linear-gradient(115deg,#000 0 3px,rgba(0,0,0,.55) 3px 5px);mask:repeating-linear-gradient(115deg,#000 0 3px,rgba(0,0,0,.55) 3px 5px)}
+.scard[data-sk="paper"] .sc-foot{border-top:3px double #3a2814}
+/* PC통신: 파란 화면 + 이중선 테두리 */
+.scard[data-sk="pc"]{background:#000080;padding:16px}
+.scard[data-sk="pc"] .sc-mast{background:#55ffff;color:#000080;text-align:left;letter-spacing:0;padding:3px 10px;margin:0;font-size:14px}
+.scard[data-sk="pc"] .sc-in{border-radius:0;border:4px double #ffffff;background:#0000a8;padding:18px}
+.scard[data-sk="pc"] .sc-in::before{display:none}
+.scard[data-sk="pc"] h1{color:#ffff55}
+.scard[data-sk="pc"] .sc-eye{border-radius:0;border-color:#aaaaff}
+.scard[data-sk="pc"] .sc-sum span{border-radius:0;background:#000080;border:1px solid #5555ff}
+.scard[data-sk="pc"] .sc-row{border-radius:0;background:transparent;border:1px solid #5555ff}
+.scard[data-sk="pc"] .sc-sw{border-radius:0;box-shadow:0 0 0 1px #fff}
+.scard[data-sk="pc"] .sc-bar{background:#ffffff;border-radius:0;height:8px}
+.scard[data-sk="pc"] .sc-bar span{border-radius:0;box-shadow:inset -1px 0 0 #000080}
+.scard[data-sk="pc"] .sc-n{color:#ffff55}
+.scard[data-sk="pc"] .sc-foot{border-top:1px dashed #aaaaff}
+/* iOS 1~6: 핀스트라이프 + 광택 내비게이션 바 + 그룹 테이블 */
+.scard[data-sk="ios"]{background:#c5ccd4;background-image:repeating-linear-gradient(90deg,#c5ccd4 0 5px,#cbd2d9 5px 7px);padding:0 0 18px}
+.scard[data-sk="ios"] .sc-mast{background:linear-gradient(#b0bccd,#889bb3 50%,#7c90aa 51%,#6d84a2);color:#fff;text-shadow:0 -1px 0 rgba(0,0,0,.45);font-size:19px;letter-spacing:0;padding:11px 0;margin:0 0 16px;border-bottom:1px solid #2d3642}
+.scard[data-sk="ios"] .sc-in{background:transparent;border:0;border-radius:0;padding:0 16px}
+.scard[data-sk="ios"] .sc-in::before{display:none}
+.scard[data-sk="ios"] .sc-top{color:#4c566c;text-shadow:0 1px 0 #fff}
+.scard[data-sk="ios"] .sc-eye{border:0;padding:0;color:#4c566c}
+.scard[data-sk="ios"] .sc-top p{color:#4c566c}
+.scard[data-sk="ios"] .sc-hemi{background:#fff;border:1px solid #abb1b8;border-radius:10px;padding:8px 6px 0;margin:12px 0 10px}
+.scard[data-sk="ios"] .sc-sum span{background:linear-gradient(#ffffff,#e2e2e2);border:1px solid #a3a7ad;border-radius:6px;color:#4c566c;text-shadow:0 1px 0 #fff}
+.scard[data-sk="ios"] .sc-list{gap:0;background:#fff;border:1px solid #abb1b8;border-radius:10px;overflow:hidden}
+.scard[data-sk="ios"] .sc-list.two{column-gap:0}
+.scard[data-sk="ios"] .sc-row{background:#fff;border-radius:0;border-bottom:1px solid #e0e0e0;padding:9px 12px}
+.scard[data-sk="ios"] .sc-list.two .sc-row:nth-child(odd){border-right:1px solid #e0e0e0}
+.scard[data-sk="ios"] .sc-sw{border-radius:50%;width:14px;height:14px;box-shadow:inset 0 -2px 3px rgba(0,0,0,.25),0 1px 0 #fff}
+.scard[data-sk="ios"] .sc-bar{background:#e6e8eb;box-shadow:inset 0 1px 2px rgba(0,0,0,.2)}
+.scard[data-sk="ios"] .sc-n{color:#385487}
+.scard[data-sk="ios"] .sc-foot{border-top:0;color:#4c566c;text-shadow:0 1px 0 #fff}
 .shotbar{display:flex;justify-content:flex-end;margin-top:12px}
 .imgsave{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line2);background:transparent;color:var(--ink2);border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600}
 .imgsave:hover{color:var(--ink);border-color:var(--ink3)}
@@ -2063,7 +2137,6 @@ function viewBoard(k){
   paint(el,a,R0,null,null);
   if(noMo()){ stage(R,R0,f=>fi===0?fr.tot[f]:fr.tot[f]-fb.tot[f],'석 중 '+given+'석 배분'); }
   else requestAnimationFrame(()=>requestAnimationFrame(()=>stage(R,R0,f=>fi===0?fr.tot[f]:fr.tot[f]-fb.tot[f],'석 중 '+given+'석 배분')));
-  addShots(app,'section.stack>.box');
   $('#cont').addEventListener('click',()=>{ if(last) viewResult(); else { S.qi++; viewQuiz(); } }); }
 
 // ── 5. 결과
@@ -2086,7 +2159,7 @@ function viewResult(keep){
   const a=A(), R=applyMv(a,simAll(a,S.ans)), mine=R.tot, real=actual(a), asked=a.Q.map((q,i)=>i).filter(i=>S.ans[i]!==undefined), answered=asked.filter(i=>S.ans[i]!=null).length, M=maj(a.N);
   const fs=fieldsOf(a);
   app.innerHTML='<section class="stack">'+
-   '<div class="rhead"><div class="pills"><span class="pill strong">'+a.y+'</span><span class="pill">'+esc(sysText(a))+'</span><span class="pill" id="yeoya"></span><span class="pill">답변 '+answered+' / '+asked.length+'</span></div><h2>나의 '+asmName(a)+'</h2><p class="lead" id="lead"></p></div>'+
+   '<div class="rhead"><div class="pills"><span class="pill strong">'+a.y+'</span><span class="pill">'+esc(sysText(a))+'</span><span class="pill" id="yeoya"></span><span class="pill">답변 '+answered+' / '+asked.length+'</span></div><h2>나의 '+asmName(a)+'</h2><p class="lead" id="lead"></p><div class="cardsave"><button type="button" class="cta" id="cardgo">'+ICON_CAM+'결과 카드 이미지 저장</button><span class="hint" id="cardmsg">반원 의석도와 정당별 의석을 지금 테마 디자인으로 한 장에 담습니다</span></div></div>'+
    '<div class="box"><div style="display:flex;justify-content:center;margin-bottom:6px"><div class="seg" role="group" aria-label="보기 전환"><button type="button" data-v="mine" aria-pressed="true">나의 결과</button><button type="button" data-v="real" aria-pressed="false">실제 결과</button></div></div>'+
     '<div class="hemi" id="rh">'+hemiSvg(a.N)+'</div><div class="hlg" id="hlg"></div>'+
     '<div class="tw"><table class="tbl"><thead><tr><th>정당</th><th>'+(fixSum(a)?'지역·간선':'지역구')+'</th>'+(a.Lst?'<th>'+a.ln+'</th>':'')+'<th>합계</th><th>실제</th><th>차이</th></tr></thead><tbody id="tb"></tbody></table></div>'+
@@ -2140,6 +2213,7 @@ function viewResult(keep){
       if(!S.mv||S.mv.n!==a.n) S.mv={n:a.n,l:[]}; S.mv.l.push({f,k,t}); S.mvOpen=true; S.cab=null; viewResult(true); });
     $('#mvlog').addEventListener('click',e=>{ const b=e.target.closest('button[data-u]'); if(!b) return; if(b.dataset.u==='all') S.mv.l=[]; else S.mv.l.splice(+b.dataset.u,1); S.cab=null; viewResult(true); }); }
   addShots(app,'section.stack>.box:not(details)');
+  $('#cardgo').addEventListener('click',()=>saveCard(a,R,real,answered,asked.length));
   const L=order[0], gov=a.gov.map(k=>a.P.findIndex(p=>p.k===k)).filter(f=>f>=0), govSeats=sum(gov.map(f=>mine[f]));
   $('#lead').innerHTML='제1당은 <b>'+esc(a.P[L].n)+'</b> '+mine[L]+'석'+(a.Lst?' (지역구 '+(R.dist[L]+R.fix[L])+' · '+a.ln+' '+R.list[L]+')':'')+'입니다. '+(mine[L]>=two3(a.N)?'혼자서 개헌선까지 넘었습니다.':mine[L]>=M?'단독 과반으로 법안을 혼자 처리할 수 있습니다.':'어느 정당도 과반('+M+'석)을 넘지 못해 연대가 필요합니다.')+
     (gov.length?' 당시 여당은 '+gov.map(f=>esc(a.P[f].n)).join('·')+'이었습니다.':'');
@@ -2461,6 +2535,34 @@ async function saveShot(btn){ const box=btn.closest('.box'); if(!box||btn.disabl
     const r=await giveFile(blob,'국회시뮬레이터_'+(a.n===1?'제헌':'제'+a.n+'대')+'_'+nm+'.png');
     done(r==='ok'?'저장했습니다':r==='declined'?'저장을 취소했습니다':r==='busy'?'저장 창이 이미 열려 있습니다':'저장하지 못했습니다'); }
   catch(e){ done(navigator.onLine===false?'인터넷 연결이 필요합니다':'이미지를 만들지 못했습니다'); } }
+// ── 결과 카드: 반원 의석도 + 정당별 의석을 테마별 디자인으로 한 장의 PNG로
+function cardEl(a,R,real,ans,tot){ const mine=R.tot, M=maj(a.N), sk=skinNow(),
+    rows=a.P.map((p,f)=>({p,f,m:mine[f],r:real[f]||0})).filter(x=>x.m>0||x.r>0).sort((x,y)=>y.m-x.m||y.r-x.r||x.f-y.f),
+    mx=Math.max(1,...rows.map(x=>x.m)), top=rows[0], gov=a.gov.map(k=>a.P.findIndex(p=>p.k===k)).filter(f=>f>=0), gs=sum(gov.map(f=>mine[f])),
+    d=new Date(), ds=d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0'),
+    mast=sk==='paper'?'국회 시뮬레이터 신보 · 호외':sk==='pc'?'[국회 시뮬레이터] 결과 보기':sk==='ios'?'결과':'국회 시뮬레이터 결과';
+  const w=document.createElement('div'); w.className='scwrap';
+  w.innerHTML='<div class="scard" data-sk="'+(sk||'auto')+'"><div class="sc-mast">'+esc(mast)+'</div><div class="sc-in">'+
+    '<div class="sc-top"><span class="sc-eye">'+esc(a.y+' · '+sysText(a))+'</span><h1>나의 '+esc(asmName(a))+'</h1><p>답변 '+ans+' / '+tot+' · 의원정수 '+a.N+'석 · 과반 '+M+'석</p></div>'+
+    '<div class="hemi sc-hemi" id="schemi">'+hemiSvg(a.N)+'</div>'+
+    '<div class="sc-sum"><span>제1당 <b>'+esc(top?top.p.n:'')+' '+(top?top.m:0)+'석</b></span><span>'+(top&&top.m>=two3(a.N)?'단독 개헌선':top&&top.m>=M?'단독 과반':'과반 정당 없음')+'</span>'+(gov.length?'<span>여당 <b>'+gs+'석</b> · '+(gs>=M?'여대야소':'여소야대')+'</span>':'')+'</div>'+
+    '<div class="sc-list'+(rows.length>6?' two':'')+'">'+rows.map(x=>{ const dd=x.m-x.r;
+      return '<div class="sc-row"><i class="sc-sw" style="background:'+x.p.c+'"></i><div class="sc-nm"><b>'+esc(x.p.n)+'</b><small>'+(a.Lst?'<span>지역 '+(R.dist[x.f]+R.fix[x.f])+' · '+a.ln+' '+R.list[x.f]+'</span>':'')+'<span>실제 '+x.r+(dd?' ('+(dd>0?'+':'−')+Math.abs(dd)+')':'')+'</span></small><span class="sc-bar"><span style="width:'+(x.m/mx*100).toFixed(1)+'%;background:'+x.p.c+'"></span></span></div><div class="sc-n num">'+x.m+'<small>석</small></div></div>'; }).join('')+'</div>'+
+    '<div class="sc-foot"><span>대한민국 국회 시뮬레이터</span><span class="num">'+ds+'</span></div></div></div>';
+  return w; }
+async function saveCard(a,R,real,ans,tot){ const btn=$('#cardgo'), msg=$('#cardmsg'); if(!btn||btn.disabled) return; const lab=btn.innerHTML, m0=msg?msg.textContent:'';
+  btn.disabled=true; if(msg) msg.textContent='이미지 만드는 중…';
+  const done=t=>{ if(msg) msg.textContent=t; setTimeout(()=>{ btn.disabled=false; if(msg) msg.textContent=m0; },2600); };
+  let w=null;
+  try{ const h=await loadH2I(); w=cardEl(a,R,real,ans,tot); document.body.appendChild(w);
+    const el=$('#schemi',w); paint(el,a,R,'석 · 나의 결과',a.N); $$('.seat',el).forEach(c=>{ c.classList.remove('s-in','s-out','s-sw'); c.style.animationDelay=''; }); delete SEATPREV.schemi;
+    if(document.fonts&&document.fonts.ready) await document.fonts.ready;
+    const card=$('.scard',w), blob=await h.toBlob(card,{pixelRatio:2,backgroundColor:getComputedStyle(card).backgroundColor,fontEmbedCSS:shotFonts(),imagePlaceholder:PH1});
+    if(!blob) throw new Error('empty');
+    const r=await giveFile(blob,'국회시뮬레이터_'+(a.n===1?'제헌':'제'+a.n+'대')+'_결과카드.png');
+    done(r==='ok'?'저장했습니다':r==='declined'?'저장을 취소했습니다':r==='busy'?'저장 창이 이미 열려 있습니다':'저장하지 못했습니다'); }
+  catch(e){ done(navigator.onLine===false?'인터넷 연결이 필요합니다':'이미지를 만들지 못했습니다'); }
+  finally{ if(w) w.remove(); } }
 function addShots(root,sel){ $$(sel||'.box',root||app).forEach(b=>{ if(b.matches('details')||$('.shotbar',b)) return; b.insertAdjacentHTML('beforeend','<div class="shotbar"><button type="button" class="imgsave" title="이 상자를 PNG 이미지로 저장">'+ICON_CAM+'이미지 저장</button></div>'); }); }
 const ICON_CAM='<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
 document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('.imgsave'); if(b) saveShot(b); });
