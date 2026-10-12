@@ -535,6 +535,26 @@ html:root[data-skin="paper"] .hemi .seat.s-sw{animation:paperSw 1s ease-in-out b
 .mvlog div{display:flex;gap:8px;align-items:center;color:var(--ink2)}
 .mvlog b{color:var(--warn)}
 .mvlog button{margin-left:auto;white-space:nowrap;flex:none;border:1px solid var(--line2);background:transparent;border-radius:999px;padding:1px 8px;font-size:12px;color:var(--ink2)}
+
+.live{margin-top:14px;padding:14px}
+.live .lvh{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
+.live .lvh small,.chgbox small{color:var(--ink3);font-size:12px;line-height:1.45}
+.live .hemi{max-width:340px;margin:0 auto}
+.lv{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;font-size:12.5px;color:var(--ink2);margin-top:6px}
+.lv span{display:inline-flex;align-items:center;gap:5px}
+.lv b{font-family:var(--f-mono);color:var(--ink)}
+.lv em{font-style:normal;font-family:var(--f-mono);font-size:11.5px;font-weight:700;padding:0 5px;border-radius:999px}
+.lv em.up{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.lv em.down{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.brow .add{border:0;padding:0;background:none;border-radius:0;font-weight:700}
+.chgbox{margin-top:12px;padding:10px 12px;border:1px dashed var(--line2);border-radius:10px;display:flex;flex-direction:column;gap:2px}
+.chgbox .lv{justify-content:flex-start}
+html:root[data-skin="pc"] .lv em.up{background:var(--ok);color:#000}
+html:root[data-skin="pc"] .lv em.down{background:var(--warn);color:#fff}
+html:root[data-skin="ios"] .lv em{color:#fff;border:1px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+html:root[data-skin="ios"] .lv em.up{background:linear-gradient(#7fd36b,#2f961d)}
+html:root[data-skin="ios"] .lv em.down{background:linear-gradient(#ff8a80,#d61f19)}
+html:root[data-skin="paper"] .lv em{background:transparent;font-family:var(--f-display);font-size:14px;text-decoration:underline wavy;text-decoration-thickness:1px}
 @media (prefers-reduced-motion: reduce){.hemi .seat,.popin,.sdl{animation:none!important}.sdl{display:none}}
 
 </style>
@@ -1937,6 +1957,9 @@ function viewPrio(){
 
 // ── 3. 분야별 질문
 const ICON={prev:'<svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9.5 12z"/></svg>',next:'<svg viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></svg>',end:'<svg viewBox="0 0 24 24"><path d="M4 5v14l9.5-7zM16 5h2v14h-2z"/></svg>'};
+// ── 실시간 예상 의석 (두마 시뮬레이터처럼 답할 때마다 정당 의석이 늘고 줄어듦)
+function chgHtml(a,B,R2,all){ const ord=a.P.map((p,f)=>f).filter(f=>all?(R2.tot[f]||B.tot[f]):R2.tot[f]!==B.tot[f]).sort((x,y)=>all?R2.tot[y]-R2.tot[x]:(R2.tot[y]-B.tot[y])-(R2.tot[x]-B.tot[x]));
+  return ord.map(f=>{ const d=R2.tot[f]-B.tot[f]; return '<span><i class="dot" style="background:'+a.P[f].c+'"></i>'+esc(a.P[f].n)+' <b class="num">'+R2.tot[f]+'</b>'+(d?'<em class="'+(d>0?'up':'down')+'">'+(d>0?'+':'−')+Math.abs(d)+'</em>':'')+'</span>'; }).join('')||'<span class="hint">변화 없음</span>'; }
 function viewQuiz(){
   toHome.hidden=false; window.scrollTo(0,0);
   const a=A(), i=S.seq[S.qi], q=a.Q[i], k=q.f, F=fld(k), Lp=PA, Rp=PB;
@@ -1960,7 +1983,7 @@ function viewQuiz(){
        '<button type="button" class="play" id="next">'+(endField?ICON.end+esc(F.n)+' 결과':ICON.next+'다음 질문')+'</button>'+
        '<button type="button" class="ic" id="skip" aria-label="잘 모르겠음, 건너뛰기" title="잘 모르겠음">?</button></div>'+
      '<div class="kbd">키보드: ← → 로 이동, Enter 로 다음 · ? 버튼은 “잘 모르겠음”(이 질문의 지역구는 분야 비례 몫으로 넘어갑니다)</div>'+
-   '</div></section>';
+   '</div><div class="box live" id="live"><div class="lvh"><b>실시간 예상 의석</b><small>막대를 움직이면 이 입장과 가까운 정당은 늘고, 먼 정당은 줄어듭니다. 아직 답하지 않은 분야는 실제 지지율대로 둡니다.</small></div><div class="hemi" id="qh">'+hemiSvg(a.N)+'</div><div class="lv" id="lv"></div></div></section>';
   const tr=$('#track'), th=$('.thumb',tr), fill=$('.fill',tr), bub=$('.bubble',tr), lp=$('.pole.l',app), rp=$('.pole.r',app);
   const txt=v=>{ if(v===null) return '막대를 움직여 입장을 정하세요'; const m=Math.abs(v), side=v<0?'A안':'B안';
     return m<.08?'정확히 가운데':m<.4?side+' 쪽으로 조금':m<.8?side+' 쪽으로 상당히':side+'에 완전히 동의'; };
@@ -1973,7 +1996,10 @@ function viewQuiz(){
     lp.style.setProperty('--o',cur===null||v<=.08?1:Math.max(.5,1-v*.55)); rp.style.setProperty('--o',cur===null||v>=-.08?1:Math.max(.5,1+v*.55));
     lp.classList.toggle('on',cur!==null&&v<=-.08); rp.classList.toggle('on',cur!==null&&v>=.08);
     $('#next').disabled=cur===null; };
-  const set=(v,anim)=>{ v=clamp(v,-1,1); if(Math.abs(v)<.04) v=0; cur=Math.round(v*100)/100; draw(anim); };
+  const ansW=v=>{ const x=S.ans.slice(); x[i]=v==null?undefined:v; return x; };
+  const base=simAll(a,ansW(null)); let lvT=0;
+  const live=()=>{ const R2=cur===null?base:simAll(a,ansW(cur)); paint($('#qh'),a,R2,'석 · 예상',a.N); $('#lv').innerHTML=chgHtml(a,base,R2,true); };
+  const set=(v,anim)=>{ v=clamp(v,-1,1); if(Math.abs(v)<.04) v=0; cur=Math.round(v*100)/100; draw(anim); clearTimeout(lvT); lvT=setTimeout(live,70); };
   const fromX=cx=>{ const b=tr.getBoundingClientRect(); return (cx-b.left)/b.width*2-1; };
   tr.addEventListener('pointerdown',e=>{ drag=true; try{ tr.setPointerCapture(e.pointerId); }catch(_){} set(fromX(e.clientX),e.target!==th); th.focus({preventScroll:true}); e.preventDefault(); });
   tr.addEventListener('pointermove',e=>{ if(drag) set(fromX(e.clientX),false); });
@@ -1988,7 +2014,7 @@ function viewQuiz(){
   $('#next').addEventListener('click',()=>{ if(cur!==null) go(cur); });
   $('#skip').addEventListener('click',()=>go(null));
   $('#prev').addEventListener('click',()=>{ if(cur!==null) S.ans[i]=cur; S.qi--; viewQuiz(); });
-  draw(false); th.focus({preventScroll:true}); }
+  draw(false); live(); th.focus({preventScroll:true}); }
 
 // ── 4. 분야별 의석 발표
 function viewBoard(k){
@@ -2002,6 +2028,7 @@ function viewBoard(k){
    '<div class="hemi" id="bh" style="margin-top:10px">'+hemiSvg(a.N)+'</div>'+
    '<div>'+ord.filter(f=>R.tot[f]||fr.tot[f]).map(f=>{ const p=a.P[f], add=fr.tot[f];
      return '<div class="brow"><i class="dot" style="background:'+p.c+'"></i><div><b style="font-weight:600">'+esc(p.n)+'</b><div class="bar"><span data-w="'+(R.tot[f]/mx*100)+'" style="width:'+((R.tot[f]-add)/mx*100)+'%;background:'+p.c+'"></span></div></div><span class="add'+(add?' popin':' zero')+'">'+(add?'+'+add:'0')+'</span><span class="cum" data-from="'+(R.tot[f]-add)+'" data-to="'+R.tot[f]+'">'+R.tot[f]+'</span></div>'; }).join('')+'</div>'+
+   (()=>{ const B=simAll(a,S.ans.map((v,j)=>a.Q[j]&&a.Q[j].f===k?undefined:v)), N2=simAll(a,S.ans); return '<div class="chgbox"><b>이 분야 답변으로 바뀐 예상 전체 의석</b><small>남은 분야를 실제 지지율로 둔 전체 '+a.N+'석 예상입니다. 입장이 먼 정당은 의석이 빠집니다.</small><div class="lv">'+chgHtml(a,B,N2,false)+'</div></div>'; })()+
    '<p class="hint" style="margin-top:10px">가운데 숫자는 이번 분야에서 얻은 의석, 오른쪽은 누적입니다. 지금까지 '+given+'석 배분'+(last?(fixSum(a)?', 간선·고정 '+fixSum(a)+'석':'')+(LRULE[a.n]?', 최종 '+a.ln+'은 당시 규칙으로 전국 단위에서 다시 나눕니다':a.bonus?', 제1당 프리미엄 '+a.bonus+'석은 최종 결과에 더해집니다':''):', 남은 분야에 '+(sum(S.order.slice(fi+1).map(x=>R.C[x].t)))+'석')+'.</p>'+
    '<p class="lead" style="margin-top:8px"><b>'+esc(a.P[L].n)+'</b>'+(fi===0?' 앞서 나갑니다':' 누적 1위')+' · '+R.tot[L]+'석</p></div>'+
    '<div class="launch"><button type="button" class="cta" id="cont">'+(last?'최종 결과 보기':'다음 분야: '+esc(fld(S.order[fi+1]).n))+'</button>'+(!last?'<span>'+esc(fld(S.order[fi+1]).n)+'에 '+R.C[S.order[fi+1]].t+'석이 걸려 있습니다</span>':'')+'</div></section>';
