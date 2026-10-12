@@ -418,6 +418,44 @@ details.card>.secb{padding:0 12px 12px;margin-top:2px}
 .cabr .num{grid-row:span 3}
 .cabr span:last-child{color:var(--ink3);font-size:12px;display:flex;gap:5px;align-items:center}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+/* ── 의석 변화 애니메이션: 기본(라이트·다크·민트) */
+.hemi .seat{transform-box:fill-box;transform-origin:center}
+.hemi .seat.s-in{animation:seatIn .55s cubic-bezier(.3,1.6,.5,1) backwards}
+.hemi .seat.s-out{animation:seatOut .65s ease backwards}
+@keyframes seatIn{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes seatOut{0%{transform:scale(1.2)}45%{transform:scale(.2)}100%{transform:scale(1)}}
+.popin{animation:seatIn .5s cubic-bezier(.3,1.6,.5,1) backwards;display:inline-block}
+.brow .bar span{transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.tbl td.tc{position:relative}
+.tbl td.tc b{transition:color .3s}
+.sdl{position:absolute;left:50%;bottom:64%;font:700 11px/1 var(--f-mono);padding:3px 6px;border-radius:999px;pointer-events:none;white-space:nowrap;z-index:2;animation:dlt 2.2s ease-out forwards}
+.sdl.up{background:color-mix(in srgb,var(--ok) 20%,var(--surface));color:var(--ok);border:1px solid color-mix(in srgb,var(--ok) 45%,transparent)}
+.sdl.down{background:color-mix(in srgb,var(--warn) 20%,var(--surface));color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 45%,transparent)}
+@keyframes dlt{0%{opacity:0;transform:translate(-50%,8px) scale(.6)}14%{opacity:1;transform:translate(-50%,0) scale(1.08)}24%{transform:translate(-50%,0) scale(1)}72%{opacity:1;transform:translate(-50%,-6px)}100%{opacity:0;transform:translate(-50%,-16px)}}
+/* PC통신: 깜빡이는 픽셀·계단식 */
+html:root[data-skin="pc"] .hemi .seat{transition:none}
+html:root[data-skin="pc"] .hemi .seat.s-in{animation:pxIn .48s steps(1,end) backwards}
+html:root[data-skin="pc"] .hemi .seat.s-out{animation:pxOut .6s steps(1,end) backwards}
+@keyframes pxIn{0%{opacity:0}25%{opacity:1}50%{opacity:0}75%{opacity:1}}
+@keyframes pxOut{0%{fill:var(--accent)}25%{fill:var(--bg)}50%{fill:var(--accent)}75%{fill:var(--bg)}}
+html:root[data-skin="pc"] .popin{animation:pxIn .48s steps(1,end) backwards}
+html:root[data-skin="pc"] .brow .bar span{transition:width .64s steps(8,end)}
+html:root[data-skin="pc"] .sdl{border-radius:0;border:0;font:14px/1 var(--f-mono);padding:2px 3px;animation:pxDl 2.2s steps(1,end) forwards}
+html:root[data-skin="pc"] .sdl.up{background:var(--accent);color:var(--accent-ink)}
+html:root[data-skin="pc"] .sdl.down{background:var(--warn);color:#fff}
+@keyframes pxDl{0%{opacity:1;transform:translate(-50%,0)}10%{opacity:0}20%{opacity:1}30%{opacity:0}40%{opacity:1;transform:translate(-50%,0)}60%{transform:translate(-50%,-4px)}80%{transform:translate(-50%,-8px)}90%{opacity:0}}
+/* 올드 페이퍼: 도장·잉크 번짐 */
+html:root[data-skin="paper"] .hemi .seat.s-in{animation:inkIn .7s ease-out backwards}
+html:root[data-skin="paper"] .hemi .seat.s-out{animation:inkOut .85s ease-in-out backwards}
+@keyframes inkIn{0%{transform:scale(2) rotate(-16deg);opacity:0}55%{transform:scale(.9) rotate(3deg);opacity:1}100%{transform:none}}
+@keyframes inkOut{0%{opacity:1;transform:none}50%{opacity:.12;transform:scale(.8) rotate(-12deg) translateX(-1px)}100%{opacity:1;transform:none}}
+html:root[data-skin="paper"] .popin{animation:inkIn .7s ease-out backwards}
+html:root[data-skin="paper"] .sdl{background:transparent;border:0;border-radius:0;font:700 15px/1 var(--f-display);padding:0 2px;text-decoration:underline wavy;text-underline-offset:3px;text-decoration-thickness:1px;animation:inkDl 2.4s ease-out forwards}
+html:root[data-skin="paper"] .sdl.up{color:var(--ok)}
+html:root[data-skin="paper"] .sdl.down{color:var(--accent)}
+@keyframes inkDl{0%{opacity:0;transform:translate(-50%,0) scale(1.8) rotate(-14deg);filter:blur(2px)}18%{opacity:1;transform:translate(-50%,0) scale(1) rotate(-6deg);filter:none}75%{opacity:1;transform:translate(-50%,-3px) rotate(-6deg)}100%{opacity:0;transform:translate(-50%,-8px) rotate(-6deg)}}
+@media (prefers-reduced-motion: reduce){.hemi .seat,.popin,.sdl{animation:none!important}.sdl{display:none}}
+
 </style>
 
 <div class="wrap">
@@ -1685,6 +1723,22 @@ function hemiSvg(N){
   const L=layout(N), K=290, r=K*L.rad;
   return '<svg viewBox="0 0 600 312" role="img" aria-label="본회의장 의석 배치" data-rw="'+(r*0.42).toFixed(2)+'"><g class="seatg">'+L.seats.map(s=>{ const cx=300+K*s.r*Math.cos(s.t), cy=302-K*s.r*Math.sin(s.t); return '<rect class="seat" data-r="'+r.toFixed(2)+'" x="'+(cx-r).toFixed(1)+'" y="'+(cy-r).toFixed(1)+'" width="'+(2*r).toFixed(2)+'" height="'+(2*r).toFixed(2)+'" rx="'+r.toFixed(2)+'" fill="var(--line)"/>'; }).join('')+'</g>'+
     '<text class="big" x="300" y="268" text-anchor="middle">'+N+'</text><text class="sm" x="300" y="296" text-anchor="middle">석</text></svg>'; }
+// ── 의석 변화 애니메이션 (늘어난 자리는 나타나고, 빠진 자리는 꺼짐 · 숫자는 세면서 바뀜)
+const SEATPREV={}, SEATCNT={};
+const noMo=()=>{ try{ return typeof matchMedia!=='function'||matchMedia('(prefers-reduced-motion: reduce)').matches||typeof requestAnimationFrame!=='function'; }catch(_){ return true; } };
+const skinNow=()=>document.documentElement.getAttribute('data-skin')||'';
+function tweenNum(n,from,to){ if(!n) return; if(from===to||noMo()){ n.textContent=to; return; }
+  const pc=skinNow()==='pc', D=pc?720:900, t0=performance.now(); n.textContent=from; n.classList.add(to>from?'up':'down');
+  const step=t=>{ let k=Math.min(1,(t-t0)/D); const e=pc?Math.floor(k*8)/8:1-Math.pow(1-k,3); n.textContent=Math.round(from+(to-from)*e); if(k<1) requestAnimationFrame(step); else setTimeout(()=>n.classList.remove('up','down'),500); };
+  requestAnimationFrame(step); }
+function dBadge(host,d){ if(!host||!d||noMo()) return; const b=document.createElement('span'); b.className='sdl '+(d>0?'up':'down'); const v=(d>0?'+':'−')+Math.abs(d); b.textContent=skinNow()==='pc'?'['+v+']':v; host.appendChild(b); setTimeout(()=>b.remove(),2600); }
+function seatAnim(el,keys){ const id=el.id||'', prev=SEATPREV[id], same=prev&&prev.length===keys.length, seats=$$('.seat',el), ch=[];
+  SEATPREV[id]=keys; seats.forEach(c=>{ c.classList.remove('s-in','s-out'); c.style.animationDelay=''; });
+  if(noMo()) return;
+  keys.forEach((k,i)=>{ const p=same?prev[i]:''; if(k&&k!==p) ch.push([i,'s-in']); else if(!k&&p) ch.push([i,'s-out']); });
+  if(!ch.length) return; void el.getBoundingClientRect();
+  const span=Math.min(750,ch.length*18);
+  ch.forEach(([i,cl],j)=>{ const c=seats[i]; c.style.animationDelay=(ch.length>1?Math.round(j/(ch.length-1)*span):0)+'ms'; c.classList.add(cl); }); }
 function paint(el,a,R,label,big,dim){
   const order=a.P.map((p,f)=>f).sort((x,y)=>a.P[x].l-a.P[y].l||x-y), seq=[];
   order.forEach(f=>{ const c=a.P[f].c, o=dim&&!dim.includes(f); for(let k=0;k<R.dist[f]+R.fix[f];k++) seq.push({c,ring:false,o}); for(let k=0;k<R.list[f];k++) seq.push({c,ring:true,o}); });
@@ -1694,7 +1748,7 @@ function paint(el,a,R,label,big,dim){
     // 테마 바탕과 정당색이 비슷해도 보이도록 외곽선을 둠 (지역구: 테마 대비색 테두리, 비례: 정당색 링 + 바깥 대비 그림자)
     if(s.ring){ c.setAttribute('fill','color-mix(in srgb, '+s.c+' 22%, var(--surface))'); c.setAttribute('stroke',s.c); c.setAttribute('stroke-width',rw); c.classList.add('rg'); }
     else { c.setAttribute('fill',s.c); c.setAttribute('stroke','var(--seat-edge)'); c.setAttribute('stroke-width',(rw*0.42).toFixed(2)); c.classList.remove('rg'); } });
-  seatShape(el);
+  seatShape(el); seatAnim(el,$$('.seat',el).map((c,i)=>seq[i]?seq[i].c+(seq[i].ring?'|r':''):''));
   if(label!=null) $('.sm',el).textContent=label;
   if(big!=null) $('.big',el).textContent=big; }
 const plain=st=>({dist:st,list:st.map(()=>0),fix:st.map(()=>0)});
@@ -1863,11 +1917,15 @@ function viewBoard(k){
    '<p class="hint">'+(fr.empty?'답한 질문이 없어 실제 지지율대로 나눴습니다.':seatTxt(a,C2)+(a.sys==='mmd'?' · 2인 선거구라 2위 정당도 지역구를 나눠 가졌습니다.':''))+'</p>'+
    '<div class="hemi" id="bh" style="margin-top:10px">'+hemiSvg(a.N)+'</div>'+
    '<div>'+ord.filter(f=>R.tot[f]||fr.tot[f]).map(f=>{ const p=a.P[f], add=fr.tot[f];
-     return '<div class="brow"><i class="dot" style="background:'+p.c+'"></i><div><b style="font-weight:600">'+esc(p.n)+'</b><div class="bar"><span style="width:'+(R.tot[f]/mx*100)+'%;background:'+p.c+'"></span></div></div><span class="add'+(add?'':' zero')+'">'+(add?'+'+add:'0')+'</span><span class="cum">'+R.tot[f]+'</span></div>'; }).join('')+'</div>'+
+     return '<div class="brow"><i class="dot" style="background:'+p.c+'"></i><div><b style="font-weight:600">'+esc(p.n)+'</b><div class="bar"><span data-w="'+(R.tot[f]/mx*100)+'" style="width:'+((R.tot[f]-add)/mx*100)+'%;background:'+p.c+'"></span></div></div><span class="add'+(add?' popin':' zero')+'">'+(add?'+'+add:'0')+'</span><span class="cum" data-from="'+(R.tot[f]-add)+'" data-to="'+R.tot[f]+'">'+R.tot[f]+'</span></div>'; }).join('')+'</div>'+
    '<p class="hint" style="margin-top:10px">가운데 숫자는 이번 분야에서 얻은 의석, 오른쪽은 누적입니다. 지금까지 '+given+'석 배분'+(last?(fixSum(a)?', 간선·고정 '+fixSum(a)+'석':'')+(LRULE[a.n]?', 최종 '+a.ln+'은 당시 규칙으로 전국 단위에서 다시 나눕니다':a.bonus?', 제1당 프리미엄 '+a.bonus+'석은 최종 결과에 더해집니다':''):', 남은 분야에 '+(sum(S.order.slice(fi+1).map(x=>R.C[x].t)))+'석')+'.</p>'+
    '<p class="lead" style="margin-top:8px"><b>'+esc(a.P[L].n)+'</b>'+(fi===0?' 앞서 나갑니다':' 누적 1위')+' · '+R.tot[L]+'석</p></div>'+
    '<div class="launch"><button type="button" class="cta" id="cont">'+(last?'최종 결과 보기':'다음 분야: '+esc(fld(S.order[fi+1]).n))+'</button>'+(!last?'<span>'+esc(fld(S.order[fi+1]).n)+'에 '+R.C[S.order[fi+1]].t+'석이 걸려 있습니다</span>':'')+'</div></section>';
   paint($('#bh'),a,R,'석 중 '+given+'석 배분',a.N);
+  $$('.brow .add.popin',app).forEach((x,j)=>x.style.animationDelay=(j*60)+'ms');
+  $$('.brow .cum',app).forEach(x=>tweenNum(x,+x.dataset.from,+x.dataset.to));
+  const grow=()=>$$('.brow .bar span[data-w]',app).forEach(x=>x.style.width=x.dataset.w+'%');
+  if(noMo()) grow(); else requestAnimationFrame(()=>requestAnimationFrame(grow));
   $('#cont').addEventListener('click',()=>{ if(last) viewResult(); else { S.qi++; viewQuiz(); } }); }
 
 // ── 5. 결과
@@ -1914,7 +1972,9 @@ function viewResult(keep){
   drawPres();
   const order=a.P.map((p,f)=>f).sort((x,y)=>mine[y]-mine[x]||real[y]-real[x]);
   $('#tb').innerHTML=order.map(f=>{ const p=a.P[f], d=mine[f]-real[f];
-    return '<tr><td><span><i class="dot" style="background:'+p.c+'"></i>'+esc(p.n)+(f===R.bonusTo?' <small style="color:var(--ink3)">+'+(LRULE[a.n]?'전국구 우선 배분':'프리미엄 '+a.bonus)+'</small>':'')+'</span></td><td>'+(R.dist[f]+R.fix[f])+'</td>'+(a.Lst?'<td>'+R.list[f]+'</td>':'')+'<td><b>'+mine[f]+'</b></td><td>'+real[f]+'</td><td class="'+(d>0?'up':d<0?'down':'')+'">'+(d>0?'+'+d:d<0?'−'+(-d):'0')+'</td></tr>'; }).join('');
+    return '<tr><td><span><i class="dot" style="background:'+p.c+'"></i>'+esc(p.n)+(f===R.bonusTo?' <small style="color:var(--ink3)">+'+(LRULE[a.n]?'전국구 우선 배분':'프리미엄 '+a.bonus)+'</small>':'')+'</span></td><td>'+(R.dist[f]+R.fix[f])+'</td>'+(a.Lst?'<td>'+R.list[f]+'</td>':'')+'<td class="tc" data-f="'+f+'"><b>'+mine[f]+'</b></td><td>'+real[f]+'</td><td class="'+(d>0?'up':d<0?'down':'')+'">'+(d>0?'+'+d:d<0?'−'+(-d):'0')+'</td></tr>'; }).join('');
+  { const pk='r'+a.n, pv=SEATCNT[pk]; SEATCNT[pk]=mine.slice();
+    $$('#tb td.tc').forEach(td=>{ const f=+td.dataset.f, from=pv?(pv[f]||0):0; tweenNum($('b',td),from,mine[f]); if(pv) dBadge(td,mine[f]-from); }); }
   const L=order[0], gov=a.gov.map(k=>a.P.findIndex(p=>p.k===k)).filter(f=>f>=0), govSeats=sum(gov.map(f=>mine[f]));
   $('#lead').innerHTML='제1당은 <b>'+esc(a.P[L].n)+'</b> '+mine[L]+'석'+(a.Lst?' (지역구 '+(R.dist[L]+R.fix[L])+' · '+a.ln+' '+R.list[L]+')':'')+'입니다. '+(mine[L]>=two3(a.N)?'혼자서 개헌선까지 넘었습니다.':mine[L]>=M?'단독 과반으로 법안을 혼자 처리할 수 있습니다.':'어느 정당도 과반('+M+'석)을 넘지 못해 연대가 필요합니다.')+
     (gov.length?' 당시 여당은 '+gov.map(f=>esc(a.P[f].n)).join('·')+'이었습니다.':'');
@@ -2323,5 +2383,4 @@ viewHome();
 })();
 
 </script>
-
 </html>
