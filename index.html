@@ -25,23 +25,24 @@
   --f-display:"HadaBatang","Noto Serif KR","Nanum Myeongjo",serif;
   --f-body:"HadaBatang","Noto Serif KR","Apple SD Gothic Neo",serif;
   --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --seat-edge:rgba(20,25,22,.5);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0f1312; --surface:#171d1b; --sunk:#121716; --line:#29312e; --line2:#36403c;
   --ink:#e5ebe8; --ink2:#a6b1ac; --ink3:#727d78;
-  --accent:#6fb5a4; --accent-ink:#0f1312; --gold:#c9a866; --ok:#6cc08f; --warn:#e08a63; --pa:#7fb0bd; --pb:#d4a165; --link:#8ab4f8; color-scheme:dark}}
-:root[data-theme="dark"]{
+  --accent:#6fb5a4; --accent-ink:#0f1312; --gold:#c9a866; --ok:#6cc08f; --warn:#e08a63; --pa:#7fb0bd; --pb:#d4a165; --link:#8ab4f8; color-scheme:dark; --seat-edge:rgba(255,255,255,.62)}}
+:root[data-theme="dark"]{--seat-edge:rgba(255,255,255,.62); 
   --bg:#0f1312; --surface:#171d1b; --sunk:#121716; --line:#29312e; --line2:#36403c;
   --ink:#e5ebe8; --ink2:#a6b1ac; --ink3:#727d78;
   --accent:#6fb5a4; --accent-ink:#0f1312; --gold:#c9a866; --ok:#6cc08f; --warn:#e08a63; --pa:#7fb0bd; --pb:#d4a165; --link:#8ab4f8; color-scheme:dark}
 /* 직접 고른 테마는 접속 기기·앱 설정보다 우선 */
-html:root[data-skin="light"]{--bg:#eef0ed; --surface:#fbfcfa; --sunk:#e3e7e3; --line:#d3d9d4; --line2:#bfc7c1; --ink:#16201c; --ink2:#47534e; --ink3:#7b8681; --accent:#2a6a5d; --accent-ink:#ffffff; --gold:#93763a; --ok:#2f7d4f; --warn:#b4552d; --pa:#4d7c8a; --pb:#a9773b; --link:#3366cc; color-scheme:light}
-html:root[data-skin="dark"]{--bg:#0f1312; --surface:#171d1b; --sunk:#121716; --line:#29312e; --line2:#36403c; --ink:#e5ebe8; --ink2:#a6b1ac; --ink3:#727d78; --accent:#6fb5a4; --accent-ink:#0f1312; --gold:#c9a866; --ok:#6cc08f; --warn:#e08a63; --pa:#7fb0bd; --pb:#d4a165; --link:#8ab4f8; color-scheme:dark}
-html:root[data-skin="mint"]{--bg:#e3f4ee; --surface:#f5fcf9; --sunk:#d2ebe2; --line:#b9dccf; --line2:#9ccbb9; --ink:#0f2f28; --ink2:#355c52; --ink3:#668b81; --accent:#0e8b70; --accent-ink:#ffffff; --gold:#8f7a2c; --ok:#1f7d4a; --warn:#b4552d; --pa:#2f7f8f; --pb:#b07a35; --link:#0a7660; color-scheme:light}
-html:root[data-skin="paper"]{--bg:#ece0c4; --surface:#f7efd9; --sunk:#e4d5b3; --line:#d3bf95; --line2:#bfa678; --ink:#3a2814; --ink2:#5e472b; --ink3:#8a7352; --accent:#7a2e1d; --accent-ink:#fbf3df; --gold:#9a7330; --ok:#4d6b2f; --warn:#a5462a; --pa:#4f6a78; --pb:#9a6a2c; --link:#7a3b17; color-scheme:light;
+html:root[data-skin="light"]{--seat-edge:rgba(20,25,22,.5); --bg:#eef0ed; --surface:#fbfcfa; --sunk:#e3e7e3; --line:#d3d9d4; --line2:#bfc7c1; --ink:#16201c; --ink2:#47534e; --ink3:#7b8681; --accent:#2a6a5d; --accent-ink:#ffffff; --gold:#93763a; --ok:#2f7d4f; --warn:#b4552d; --pa:#4d7c8a; --pb:#a9773b; --link:#3366cc; color-scheme:light}
+html:root[data-skin="dark"]{--seat-edge:rgba(255,255,255,.62); --bg:#0f1312; --surface:#171d1b; --sunk:#121716; --line:#29312e; --line2:#36403c; --ink:#e5ebe8; --ink2:#a6b1ac; --ink3:#727d78; --accent:#6fb5a4; --accent-ink:#0f1312; --gold:#c9a866; --ok:#6cc08f; --warn:#e08a63; --pa:#7fb0bd; --pb:#d4a165; --link:#8ab4f8; color-scheme:dark}
+html:root[data-skin="mint"]{--seat-edge:rgba(10,40,32,.5); --bg:#e3f4ee; --surface:#f5fcf9; --sunk:#d2ebe2; --line:#b9dccf; --line2:#9ccbb9; --ink:#0f2f28; --ink2:#355c52; --ink3:#668b81; --accent:#0e8b70; --accent-ink:#ffffff; --gold:#8f7a2c; --ok:#1f7d4a; --warn:#b4552d; --pa:#2f7f8f; --pb:#b07a35; --link:#0a7660; color-scheme:light}
+html:root[data-skin="paper"]{--seat-edge:rgba(58,40,20,.6); --bg:#ece0c4; --surface:#f7efd9; --sunk:#e4d5b3; --line:#d3bf95; --line2:#bfa678; --ink:#3a2814; --ink2:#5e472b; --ink3:#8a7352; --accent:#7a2e1d; --accent-ink:#fbf3df; --gold:#9a7330; --ok:#4d6b2f; --warn:#a5462a; --pa:#4f6a78; --pb:#9a6a2c; --link:#7a3b17; color-scheme:light;
   --f-display:"Malmoi","HadaBatang",serif; --f-body:"Malmoi","HadaBatang",serif}
 html:root[data-skin="paper"] body{background:radial-gradient(ellipse at 20% 10%,rgba(255,250,235,.55),transparent 60%),radial-gradient(ellipse at 80% 90%,rgba(150,110,50,.12),transparent 55%),var(--bg)}
-html:root[data-skin="pc"]{--bg:#0000a8; --surface:#0000a8; --sunk:#000080; --line:#5555ff; --line2:#aaaaff; --ink:#ffffff; --ink2:#d8d8ff; --ink3:#9a9aff; --accent:#ffff55; --accent-ink:#0000a8; --gold:#ffff55; --ok:#55ff55; --warn:#ff5555; --pa:#55ffff; --pb:#ffaa55; --link:#55ffff; color-scheme:dark;
+html:root[data-skin="pc"]{--seat-edge:#ffffff; --bg:#0000a8; --surface:#0000a8; --sunk:#000080; --line:#5555ff; --line2:#aaaaff; --ink:#ffffff; --ink2:#d8d8ff; --ink3:#9a9aff; --accent:#ffff55; --accent-ink:#0000a8; --gold:#ffff55; --ok:#55ff55; --warn:#ff5555; --pa:#55ffff; --pb:#ffaa55; --link:#55ffff; color-scheme:dark;
   --f-display:"RoundedFixedsys",monospace; --f-body:"RoundedFixedsys",monospace; --f-mono:"RoundedFixedsys",monospace}
 html:root[data-skin="pc"] *{border-radius:0 !important}
 html:root[data-skin="pc"] body{-webkit-font-smoothing:none;letter-spacing:.01em}
@@ -107,6 +108,7 @@ h3{font-size:19px}
 .syslg span{display:flex;gap:6px;align-items:center}
 .hemi svg{width:100%;height:auto;display:block}
 .hemi .seat{transition:fill .5s ease,stroke .5s ease}
+.hemi .seat.rg{filter:drop-shadow(0 0 .6px var(--seat-edge))}
 .hemi .big{font-family:var(--f-display);font-weight:800;font-size:46px;fill:var(--ink)}
 .hemi .sm{font-size:15px;fill:var(--ink3)}
 .hlg{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--ink3);margin-top:4px}
@@ -1681,9 +1683,10 @@ function paint(el,a,R,label,big,dim){
   order.forEach(f=>{ const c=a.P[f].c, o=dim&&!dim.includes(f); for(let k=0;k<R.dist[f]+R.fix[f];k++) seq.push({c,ring:false,o}); for(let k=0;k<R.list[f];k++) seq.push({c,ring:true,o}); });
   const rw=$('svg',el).dataset.rw;
   $$('.seat',el).forEach((c,i)=>{ const s=seq[i]; c.style.opacity=s&&s.o?.2:'';
-    if(!s){ c.setAttribute('fill','var(--line)'); c.setAttribute('stroke','none'); return; }
-    if(s.ring){ c.setAttribute('fill','var(--surface)'); c.setAttribute('stroke',s.c); c.setAttribute('stroke-width',rw); }
-    else { c.setAttribute('fill',s.c); c.setAttribute('stroke','none'); } });
+    if(!s){ c.setAttribute('fill','var(--line)'); c.setAttribute('stroke','none'); c.classList.remove('rg'); return; }
+    // 테마 바탕과 정당색이 비슷해도 보이도록 외곽선을 둠 (지역구: 테마 대비색 테두리, 비례: 정당색 링 + 바깥 대비 그림자)
+    if(s.ring){ c.setAttribute('fill','color-mix(in srgb, '+s.c+' 22%, var(--surface))'); c.setAttribute('stroke',s.c); c.setAttribute('stroke-width',rw); c.classList.add('rg'); }
+    else { c.setAttribute('fill',s.c); c.setAttribute('stroke','var(--seat-edge)'); c.setAttribute('stroke-width',(rw*0.42).toFixed(2)); c.classList.remove('rg'); } });
   if(label!=null) $('.sm',el).textContent=label;
   if(big!=null) $('.big',el).textContent=big; }
 const plain=st=>({dist:st,list:st.map(()=>0),fix:st.map(()=>0)});
