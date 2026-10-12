@@ -1984,7 +1984,7 @@ function viewQuiz(){
        '<button type="button" class="play" id="next">'+(endField?ICON.end+esc(F.n)+' 결과':ICON.next+'다음 질문')+'</button>'+
        '<button type="button" class="ic" id="skip" aria-label="잘 모르겠음, 건너뛰기" title="잘 모르겠음">?</button></div>'+
      '<div class="kbd">키보드: ← → 로 이동, Enter 로 다음 · ? 버튼은 “잘 모르겠음”(이 질문의 지역구는 분야 비례 몫으로 넘어갑니다)</div>'+
-   '</div><div class="box live" id="live"><div class="lvh"><b>실시간 예상 의석</b><small>막대를 움직이면 이 입장과 가까운 정당은 늘고, 먼 정당은 줄어듭니다. 아직 답하지 않은 분야는 실제 지지율대로 둡니다.</small></div><div class="hemi" id="qh">'+hemiSvg(a.N)+'</div><div class="lv" id="lv"></div></div></section>';
+   '</div></section>';
   const tr=$('#track'), th=$('.thumb',tr), fill=$('.fill',tr), bub=$('.bubble',tr), lp=$('.pole.l',app), rp=$('.pole.r',app);
   const txt=v=>{ if(v===null) return '막대를 움직여 입장을 정하세요'; const m=Math.abs(v), side=v<0?'A안':'B안';
     return m<.08?'정확히 가운데':m<.4?side+' 쪽으로 조금':m<.8?side+' 쪽으로 상당히':side+'에 완전히 동의'; };
@@ -1997,10 +1997,7 @@ function viewQuiz(){
     lp.style.setProperty('--o',cur===null||v<=.08?1:Math.max(.5,1-v*.55)); rp.style.setProperty('--o',cur===null||v>=-.08?1:Math.max(.5,1+v*.55));
     lp.classList.toggle('on',cur!==null&&v<=-.08); rp.classList.toggle('on',cur!==null&&v>=.08);
     $('#next').disabled=cur===null; };
-  const ansW=v=>{ const x=S.ans.slice(); x[i]=v==null?undefined:v; return x; };
-  const base=simAll(a,ansW(null)); let lvT=0;
-  const live=()=>{ const R2=cur===null?base:simAll(a,ansW(cur)); paint($('#qh'),a,R2,'석 · 예상',a.N); $('#lv').innerHTML=chgHtml(a,base,R2,true); };
-  const set=(v,anim)=>{ v=clamp(v,-1,1); if(Math.abs(v)<.04) v=0; cur=Math.round(v*100)/100; draw(anim); clearTimeout(lvT); lvT=setTimeout(live,70); };
+  const set=(v,anim)=>{ v=clamp(v,-1,1); if(Math.abs(v)<.04) v=0; cur=Math.round(v*100)/100; draw(anim); };
   const fromX=cx=>{ const b=tr.getBoundingClientRect(); return (cx-b.left)/b.width*2-1; };
   tr.addEventListener('pointerdown',e=>{ drag=true; try{ tr.setPointerCapture(e.pointerId); }catch(_){} set(fromX(e.clientX),e.target!==th); th.focus({preventScroll:true}); e.preventDefault(); });
   tr.addEventListener('pointermove',e=>{ if(drag) set(fromX(e.clientX),false); });
@@ -2015,7 +2012,7 @@ function viewQuiz(){
   $('#next').addEventListener('click',()=>{ if(cur!==null) go(cur); });
   $('#skip').addEventListener('click',()=>go(null));
   $('#prev').addEventListener('click',()=>{ if(cur!==null) S.ans[i]=cur; S.qi--; viewQuiz(); });
-  draw(false); live(); th.focus({preventScroll:true}); }
+  draw(false); th.focus({preventScroll:true}); }
 
 // ── 4. 분야별 의석 발표
 function viewBoard(k){
