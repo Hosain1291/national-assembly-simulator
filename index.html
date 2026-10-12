@@ -2212,7 +2212,6 @@ function viewResult(keep){
     $('#mvgo').addEventListener('click',()=>{ const f=+$('#mvf').value, k=Math.max(1,Math.min(mine[f]||0,Math.round(+$('#mvk').value||0))), t=+$('#mvt').value; if(!mine[f]) return;
       if(!S.mv||S.mv.n!==a.n) S.mv={n:a.n,l:[]}; S.mv.l.push({f,k,t}); S.mvOpen=true; S.cab=null; viewResult(true); });
     $('#mvlog').addEventListener('click',e=>{ const b=e.target.closest('button[data-u]'); if(!b) return; if(b.dataset.u==='all') S.mv.l=[]; else S.mv.l.splice(+b.dataset.u,1); S.cab=null; viewResult(true); }); }
-  addShots(app,'section.stack>.box:not(details)');
   $('#cardgo').addEventListener('click',()=>saveCard(a,R,real,answered,asked.length));
   const L=order[0], gov=a.gov.map(k=>a.P.findIndex(p=>p.k===k)).filter(f=>f>=0), govSeats=sum(gov.map(f=>mine[f]));
   $('#lead').innerHTML='제1당은 <b>'+esc(a.P[L].n)+'</b> '+mine[L]+'석'+(a.Lst?' (지역구 '+(R.dist[L]+R.fix[L])+' · '+a.ln+' '+R.list[L]+')':'')+'입니다. '+(mine[L]>=two3(a.N)?'혼자서 개헌선까지 넘었습니다.':mine[L]>=M?'단독 과반으로 법안을 혼자 처리할 수 있습니다.':'어느 정당도 과반('+M+'석)을 넘지 못해 연대가 필요합니다.')+
