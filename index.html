@@ -447,6 +447,9 @@ html:root[data-skin="pc"] :is(.sysbar,.lbar,.meter,.vbar,.fbar) span+span{box-sh
 html:root[data-skin="pc"] :is(.mk,.vbar em,.lbar em){background:#000}
 html:root[data-skin="pc"] .mk.l2{background:#aa0000}
 html:root[data-skin="pc"] .dot{box-shadow:0 0 0 1px #fff}
+/* PC통신: 비례(링) 의석은 흰 바탕 위 정당색으로 — 파란 정당도 파란 화면에서 보이게 */
+html:root[data-skin="pc"]{--ring-base:#ffffff;--ring-mix:28%}
+html:root[data-skin="pc"] .ring{background:#fff;border-color:#fff;box-shadow:inset 0 0 0 2px #5555ff;border-radius:0}
 html:root[data-skin="pc"] .sdl{border-radius:0;border:0;font:14px/1 var(--f-mono);padding:2px 3px;animation:pxDl 2.2s steps(1,end) forwards}
 html:root[data-skin="pc"] .sdl.up{background:var(--accent);color:var(--accent-ink)}
 html:root[data-skin="pc"] .sdl.down{background:var(--warn);color:#fff}
@@ -1758,7 +1761,7 @@ function paint(el,a,R,label,big,dim){
   $$('.seat',el).forEach((c,i)=>{ const s=seq[i]; c.style.opacity=s&&s.o?.2:'';
     if(!s){ c.setAttribute('fill','var(--line)'); c.setAttribute('stroke','none'); c.classList.remove('rg'); return; }
     // 테마 바탕과 정당색이 비슷해도 보이도록 외곽선을 둠 (지역구: 테마 대비색 테두리, 비례: 정당색 링 + 바깥 대비 그림자)
-    if(s.ring){ c.setAttribute('fill','color-mix(in srgb, '+s.c+' 22%, var(--surface))'); c.setAttribute('stroke',s.c); c.setAttribute('stroke-width',rw); c.classList.add('rg'); }
+    if(s.ring){ c.setAttribute('fill','color-mix(in srgb, '+s.c+' var(--ring-mix,22%), var(--ring-base,var(--surface)))'); c.setAttribute('stroke',s.c); c.setAttribute('stroke-width',rw); c.classList.add('rg'); }
     else { c.setAttribute('fill',s.c); c.setAttribute('stroke','var(--seat-edge)'); c.setAttribute('stroke-width',(rw*0.42).toFixed(2)); c.classList.remove('rg'); } });
   seatShape(el); seatAnim(el,$$('.seat',el).map((c,i)=>seq[i]?seq[i].c+(seq[i].ring?'|r':''):''));
   if(label!=null) $('.sm',el).textContent=label;
