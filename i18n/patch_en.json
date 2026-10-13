@@ -63,12 +63,15 @@
 "content:\"Close\""
 ],
 [
-"--f-display:\"LineSeed\",\"HadaBatang\",\"Apple SD Gothic Neo\",\"Noto Sans KR\",sans-serif;",
+"--f-display:\"Pretendard\",\"HadaBatang\",\"Apple SD Gothic Neo\",\"Noto Sans KR\",sans-serif;",
 "--f-display:\"HadaBatang\",\"Noto Serif KR\",\"Nanum Myeongjo\",serif;"
 ],
 [
-"--f-body:\"LineSeed\",\"HadaBatang\",\"Apple SD Gothic Neo\",\"Noto Sans KR\",sans-serif;",
+"--f-body:\"Pretendard\",\"HadaBatang\",\"Apple SD Gothic Neo\",\"Noto Sans KR\",sans-serif;",
 "--f-body:\"HadaBatang\",\"Noto Serif KR\",\"Apple SD Gothic Neo\",serif;"
 ]
+],
+"dropfonts": [
+"Pretendard"
 ]
 }

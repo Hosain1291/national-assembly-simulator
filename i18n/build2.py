@@ -49,6 +49,8 @@ res=trhtml(head)+js2+trhtml(tail)
 for a,b in P.get('html',[]):
     if a not in res: print('HTML MISS',a[:60])
     res=res.replace(a,b)
+for fam in P.get('dropfonts',[]):
+    res='\n'.join(l for l in res.split('\n') if not l.startswith("@font-face{font-family:'%s'"%fam))
 open('../korea-assembly-%s.html'%L,'w',encoding='utf-8').write(res)
 noc=re.sub(r'/\*.*?\*/','',re.sub(r'data:[a-z/+\-]+;base64,[A-Za-z0-9+/=]+','',res),flags=re.S)
 noc=re.sub(r'//[^\n]*','',noc)
