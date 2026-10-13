@@ -59,34 +59,61 @@
 ],
 [
 "--f-display:\"Pretendard\",\"HadaBatang\",\"Apple SD Gothic Neo\",\"Noto Sans KR\",sans-serif;",
-"--f-display:\"LINE Seed JP\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",\"HadaBatang\",sans-serif;"
+"--f-display:\"Pretendard JP\",\"HadaBatang\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans JP\",\"Noto Sans CJK JP\",sans-serif;"
 ],
 [
 "--f-body:\"Pretendard\",\"HadaBatang\",\"Apple SD Gothic Neo\",\"Noto Sans KR\",sans-serif;",
-"--f-body:\"LINE Seed JP\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",\"HadaBatang\",sans-serif;"
+"--f-body:\"Pretendard JP\",\"HadaBatang\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans JP\",\"Noto Sans CJK JP\",sans-serif;"
 ],
 [
 "--f-display:\"RoundedFixedsys\",monospace; --f-body:\"RoundedFixedsys\",monospace; --f-mono:\"RoundedFixedsys\",monospace}",
-"--f-display:\"DotGothic16\",\"RoundedFixedsys\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",monospace; --f-body:\"DotGothic16\",\"RoundedFixedsys\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",monospace; --f-mono:\"DotGothic16\",\"RoundedFixedsys\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",monospace}"
+"--f-display:\"DotGothic16\",\"Pretendard JP\",\"RoundedFixedsys\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",monospace; --f-body:\"DotGothic16\",\"Pretendard JP\",\"RoundedFixedsys\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",monospace; --f-mono:\"DotGothic16\",\"Pretendard JP\",\"RoundedFixedsys\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",monospace}"
 ],
 [
 "--f-display:\"SeochoDotum\",\"Apple SD Gothic Neo\",sans-serif; --f-body:\"SeochoDotum\",\"Apple SD Gothic Neo\",sans-serif; --f-mono:\"SeochoDotum\",\"Apple SD Gothic Neo\",sans-serif}",
-"--f-display:\"SeochoDotum\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",sans-serif; --f-body:\"SeochoDotum\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",sans-serif; --f-mono:\"SeochoDotum\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",sans-serif}"
+"--f-display:\"SeochoDotum\",\"Pretendard JP\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",sans-serif; --f-body:\"SeochoDotum\",\"Pretendard JP\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",sans-serif; --f-mono:\"SeochoDotum\",\"Pretendard JP\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",sans-serif}"
 ],
 [
 "--f-mono:\"IBM Plex Mono\",ui-monospace,monospace;",
-"--f-mono:\"IBM Plex Mono\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",ui-monospace,monospace;"
+"--f-mono:\"IBM Plex Mono\",\"Pretendard JP\",\"Noto Sans JP\",\"Hiragino Sans\",\"Yu Gothic\",\"Meiryo\",\"Noto Sans CJK JP\",ui-monospace,monospace;"
 ],
 [
 "--f-display:\"Malmoi\",\"HadaBatang\",serif; --f-body:\"Malmoi\",\"HadaBatang\",serif}",
-"--f-display:\"New Tegomin\",\"Malmoi\",\"HadaBatang\",\"Noto Serif JP\",\"Hiragino Mincho ProN\",\"Yu Mincho\",serif; --f-body:\"New Tegomin\",\"Malmoi\",\"HadaBatang\",\"Noto Serif JP\",\"Hiragino Mincho ProN\",\"Yu Mincho\",serif}"
+"--f-display:\"New Tegomin\",\"Pretendard JP\",\"Malmoi\",\"HadaBatang\",\"Noto Serif JP\",\"Hiragino Mincho ProN\",\"Yu Mincho\",serif; --f-body:\"New Tegomin\",\"Pretendard JP\",\"Malmoi\",\"HadaBatang\",\"Noto Serif JP\",\"Hiragino Mincho ProN\",\"Yu Mincho\",serif}"
 ],
 [
 "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap\">",
-"<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap\">\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=LINE+Seed+JP:wght@400;700;800&family=New+Tegomin&family=DotGothic16&display=swap\">"
+"<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap\">\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=New+Tegomin&family=DotGothic16&display=swap\">"
 ]
 ],
 "dropfonts": [
 "Pretendard"
+],
+"embedfonts": [
+[
+"Pretendard JP",
+400,
+"fonts_ja/pjp-Regular.woff2"
+],
+[
+"Pretendard JP",
+500,
+"fonts_ja/pjp-Medium.woff2"
+],
+[
+"Pretendard JP",
+600,
+"fonts_ja/pjp-SemiBold.woff2"
+],
+[
+"Pretendard JP",
+700,
+"fonts_ja/pjp-Bold.woff2"
+],
+[
+"Pretendard JP",
+800,
+"fonts_ja/pjp-ExtraBold.woff2"
+]
 ]
 }

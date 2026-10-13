@@ -49,6 +49,11 @@ res=trhtml(head)+js2+trhtml(tail)
 for a,b in P.get('html',[]):
     if a not in res: print('HTML MISS',a[:60])
     res=res.replace(a,b)
+import base64 as _b64, os as _os
+_ef=[x for x in P.get('embedfonts',[]) if _os.path.exists(x[2])]
+if _ef:
+    _ff='\n'.join("@font-face{font-family:'%s';src:url(data:font/woff2;base64,%s) format('woff2');font-weight:%d;font-display:swap}"%(f,_b64.b64encode(open(p,'rb').read()).decode(),w) for f,w,p in _ef)
+    _k=res.index("@font-face{font-family:'HadaBatang'"); _e=res.index('\n',_k); res=res[:_e+1]+_ff+'\n'+res[_e+1:]
 for fam in P.get('dropfonts',[]):
     res='\n'.join(l for l in res.split('\n') if not l.startswith("@font-face{font-family:'%s'"%fam))
 open('../korea-assembly-%s.html'%L,'w',encoding='utf-8').write(res)
