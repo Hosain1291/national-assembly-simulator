@@ -1,0 +1,22 @@
+name: 인물 사진 내려받기
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['photos/links.json']
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 링크의 사진 저장
+        run: python3 photos/download.py
+      - name: 커밋
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898341+github-actions[bot]@users.noreply.github.com"
+          git add photos
+          git diff --cached --quiet || git commit -m "인물 사진 내려받기 (photos/links.json)"
+          git push
